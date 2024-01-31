@@ -4,7 +4,7 @@ document.getElementById('search-box').addEventListener('input', function(event) 
     clearTimeout(this.delay);
     this.delay = setTimeout(() => {
         if (searchQuery.length > 3) {
-            fetch(`http://localhost:5001/search?query=${encodeURIComponent(searchQuery)}`)
+            fetch(`https://jhrecipesapp-1d5375e2a02f.herokuapp.com/search?query=${encodeURIComponent(searchQuery)}`)
                 .then(response => response.json())
                 .then(data => {
                     resultsContainer.innerHTML = '';
