@@ -9,11 +9,11 @@ CORS(app, resources={r"/search*": {"origins": "*"}})  # Adjust as needed for pro
 
 # Environment variables are used here for security reasons
 db_config = {
-    'host': os.getenv('DB_HOST'),
-    'user': os.getenv('DB_USER'),
-    'password': os.getenv('DB_PASS'),
-    'database': os.getenv('DB_NAME'),
-    'port': 3306
+    'host': os.environ.get('DB_HOST', 'default_host'),
+    'user': os.environ.get('DB_USER', 'default_user'),
+    'password': os.environ.get('DB_PASSWORD', 'default_password'),
+    'database': os.environ.get('DB_NAME', 'default_db'),
+    'port': int(os.environ.get('DB_PORT', 3306))  # Default to 3306 if not specified
 }
 
 @app.route('/')
