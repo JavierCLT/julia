@@ -44,12 +44,20 @@ function fetchAndDisplayRecipeDetails(recipeId) {
             // Create HTML for ingredients
             let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
             data.ingredients.forEach(ingredient => {
-                if (ingredient.Quantity && ingredient.Quantity.trim() !== "") {
-                    ingredientsHtml += `<li>${ingredient.Quantity} ${ingredient.Unit} of ${ingredient.Name}</li>`;
+                let quantity = ingredient.Quantity;
+                let unit = ingredient.Unit;
+                let name = ingredient.Name;
+            
+                // Check if quantity is empty and capitalize the first letter of the ingredient's name
+                if (quantity === "") {
+                    name = name.charAt(0).toUpperCase() + name.slice(1);
+                    ingredientsHtml += `<li>${name}</li>`; // No quantity or unit, and 'of' is omitted
                 } else {
-                    // Capitalize the first letter if Quantity is empty
-                    const nameCapitalized = ingredient.Name.charAt(0).toUpperCase() + ingredient.Name.slice(1);
-                    ingredientsHtml += `<li>${nameCapitalized}</li>`;
+                    // Check if quantity is text and should be capitalized
+                    if (isNaN(quantity)) {
+                        quantity = quantity.charAt(0).toUpperCase() + quantity.slice(1);
+                    }
+                    ingredientsHtml += `<li>${quantity} ${unit} of ${name}</li>`;
                 }
             });
             ingredientsHtml += '</ul>';
