@@ -44,9 +44,15 @@ function fetchAndDisplayRecipeDetails(recipeId) {
             // Create HTML for ingredients
             let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
             data.ingredients.forEach(ingredient => {
-                ingredientsHtml += `<li>${ingredient.Quantity} ${ingredient.Unit} of ${ingredient.Name}</li>`;
+                // Check if Quantity is present and not an empty string
+                if(ingredient.Quantity && ingredient.Quantity.trim() !== "") {
+                    ingredientsHtml += `<li>${ingredient.Quantity} ${ingredient.Unit} of ${ingredient.Name}</li>`;
+                } else {
+                    // If Quantity is not present, do not include "of"
+                    ingredientsHtml += `<li>${ingredient.Name}</li>`;
+                }
             });
-            ingredientsHtml += '</ul>';
+                        ingredientsHtml += '</ul>';
 
             // Create HTML for instructions
             let instructionsHtml = '<h3>Instructions:</h3><ul>';
