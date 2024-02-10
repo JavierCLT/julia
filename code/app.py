@@ -31,12 +31,21 @@ def search_recipes():
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor(dictionary=True)
         query = """
-        SELECT id, title
-        FROM foods
-        WHERE Title LIKE %s
+        SELECT MIN(recipes.RecipeID) as RecipeID, recipes.Title
+        FROM recipes
+        LEFT JOIN recipecategory ON recipes.RecipeID = recipecategory.RecipeID
+        LEFT JOIN category ON recipecategory.CategoryID = category.CategoryID
+        LEFT JOIN recipetags ON recipes.RecipeID = recipetags.RecipeID
+        LEFT JOIN tags ON recipetags.TagID = tags.TagID
+        LEFT JOIN ingredients ON recipes.RecipeID = ingredients.RecipeID
+        WHERE recipes.Title LIKE %s 
+            OR ingredients.Name LIKE %s 
+            OR category.CategoryName LIKE %s 
+            OR tags.TagName LIKE %s
+        GROUP BY recipes.Title
         """
         like_pattern = f"%{query_param}%"
-        cursor.execute(query, (like_pattern,))
+        cursor.execute(query, (like_pattern, like_pattern, like_pattern, like_pattern))
         result = cursor.fetchall()
         cursor.close()
     except Error as e:
@@ -50,38 +59,43 @@ def search_recipes():
 
 # New route for fetching recipe details
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
-def explanation_details(recipe_id):
-    connection = None
-    try:
-        connection = mysql.connector.connect(**db_config)
-        cursor = connection.cursor(dictionary=True)
-        
-        # Fetch the explanation of the food item
-        cursor.execute("SELECT explanation FROM foods WHERE id = %s", (recipe_id,))
-        explanation = cursor.fetchone()  # Assuming there's only one explanation per id
+def recipe_details(recipe_id):
+    # Connect to the database and retrieve details
+    connection = mysql.connector.connect(**db_config)
+    cursor = connection.cursor(dictionary=True)
 
-        if explanation:
-            # Send back the explanation
-            return jsonify(explanation)
-        else:
-            # Send back an empty JSON object if no explanation is found
-            return jsonify({})
-    except Error as e:
-        print(f"Error while connecting to MySQL or executing query: {e}")
-        return jsonify({'error': str(e)}), 500
-    finally:
-        if connection and connection.is_connected():
-            cursor.close()
-            connection.close()
+    print(f"Executing query with recipe_id: {recipe_id}")
+
+    # Fetch ingredients
+    cursor.execute("""
+        SELECT Name, Unit, Quantity
+        FROM ingredients
+        WHERE RecipeID = %s
+        ORDER BY IngredientID
+    """, (recipe_id,))
+    ingredients = cursor.fetchall()
+
+    # Fetch instructions
+    cursor.execute("""
+        SELECT StepNumber, Description
+        FROM instructions
+        WHERE RecipeID = %s
+        ORDER BY StepNumber
+    """, (recipe_id,))
+    instructions = cursor.fetchall()
+
+    # Close connection
+    cursor.close()
+    connection.close()
 
     # Combine data into one response
     details = {
-        'explanation': explanation,
+        'ingredients': ingredients,
+        'instructions': instructions
     }
 
     return jsonify(details)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
-
 
