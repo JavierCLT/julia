@@ -3,8 +3,8 @@ document.getElementById('search-box').addEventListener('input', function(event) 
     const resultsContainer = document.getElementById('results');
     clearTimeout(this.delay);
     this.delay = setTimeout(() => {
-        if (searchQuery.length > 2) {
-            fetch(`https://jhrecipesapp-1d5375e2a02f.herokuapp.com/search?query=${encodeURIComponent(searchQuery)}`)
+        if (searchQuery.length > 3) {
+            fetch(`https://foods-cad3aa2b09ba.herokuapp.com/search?query=${encodeURIComponent(searchQuery)}`)
                 .then(response => response.json())
                 .then(data => {
                     resultsContainer.innerHTML = '';
@@ -108,13 +108,13 @@ document.addEventListener('click', function(event) {
     // Check if a recipe-box was clicked
     if (targetElement) {
         const recipeId = targetElement.getAttribute('data-recipe-id');
-        if (recipeId) {
+        if (id) {
             // Retrieve the title from the clicked element and update the yellow area
             const recipeTitle = targetElement.querySelector('.recipe-title').textContent;
             document.getElementById('recipe-title').textContent = recipeTitle;
             
             // Fetch and display recipe details
-            fetchAndDisplayRecipeDetails(recipeId);
+            fetchAndDisplayRecipeDetails(id);
 
             // Call this function when a recipe is clicked to show the details and the overlay
             toggleBlurAndOverlay(true);
