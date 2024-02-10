@@ -107,7 +107,7 @@ document.addEventListener('click', function(event) {
     
     // Check if a recipe-box was clicked
     if (targetElement) {
-        const recipeId = targetElement.getAttribute('data-recipe-id');
+        const id = targetElement.getAttribute('data-recipe-id');
         if (id) {
             // Retrieve the title from the clicked element and update the yellow area
             const recipeTitle = targetElement.querySelector('.recipe-title').textContent;
