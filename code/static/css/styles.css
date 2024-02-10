@@ -11,8 +11,15 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: var(--misty-rose);
-    color: var(--cadet-gray);
+      background-image: linear-gradient(
+    to bottom,
+    #E63946, /* Color 1 */
+    #F1FAEE, /* Color 2 */
+    #A8DADC, /* Color 3 */
+    #457B9D, /* Color 4 */
+    #1D3557  /* Color 5 */
+    );
+    color: #fff; /* Adjust text color for visibility if needed */
     font-family: var(--font-family-body);
 }
 
