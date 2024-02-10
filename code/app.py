@@ -56,11 +56,16 @@ def explanation_details(recipe_id):
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor(dictionary=True)
         
-        # Query to fetch the explanation of the food item
+        # Fetch the explanation of the food item
         cursor.execute("SELECT explanation FROM foods WHERE id = %s", (recipe_id,))
-        explanation = cursor.fetchone()  # Fetchone if you're expecting a single row
-        
-        return jsonify({'explanation': explanation})
+        explanation = cursor.fetchone()  # Assuming there's only one explanation per id
+
+        if explanation:
+            # Send back the explanation
+            return jsonify(explanation)
+        else:
+            # Send back an empty JSON object if no explanation is found
+            return jsonify({})
     except Error as e:
         print(f"Error while connecting to MySQL or executing query: {e}")
         return jsonify({'error': str(e)}), 500
