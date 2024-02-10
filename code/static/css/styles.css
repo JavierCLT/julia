@@ -1,8 +1,8 @@
 :root {
-    --rich-black: #0D1F2D;
+    --rich-black: #1D3557;
     --paynes-gray: #546A7B;
     --cadet-gray: #9EA3B0;
-    --misty-rose: #FAE1DF;
+    --misty-rose: #F1FAEE;
     --desert-sand: #E4C3AD;
     --font-family-heading: 'Merriweather', serif;
     --font-family-body: 'Open Sans', sans-serif;
@@ -11,15 +11,8 @@
 body {
     margin: 0;
     padding: 0;
-      background-image: linear-gradient(
-    to bottom,
-    #E63946, /* Color 1 */
-    #F1FAEE, /* Color 2 */
-    #A8DADC, /* Color 3 */
-    #457B9D, /* Color 4 */
-    #1D3557  /* Color 5 */
-    );
-    color: #fff; /* Adjust text color for visibility if needed */
+    background-color: var(--misty-rose);
+    color: var(--cadet-gray);
     font-family: var(--font-family-body);
 }
 
