@@ -51,23 +51,23 @@ def search_recipes():
 # New route for fetching recipe details
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
 def explanation_details(recipe_id):
-    # Connect to the database and retrieve details
-    connection = mysql.connector.connect(**db_config)
-    cursor = connection.cursor(dictionary=True)
-
-    print(f"Executing query with recipe_id: {recipe_id}")
-
-    # Fetch explanation
-    cursor.execute("""
-        SELECT explanation
-        FROM foods
-        WHERE id = %s
-    """, (recipe_id,))
-    explanation = cursor.fetchall()
-
-    # Close connection
-    cursor.close()
-    connection.close()
+    connection = None
+    try:
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor(dictionary=True)
+        
+        # Query to fetch the explanation of the food item
+        cursor.execute("SELECT explanation FROM foods WHERE id = %s", (recipe_id,))
+        explanation = cursor.fetchone()  # Fetchone if you're expecting a single row
+        
+        return jsonify({'explanation': explanation})
+    except Error as e:
+        print(f"Error while connecting to MySQL or executing query: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if connection and connection.is_connected():
+            cursor.close()
+            connection.close()
 
     # Combine data into one response
     details = {
