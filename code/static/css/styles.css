@@ -11,9 +11,17 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: var(--misty-rose);
+    background-image: linear-gradient(
+    to right,
+    #264653 0%, #264653 20%, /* Color 1 */
+    #2A9D8F 20%, #2A9D8F 40%, /* Color 2 */
+    #E9C46A 40%, #E9C46A 60%, /* Color 3 */
+    #F4A261 60%, #F4A261 80%, /* Color 4 */
+    #E76F51 80%, #E76F51 100%  /* Color 5 */
+    );
     color: var(--cadet-gray);
     font-family: var(--font-family-body);
+    height: 100vh; /* Full height of the viewport */
 }
 
 h1, h2, h3 {
