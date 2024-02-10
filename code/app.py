@@ -31,21 +31,12 @@ def search_recipes():
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor(dictionary=True)
         query = """
-        SELECT MIN(recipes.RecipeID) as RecipeID, recipes.Title
-        FROM recipes
-        LEFT JOIN recipecategory ON recipes.RecipeID = recipecategory.RecipeID
-        LEFT JOIN category ON recipecategory.CategoryID = category.CategoryID
-        LEFT JOIN recipetags ON recipes.RecipeID = recipetags.RecipeID
-        LEFT JOIN tags ON recipetags.TagID = tags.TagID
-        LEFT JOIN ingredients ON recipes.RecipeID = ingredients.RecipeID
-        WHERE recipes.Title LIKE %s 
-            OR ingredients.Name LIKE %s 
-            OR category.CategoryName LIKE %s 
-            OR tags.TagName LIKE %s
-        GROUP BY recipes.Title
+        SELECT id, title
+        FROM foods
+        WHERE Title LIKE %s
         """
         like_pattern = f"%{query_param}%"
-        cursor.execute(query, (like_pattern, like_pattern, like_pattern, like_pattern))
+        cursor.execute(query, (like_pattern,))
         result = cursor.fetchall()
         cursor.close()
     except Error as e:
@@ -59,30 +50,20 @@ def search_recipes():
 
 # New route for fetching recipe details
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
-def recipe_details(recipe_id):
+def explanation_details(recipe_id):
     # Connect to the database and retrieve details
     connection = mysql.connector.connect(**db_config)
     cursor = connection.cursor(dictionary=True)
 
     print(f"Executing query with recipe_id: {recipe_id}")
 
-    # Fetch ingredients
+    # Fetch explanation
     cursor.execute("""
-        SELECT Name, Unit, Quantity
-        FROM ingredients
-        WHERE RecipeID = %s
-        ORDER BY IngredientID
+        SELECT explanation
+        FROM foods
+        WHERE id = %s
     """, (recipe_id,))
-    ingredients = cursor.fetchall()
-
-    # Fetch instructions
-    cursor.execute("""
-        SELECT StepNumber, Description
-        FROM instructions
-        WHERE RecipeID = %s
-        ORDER BY StepNumber
-    """, (recipe_id,))
-    instructions = cursor.fetchall()
+    explanation = cursor.fetchall()
 
     # Close connection
     cursor.close()
@@ -90,8 +71,7 @@ def recipe_details(recipe_id):
 
     # Combine data into one response
     details = {
-        'ingredients': ingredients,
-        'instructions': instructions
+        'explanation': explanation,
     }
 
     return jsonify(details)
