@@ -17,9 +17,9 @@ document.getElementById('search-box').addEventListener('input', function(event) 
                     data.forEach(recipe => {
                         const recipeElement = document.createElement('div');
                         recipeElement.className = 'recipe-box';
-                        recipeElement.setAttribute('data-recipe-id', recipe.RecipeID); // Set the recipe ID here
+                        recipeElement.setAttribute('data-recipe-id', recipe.id); // Set the recipe ID here
                         recipeElement.innerHTML = `<div class="recipe-content">
-                                                      <h3 class="recipe-title">${recipe.Title}</h3>
+                                                      <h3 class="recipe-title">${recipe.title}</h3>
                                                       <!-- Other recipe info can go here -->
                                                    </div>`;
                         grid.appendChild(recipeElement);
