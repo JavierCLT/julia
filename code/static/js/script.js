@@ -34,9 +34,9 @@ document.getElementById('search-box').addEventListener('input', function(event) 
 });
 
 // JavaScript function to fetch and display recipe details
-function fetchAndDisplayRecipeDetails(recipeId) {
+function fetchAndDisplayRecipeDetails(id) {
     // Fetch the details from the server
-    fetch(`/recipe_details/${encodeURIComponent(recipeId)}`)
+    fetch(`/recipe_details/${encodeURIComponent(id)}`)
         .then(response => response.json())
         .then(data => {
             // Reference to the container
