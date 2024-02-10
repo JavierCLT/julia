@@ -45,7 +45,7 @@ h1, h2, h3 {
 
 .header h1 {
     color: var(--rich-black);
-    font-size: 3em;
+    font-size: 3.5em;
     margin: 20px 0;
 }
 
