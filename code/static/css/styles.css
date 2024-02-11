@@ -75,10 +75,13 @@ h1, h2, h3 {
 
 .grid {
     display: grid;
-    justify-content: center; /* Centers grid items horizontally */
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Makes the grid responsive */
+    justify-content: center; /* Keeps items centered */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Adjusts the column min and max width */
     gap: 20px;
     text-align: center;
+    max-width: 1200px; /* Or whatever maximum width you desire */
+    margin-left: auto; /* These two lines center the grid */
+    margin-right: auto;
 }
 
 .recipe-box {
@@ -88,6 +91,9 @@ h1, h2, h3 {
     background-color: #fff;
     cursor: pointer; /* Indicates the box is clickable */
     margin-bottom: 20px; /* Space between recipe boxes */
+    max-width: 600px; /* Adjust the maximum width as desired */
+    margin-left: auto; /* These two lines center the box horizontally */
+    margin-right: auto;
 }
 
 #recipe-details-container {
