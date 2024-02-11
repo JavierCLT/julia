@@ -60,6 +60,7 @@ h1, h2, h3 {
     width: 80%;
     max-width: 500px; /* Limits the width of the search box */
     padding: 10px;
+    text-align: center;
     font-size: 1em;
     font-family: var(--font-family-body);
     border: 1px solid #ccc;
