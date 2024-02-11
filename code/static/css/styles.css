@@ -19,7 +19,7 @@ body {
     #F4A261 60%, #F4A261 80%, /* Color 4 */
     #E76F51 80%, #E76F51 100%  /* Color 5 */
     );
-    color: var(--cadet-gray);
+    color: #264653;
     font-family: var(--font-family-body);
     height: 100vh; /* Full height of the viewport */
 }
