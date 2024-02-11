@@ -27,6 +27,7 @@ document.getElementById('search-box').addEventListener('input', function(event) 
 });
 
 // JavaScript function to fetch and display recipe details
+// JavaScript function to fetch and display recipe details
 function fetchAndDisplayFoodDetails(id) {
     fetch(`/recipe_details/${id}`)
         .then(response => response.json())
@@ -34,12 +35,33 @@ function fetchAndDisplayFoodDetails(id) {
             const detailsContainer = document.getElementById('recipe-details-container');
             let explanationHtml = '';
             if (data.explanation) {
-                explanationHtml = `<p>${data.explanation}</p>`;
+                // Format the explanation text to bold text before the first colon
+                explanationHtml = formatExplanation(data.explanation);
+                explanationHtml = `<p>${explanationHtml}</p>`;
             }
             detailsContainer.innerHTML = `<h2>${data.title}</h2>${explanationHtml}`;
             detailsContainer.style.display = 'block';
         })
         .catch(error => console.error('Error fetching food details:', error));
+}
+
+// Add this function to your JS
+function formatExplanation(text) {
+  // Split the text into an array of lines
+  const lines = text.split('\n');
+  
+  // Map over each line, and apply bold formatting to the text before the first colon
+  const formattedLines = lines.map(line => {
+    const colonIndex = line.indexOf(':');
+    if (colonIndex !== -1) {
+      // Only wrap text before the colon if there is a colon
+      return `<strong>${line.slice(0, colonIndex + 1)}</strong>${line.slice(colonIndex + 1)}`;
+    }
+    return line; // Return the line unchanged if there is no colon
+  });
+
+  // Join the array back into a single string with line breaks
+  return formattedLines.join('<br>'); // Use <br> instead of \n for HTML line breaks
 }
 
 function toggleBlurAndOverlay(show) {
