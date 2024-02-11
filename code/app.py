@@ -49,9 +49,14 @@ def food_details(id):
     try:
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor(dictionary=True)
-        cursor.execute("SELECT title, explanation FROM foods WHERE id = %s", (id,))
+        cursor.execute("""
+            SELECT f.title AS title, e.explanation AS explanation
+            FROM foods f
+            INNER JOIN explanations e ON f.id = e.food_id
+            WHERE f.id = %s
+        """, (id,))
         details = cursor.fetchone()
-    except Error as e:
+    except mysql.connector.Error as e:
         print(f"Error fetching food details: {e}")
         details = {}
     finally:
