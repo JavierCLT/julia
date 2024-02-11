@@ -74,20 +74,25 @@ h1, h2, h3 {
 }
 
 .grid {
-    display: grid;
-    justify-content: center; /* Centers grid items horizontally */
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Makes the grid responsive */
-    gap: 20px;
-    text-align: center;
+    display: flex; /* Use flexbox instead of grid */
+    flex-wrap: wrap; /* Allow wrapping of items */
+    gap: 20px; /* Keep the gap */
+    justify-content: center; /* Center the items horizontally */
+    align-items: stretch; /* Stretch items to fill the container vertically */
 }
 
 .recipe-box {
+    flex: 1 1 200px; /* Grow and shrink equally, basis at 200px */
+    max-width: calc(50% - 20px); /* Adjust max-width for 2 items per row with gap considered */
     border: 1px solid #ccc;
     padding: 20px;
     border-radius: 5px;
     background-color: #fff;
-    cursor: pointer; /* Indicates the box is clickable */
-    margin-bottom: 20px; /* Space between recipe boxes */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex; /* Use flexbox for content alignment */
+    justify-content: center; /* Center content horizontally */
+    align-items: center; /* Center content vertically */
+    text-align: center; /* Center text */
 }
 
 #recipe-details-container {
@@ -201,6 +206,9 @@ li {
     }
     h3 {
         font-size: 1em;
+    }
+    .recipe-box {
+        max-width: calc(100% - 20px); /* Full width on smaller screens */
     }
 }
 
