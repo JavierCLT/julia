@@ -1,25 +1,29 @@
 document.getElementById('search-box').addEventListener('input', function(event) {
     const searchQuery = this.value.trim();
     const resultsContainer = document.getElementById('results');
-    if (searchQuery.length > 2) {
-        fetch(`https://foods-cad3aa2b09ba.herokuapp.com/search?query=${encodeURIComponent(searchQuery)}`)
-            .then(response => response.json())
-            .then(data => {
-                resultsContainer.innerHTML = '';
-                let grid = document.createElement('div');
-                grid.className = 'grid';
-                if (data.length > 0) {
-                    const recipe = data[0]; // Assuming only one result for simplicity
-                    const recipeElement = document.createElement('div');
-                    recipeElement.className = 'recipe-box';
-                    recipeElement.innerHTML = `<h3 class="recipe-title" data-id="${recipe.id}">${recipe.title}</h3>`;
-                    recipeElement.onclick = () => fetchAndDisplayFoodDetails(recipe.id);
-                    grid.appendChild(recipeElement);
-                }
-                resultsContainer.appendChild(grid);
-            })
-            .catch(error => console.error('Error:', error));
-    }
+    clearTimeout(this.delay); // Debounce setup to wait until user stops typing
+    this.delay = setTimeout(() => {
+        if (searchQuery.length > 2) {
+            fetch(`https://foods-cad3aa2b09ba.herokuapp.com/search?query=${encodeURIComponent(searchQuery)}`)
+                .then(response => response.json())
+                .then(data => {
+                    resultsContainer.innerHTML = '';
+                    let grid = document.createElement('div');
+                    grid.className = 'grid';
+                    data.forEach(recipe => {
+                        const recipeElement = document.createElement('div');
+                        recipeElement.className = 'recipe-box';
+                        recipeElement.innerHTML = `<h3 class="recipe-title" data-id="${recipe.id}">${recipe.title}</h3>`;
+                        recipeElement.onclick = () => fetchAndDisplayFoodDetails(recipe.id);
+                        grid.appendChild(recipeElement);
+                    });
+                    resultsContainer.appendChild(grid);
+                })
+                .catch(error => console.error('Error:', error));
+        } else {
+            resultsContainer.innerHTML = '';
+        }
+    }, 300); // Wait for 300 ms after the user stops typing
 });
 
 // JavaScript function to fetch and display recipe details
@@ -29,11 +33,8 @@ function fetchAndDisplayFoodDetails(id) {
         .then(data => {
             const detailsContainer = document.getElementById('recipe-details-container');
             let explanationHtml = '';
-            if (Array.isArray(data.explanation)) {
-                explanationHtml = data.explanation.map(line => `<p>${line}</p>`).join('');
-            } else if (typeof data.explanation === 'string') {
-                // Split the string into paragraphs based on line breaks
-                explanationHtml = data.explanation.split('\n').map(line => `<p>${line}</p>`).join('');
+            if (data.explanation) {
+                explanationHtml = `<p>${data.explanation}</p>`;
             }
             detailsContainer.innerHTML = `<h2>${data.title}</h2>${explanationHtml}`;
             detailsContainer.style.display = 'block';
@@ -43,7 +44,7 @@ function fetchAndDisplayFoodDetails(id) {
 
 function toggleBlurAndOverlay(show) {
     const overlay = document.getElementById('darkOverlay');
-    const backgroundContent = document.querySelector('.container'); // This should be the container of your background content.
+    const backgroundContent = document.querySelector('.container');
     if (show) {
         overlay.style.display = 'block';
         backgroundContent.classList.add('blur-background');
@@ -57,19 +58,12 @@ function toggleBlurAndOverlay(show) {
 // Event delegation to handle clicks on recipe titles
 document.addEventListener('click', function(event) {
     let targetElement = event.target.closest('.recipe-box');
-    
-    // Check if a recipe-box was clicked
     if (targetElement) {
-        const recipeId = targetElement.getAttribute('data-recipe-id');
-        if (recipeId) {
-            // Retrieve the title from the clicked element and update the yellow area
-            const recipeTitle = targetElement.querySelector('.recipe-title').textContent;
-            document.getElementById('recipe-title').textContent = recipeTitle;
-            
+        const id = targetElement.getAttribute('data-id');
+        if (id) {
             // Fetch and display recipe details
-            fetchAndDisplayRecipeDetails(recipeId);
-
-            // Call this function when a recipe is clicked to show the details and the overlay
+            fetchAndDisplayFoodDetails(id);
+            // Show the details and the overlay
             toggleBlurAndOverlay(true);
         }
     }
@@ -78,11 +72,8 @@ document.addEventListener('click', function(event) {
 // JavaScript to close the recipe details view when clicking outside
 window.addEventListener('click', function(event) {
     const detailsContainer = document.getElementById('recipe-details-container');
-    const recipeTitle = document.getElementById('recipe-title');
-    // Check if the click is outside the recipe details and if the details container is currently shown
     if (!detailsContainer.contains(event.target) && detailsContainer.style.display === 'block') {
         detailsContainer.style.display = 'none';
-        recipeTitle.textContent = ''; // Clear the title when the details view is closed
         toggleBlurAndOverlay(false);
     }
 });
