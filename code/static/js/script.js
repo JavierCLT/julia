@@ -28,8 +28,14 @@ function fetchAndDisplayFoodDetails(id) {
         .then(response => response.json())
         .then(data => {
             const detailsContainer = document.getElementById('recipe-details-container');
-            const explanationParagraphs = data.explanation.map(line => `<p>${line}</p>`).join('');
-            detailsContainer.innerHTML = `<h2>${data.title}</h2>${explanationParagraphs}`;
+            let explanationHtml = '';
+            if (Array.isArray(data.explanation)) {
+                explanationHtml = data.explanation.map(line => `<p>${line}</p>`).join('');
+            } else if (typeof data.explanation === 'string') {
+                // Split the string into paragraphs based on line breaks
+                explanationHtml = data.explanation.split('\n').map(line => `<p>${line}</p>`).join('');
+            }
+            detailsContainer.innerHTML = `<h2>${data.title}</h2>${explanationHtml}`;
             detailsContainer.style.display = 'block';
         })
         .catch(error => console.error('Error fetching food details:', error));
