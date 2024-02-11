@@ -40,7 +40,7 @@ h1, h2, h3 {
     top: 0;
     z-index: 1000;
     text-align: center; /* Ensures the header text is centered */
-    color: var(--misty-rose);;
+    color: #f5f5f5;
 }
 
 .header h1 {
