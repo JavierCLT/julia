@@ -28,7 +28,8 @@ function fetchAndDisplayFoodDetails(id) {
         .then(response => response.json())
         .then(data => {
             const detailsContainer = document.getElementById('recipe-details-container');
-            detailsContainer.innerHTML = `<h2>${data.title}</h2><p>${data.explanation}</p>`;
+            const explanationParagraphs = data.explanation.map(line => `<p>${line}</p>`).join('');
+            detailsContainer.innerHTML = `<h2>${data.title}</h2>${explanationParagraphs}`;
             detailsContainer.style.display = 'block';
         })
         .catch(error => console.error('Error fetching food details:', error));
