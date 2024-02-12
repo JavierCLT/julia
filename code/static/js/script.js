@@ -1,3 +1,27 @@
+// This function runs when the page is loaded to check for URL parameters
+document.addEventListener('DOMContentLoaded', (event) => {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const title = urlParams.get('title');
+    
+    if (title) {
+        searchAndDisplay(title);
+    }
+});
+
+// This function handles searching and displaying food details from a title
+function searchAndDisplay(title) {
+    fetch(`https://foods-cad3aa2b09ba.herokuapp.com/search?query=${encodeURIComponent(title)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.length > 0) {
+                fetchAndDisplayFoodDetails(data[0].id, title);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+// Event listener for the search box input
 document.getElementById('search-box').addEventListener('input', function(event) {
     const searchQuery = this.value.trim();
     const resultsContainer = document.getElementById('results');
@@ -29,6 +53,7 @@ document.getElementById('search-box').addEventListener('input', function(event) 
     }, 300); // Wait for 300 ms after the user stops typing
 });
 
+// Function to fetch and display food details
 function fetchAndDisplayFoodDetails(id, title) {
     fetch(`/recipe_details/${id}`)
         .then(response => response.json())
