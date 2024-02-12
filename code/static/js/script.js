@@ -14,7 +14,10 @@ document.getElementById('search-box').addEventListener('input', function(event) 
                         const recipeElement = document.createElement('div');
                         recipeElement.className = 'recipe-box';
                         recipeElement.innerHTML = `<h3 class="recipe-title" data-id="${recipe.id}">${recipe.title}</h3>`;
-                        recipeElement.onclick = () => fetchAndDisplayFoodDetails(recipe.id);
+                        recipeElement.onclick = () => {
+                            fetchAndDisplayFoodDetails(recipe.id);
+                            updateURLWithFoodId(recipe.id);
+                        };
                         grid.appendChild(recipeElement);
                     });
                     resultsContainer.appendChild(grid);
@@ -26,7 +29,11 @@ document.getElementById('search-box').addEventListener('input', function(event) 
     }, 300); // Wait for 300 ms after the user stops typing
 });
 
-// JavaScript function to fetch and display recipe details
+function updateURLWithFoodId(id) {
+    // Update the URL without reloading the page
+    window.history.pushState({}, '', `?foodId=${id}`);
+}
+
 // JavaScript function to fetch and display recipe details
 function fetchAndDisplayFoodDetails(id) {
     fetch(`/recipe_details/${id}`)
@@ -45,7 +52,6 @@ function fetchAndDisplayFoodDetails(id) {
         .catch(error => console.error('Error fetching food details:', error));
 }
 
-// Add this function to your JS
 function formatExplanation(text) {
   // Split the text into an array of lines
   const lines = text.split('\n');
@@ -76,7 +82,6 @@ function toggleBlurAndOverlay(show) {
     }
 }
 
-
 // Event delegation to handle clicks on recipe titles
 document.addEventListener('click', function(event) {
     let targetElement = event.target.closest('.recipe-box');
@@ -87,6 +92,8 @@ document.addEventListener('click', function(event) {
             fetchAndDisplayFoodDetails(id);
             // Show the details and the overlay
             toggleBlurAndOverlay(true);
+            // Update the URL with the food ID
+            updateURLWithFoodId(id);
         }
     }
 });
@@ -97,5 +104,7 @@ window.addEventListener('click', function(event) {
     if (!detailsContainer.contains(event.target) && detailsContainer.style.display === 'block') {
         detailsContainer.style.display = 'none';
         toggleBlurAndOverlay(false);
+        // Revert to the original URL without the food ID
+        window.history.pushState({}, '', window.location.pathname);
     }
 });
