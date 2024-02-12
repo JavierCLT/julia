@@ -15,8 +15,8 @@ document.getElementById('search-box').addEventListener('input', function(event) 
                         recipeElement.className = 'recipe-box';
                         recipeElement.innerHTML = `<h3 class="recipe-title" data-id="${recipe.id}">${recipe.title}</h3>`;
                         recipeElement.onclick = () => {
-                            fetchAndDisplayFoodDetails(recipe.id);
-                            updateURLWithFoodId(recipe.id);
+                            fetchAndDisplayFoodDetails(recipe.id, recipe.title);
+                            updateURL(recipe.title);
                         };
                         grid.appendChild(recipeElement);
                     });
@@ -29,45 +29,32 @@ document.getElementById('search-box').addEventListener('input', function(event) 
     }, 300); // Wait for 300 ms after the user stops typing
 });
 
-function updateURLWithFoodId(id) {
-    // Update the URL without reloading the page
-    window.history.pushState({}, '', `?foodId=${id}`);
-}
-
-// JavaScript function to fetch and display recipe details
-function fetchAndDisplayFoodDetails(id) {
+function fetchAndDisplayFoodDetails(id, title) {
     fetch(`/recipe_details/${id}`)
         .then(response => response.json())
         .then(data => {
             const detailsContainer = document.getElementById('recipe-details-container');
             let explanationHtml = '';
             if (data.explanation) {
-                // Format the explanation text to bold text before the first colon
                 explanationHtml = formatExplanation(data.explanation);
                 explanationHtml = `<p>${explanationHtml}</p>`;
             }
-            detailsContainer.innerHTML = `<h2>${data.title}</h2>${explanationHtml}`;
+            detailsContainer.innerHTML = `<h2>${title}</h2>${explanationHtml}`;
             detailsContainer.style.display = 'block';
         })
         .catch(error => console.error('Error fetching food details:', error));
 }
 
 function formatExplanation(text) {
-  // Split the text into an array of lines
-  const lines = text.split('\n');
-  
-  // Map over each line, and apply bold formatting to the text before the first colon
-  const formattedLines = lines.map(line => {
-    const colonIndex = line.indexOf(':');
-    if (colonIndex !== -1) {
-      // Only wrap text before the colon if there is a colon
-      return `<strong>${line.slice(0, colonIndex + 1)}</strong>${line.slice(colonIndex + 1)}`;
-    }
-    return line; // Return the line unchanged if there is no colon
-  });
-
-  // Join the array back into a single string with line breaks
-  return formattedLines.join('<br>'); // Use <br> instead of \n for HTML line breaks
+    const lines = text.split('\n');
+    const formattedLines = lines.map(line => {
+        const colonIndex = line.indexOf(':');
+        if (colonIndex !== -1) {
+            return `<strong>${line.slice(0, colonIndex + 1)}</strong>${line.slice(colonIndex + 1)}`;
+        }
+        return line;
+    });
+    return formattedLines.join('<br>');
 }
 
 function toggleBlurAndOverlay(show) {
@@ -82,29 +69,30 @@ function toggleBlurAndOverlay(show) {
     }
 }
 
-// Event delegation to handle clicks on recipe titles
 document.addEventListener('click', function(event) {
     let targetElement = event.target.closest('.recipe-box');
     if (targetElement) {
         const id = targetElement.getAttribute('data-id');
+        const title = targetElement.textContent;
         if (id) {
-            // Fetch and display recipe details
-            fetchAndDisplayFoodDetails(id);
-            // Show the details and the overlay
+            fetchAndDisplayFoodDetails(id, title);
             toggleBlurAndOverlay(true);
-            // Update the URL with the food ID
-            updateURLWithFoodId(id);
         }
     }
 });
 
-// JavaScript to close the recipe details view when clicking outside
 window.addEventListener('click', function(event) {
     const detailsContainer = document.getElementById('recipe-details-container');
     if (!detailsContainer.contains(event.target) && detailsContainer.style.display === 'block') {
         detailsContainer.style.display = 'none';
         toggleBlurAndOverlay(false);
-        // Revert to the original URL without the food ID
-        window.history.pushState({}, '', window.location.pathname);
     }
 });
+
+// Function to update the URL
+function updateURL(title) {
+    // Construct the URL with the new title parameter
+    const newURL = `${window.location.protocol}//${window.location.host}${window.location.pathname}?title=${encodeURIComponent(title)}`;
+    // Use the HTML5 History API to change the URL without reloading the page
+    window.history.pushState({ path: newURL }, '', newURL);
+}
