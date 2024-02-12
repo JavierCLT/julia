@@ -4,7 +4,7 @@
     --cadet-gray: #9EA3B0;
     --misty-rose: #F1FAEE;
     --desert-sand: #E4C3AD;
-    --font-family-heading: 'Merriweather', serif;
+    --font-family-heading: 'Open Sans', sans-serif;
     --font-family-body: 'Open Sans', sans-serif;
   }
 
@@ -209,6 +209,7 @@ li {
     .header h1 {
         font-size: 2.8em; /* Smaller font size for mobile */
         font-family: 'Comic Neue', sans-serif; /* Comic Sans font */
+        margin: 0px 0;
     }
     
     .grid {
