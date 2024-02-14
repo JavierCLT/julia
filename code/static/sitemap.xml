@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" 
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 
+                            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
   <url>
-    <loc>https://www.eli5food.com/</loc>
-    <lastmod>2024-02-13</lastmod> <!-- Use the last date the page was modified -->
-    <changefreq>monthly</changefreq> <!-- How frequently the page is likely to change -->
-    <priority>1.0</priority> <!-- The priority of this URL relative to other URLs -->
+    <loc>https://www.yourdomain.com/</loc>
+    <lastmod>2024-02-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
   </url>
+  <!-- Add additional <url> entries here for more pages -->
 </urlset>
