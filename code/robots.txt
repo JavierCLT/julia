@@ -1,6 +1,0 @@
-User-agent: *
-Disallow: /private/
-Disallow: /tmp/
-Allow: /
-
-Sitemap: https://www.eli5food.com/sitemap.xml
