@@ -17,11 +17,11 @@ db_config = {
 
 @app.route('/robots.txt')
 def robots_txt():
-    return send_from_directory(app.root_path, 'robots.txt')
+    return send_from_directory('robots.txt')
 
 @app.route('/sitemap.xml')
 def sitemap_xml():
-    return send_from_directory(app.root_path, 'sitemap.xml')
+    return send_from_directory('sitemap.xml')
     
 @app.route('/')
 def index():
