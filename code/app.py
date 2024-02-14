@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_from_directory
 import mysql.connector
 from mysql.connector import Error
 from flask_cors import CORS
@@ -17,11 +17,11 @@ db_config = {
 
 @app.route('/robots.txt')
 def robots_txt():
-    return send_file(os.path.join(app.root_path, 'robots.txt'), mimetype='text/plain')
+    return send_from_directory(app.root_path, 'robots.txt')
 
 @app.route('/sitemap.xml')
 def sitemap_xml():
-    return send_file(os.path.join(app.root_path, 'sitemap.xml'), mimetype='application/xml')
+    return send_from_directory(app.root_path, 'sitemap.xml')
     
 @app.route('/')
 def index():
