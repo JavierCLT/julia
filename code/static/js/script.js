@@ -1,11 +1,7 @@
+// script.js
+import { firebaseConfig } from './config.js';
+
 // Initialize Firebase
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  databaseURL: "YOUR_DATABASE_URL",
-  projectId: "YOUR_PROJECT_ID",
-  // ...
-};
 firebase.initializeApp(firebaseConfig);
 
 // Get a reference to the database
