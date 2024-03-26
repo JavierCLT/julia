@@ -3,65 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ELI5 Food</title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon32px.png') }}">
-    <meta name="description" content="Learn about foods with simple explanations suitable for all ages. Explains nutritional facts like you are 5 (ELI5). Ideal for teaching kids or for quick learning.">
-    <meta name="keywords" content="food eli5, food explained for kids, simple food explanations, kids nutrition, diet, fruits, kids and vegetables">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>JH Recipes</title>
+    <link rel="icon" type="image/png" href="favicon32px.png">
+    <meta name="description" content="Discover delicious recipes with simple explanations. Ideal for home cooks of all skill levels. Explore our collection of recipes and start cooking today!">
+    <meta name="keywords" content="recipes, cooking, food, ingredients, instructions, easy recipes, home cooking">
+    <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Comic+Neue&display=swap" rel="stylesheet">
-    <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <!-- when sharing your content on social media platforms -->
-    <meta property="og:title" content="ELI5 Food - Understand Foods Simply">
-    <meta property="og:description" content="Plain and simple explanations about foods. Ideal for teaching kids or for quick learning.">
-    <meta property="og:image" content="{{ url_for('static', filename='images/banner.png') }}">
-    <meta property="og:url" content="https://www.eli5food.com/">
+    <meta property="og:title" content="JH Recipes - Delicious Recipes for Home Cooks">
+    <meta property="og:description" content="Explore our collection of delicious recipes with simple explanations. Perfect for home cooks of all skill levels.">
+    <meta property="og:image" content="banner.png">
+    <meta property="og:url" content="https://www.jhrecipes.com/">
     <meta property="og:type" content="website">
-    <meta name="google-adsense-account" content="ca-pub-4079240056812797">
-        
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HF8SB03TZF"></script>
-    <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-  gtag('config', 'G-HF8SB03TZF');
-</script>
-</script>
 </head>
 <body>
     <div class="dark-overlay" id="darkOverlay"></div>
     <div class="container">
         <div class="header">
-            <h1>Food Explained Like I'm 5</h1>
+            <h1>JH Recipes</h1>
         </div>
         <div class="search-container">
-            <input type="text" id="search-box" class="search-box" placeholder="Search by food (i.e., Carrots, Apples)">
+            <input type="text" id="search-box" class="search-box" placeholder="Search recipes...">
         </div>
         <div id="results"></div>
-        <!-- The recipe-details-container should be empty initially and populated with recipe details dynamically with JavaScript -->
         <div id="recipe-details-container" class="yellow-area" style="display:none;">
-            <!-- This is where the recipe title will appear -->
-            <h2 id="recipe-title" class="recipe-title"></h2> <!-- Add this line -->
-
-            <!-- Example structure, should be generated and inserted by JavaScript -->
+            <h2 id="recipe-title" class="recipe-title"></h2>
             <div class="card ingredients-card">
                 <h3><i class="fas fa-utensils"></i> Ingredients:</h3>
-                <ul>
-                  <!-- Ingredient items will be inserted here by JavaScript -->
-                </ul>
+                <ul></ul>
             </div>
-            
             <div class="card instructions-card">
                 <h3><i class="fas fa-utensils"></i> Instructions:</h3>
-                <ul>
-                  <!-- Instruction items will be inserted here by JavaScript -->
-                </ul>
+                <ul></ul>
             </div>
         </div>
     </div>
-    <!-- JavaScript file for handling the interactions and dynamic content -->
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
+
+
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
