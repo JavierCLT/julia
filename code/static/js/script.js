@@ -1,123 +1,90 @@
-// This function runs when the page is loaded to check for URL parameters
-document.addEventListener('DOMContentLoaded', (event) => {
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    const title = urlParams.get('title');
-    
-    if (title) {
-        searchAndDisplay(title);
-    }
-});
+// Initialize Firebase
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  databaseURL: "YOUR_DATABASE_URL",
+  projectId: "YOUR_PROJECT_ID",
+  // ...
+};
+firebase.initializeApp(firebaseConfig);
 
-// This function handles searching and displaying food details from a title
-function searchAndDisplay(title) {
-    fetch(`https://foods-cad3aa2b09ba.herokuapp.com/search?query=${encodeURIComponent(title)}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.length > 0) {
-                fetchAndDisplayFoodDetails(data[0].id, title);
-            }
-        })
-        .catch(error => console.error('Error:', error));
-}
+// Get a reference to the database
+const database = firebase.database();
 
-// Event listener for the search box input
-document.getElementById('search-box').addEventListener('input', function(event) {
-    const searchQuery = this.value.trim();
-    const resultsContainer = document.getElementById('results');
-    clearTimeout(this.delay); // Debounce setup to wait until user stops typing
-    this.delay = setTimeout(() => {
-        if (searchQuery.length > 2) {
-            fetch(`https://foods-cad3aa2b09ba.herokuapp.com/search?query=${encodeURIComponent(searchQuery)}`)
-                .then(response => response.json())
-                .then(data => {
-                    resultsContainer.innerHTML = '';
-                    let grid = document.createElement('div');
-                    grid.className = 'grid';
-                    data.forEach(recipe => {
-                        const recipeElement = document.createElement('div');
-                        recipeElement.className = 'recipe-box';
-                        recipeElement.innerHTML = `<h3 class="recipe-title" data-id="${recipe.id}">${recipe.title}</h3>`;
-                        recipeElement.onclick = () => {
-                            fetchAndDisplayFoodDetails(recipe.id, recipe.title);
-                            updateURL(recipe.title);
-                        };
-                        grid.appendChild(recipeElement);
-                    });
-                    resultsContainer.appendChild(grid);
-                })
-                .catch(error => console.error('Error:', error));
-        } else {
-            resultsContainer.innerHTML = '';
-        }
-    }, 300); // Wait for 300 ms after the user stops typing
-});
+// Get the search input element
+const searchInput = document.getElementById('search-box');
 
-// Function to fetch and display food details
-function fetchAndDisplayFoodDetails(id, title) {
-    fetch(`/recipe_details/${id}`)
-        .then(response => response.json())
-        .then(data => {
-            const detailsContainer = document.getElementById('recipe-details-container');
-            let explanationHtml = '';
-            if (data.explanation) {
-                explanationHtml = formatExplanation(data.explanation);
-                explanationHtml = `<p>${explanationHtml}</p>`;
-            }
-            detailsContainer.innerHTML = `<h2>${title}</h2>${explanationHtml}`;
-            detailsContainer.style.display = 'block';
-        })
-        .catch(error => console.error('Error fetching food details:', error));
-}
+// Add an event listener to the search input
+searchInput.addEventListener('input', function() {
+  const searchTerm = this.value.trim().toLowerCase();
 
-function formatExplanation(text) {
-    const lines = text.split('\n');
-    const formattedLines = lines.map(line => {
-        const colonIndex = line.indexOf(':');
-        if (colonIndex !== -1) {
-            return `<strong>${line.slice(0, colonIndex + 1)}</strong>${line.slice(colonIndex + 1)}`;
-        }
-        return line;
+  // Query the Firebase database for matching recipes
+  const recipesRef = database.ref('recipes');
+  recipesRef.orderByChild('title').startAt(searchTerm).endAt(searchTerm + '\uf8ff').on('value', function(snapshot) {
+    const searchResults = [];
+    snapshot.forEach(function(childSnapshot) {
+      searchResults.push(childSnapshot.val());
     });
-    return formattedLines.join('<br>');
-}
 
-function toggleBlurAndOverlay(show) {
-    const overlay = document.getElementById('darkOverlay');
-    const backgroundContent = document.querySelector('.container');
-    if (show) {
-        overlay.style.display = 'block';
-        backgroundContent.classList.add('blur-background');
-    } else {
-        overlay.style.display = 'none';
-        backgroundContent.classList.remove('blur-background');
-    }
-}
-
-document.addEventListener('click', function(event) {
-    let targetElement = event.target.closest('.recipe-box');
-    if (targetElement) {
-        const id = targetElement.getAttribute('data-id');
-        const title = targetElement.textContent;
-        if (id) {
-            fetchAndDisplayFoodDetails(id, title);
-            toggleBlurAndOverlay(true);
-        }
-    }
+    // Display the search results on the page
+    displaySearchResults(searchResults);
+  });
 });
 
-window.addEventListener('click', function(event) {
+// Function to display the search results
+function displaySearchResults(results) {
+  const resultsContainer = document.getElementById('results');
+  resultsContainer.innerHTML = '';
+
+  results.forEach(recipe => {
+    const recipeElement = document.createElement('div');
+    recipeElement.classList.add('recipe-box');
+    recipeElement.innerHTML = `
+      <h3 class="recipe-title" data-id="${recipe.id}">${recipe.title}</h3>
+    `;
+    recipeElement.addEventListener('click', function() {
+      const recipeId = this.querySelector('.recipe-title').getAttribute('data-id');
+      fetchAndDisplayRecipeDetails(recipeId);
+    });
+    resultsContainer.appendChild(recipeElement);
+  });
+}
+
+// Function to fetch and display recipe details
+function fetchAndDisplayRecipeDetails(recipeId) {
+  const recipeRef = database.ref(`recipes/${recipeId}`);
+  recipeRef.once('value', function(snapshot) {
+    const recipe = snapshot.val();
     const detailsContainer = document.getElementById('recipe-details-container');
-    if (!detailsContainer.contains(event.target) && detailsContainer.style.display === 'block') {
-        detailsContainer.style.display = 'none';
-        toggleBlurAndOverlay(false);
-    }
-});
+    const titleElement = document.getElementById('recipe-title');
 
-// Function to update the URL
-function updateURL(title) {
-    // Construct the URL with the new title parameter
-    const newURL = `${window.location.protocol}//${window.location.host}${window.location.pathname}?title=${encodeURIComponent(title)}`;
-    // Use the HTML5 History API to change the URL without reloading the page
-    window.history.pushState({ path: newURL }, '', newURL);
+    titleElement.textContent = recipe.title;
+    detailsContainer.querySelector('.ingredients-card ul').innerHTML = recipe.ingredients.map(ingredient => `<li>${ingredient}</li>`).join('');
+    detailsContainer.querySelector('.instructions-card ul').innerHTML = recipe.instructions.map(instruction => `<li>${instruction}</li>`).join('');
+
+    detailsContainer.style.display = 'block';
+    toggleBlurAndOverlay(true);
+  });
 }
+
+// Function to toggle blur and overlay
+function toggleBlurAndOverlay(show) {
+  const overlay = document.getElementById('darkOverlay');
+  const backgroundContent = document.querySelector('.container');
+  if (show) {
+    overlay.style.display = 'block';
+    backgroundContent.classList.add('blur-background');
+  } else {
+    overlay.style.display = 'none';
+    backgroundContent.classList.remove('blur-background');
+  }
+}
+
+// Close recipe details when clicking outside the container
+window.addEventListener('click', function(event) {
+  const detailsContainer = document.getElementById('recipe-details-container');
+  if (!detailsContainer.contains(event.target) && detailsContainer.style.display === 'block') {
+    detailsContainer.style.display = 'none';
+    toggleBlurAndOverlay(false);
+  }
+});
