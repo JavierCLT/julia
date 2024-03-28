@@ -1,36 +1,28 @@
 :root {
-    --rich-black: #1D3557;
+    --rich-black: #0D1F2D;
     --paynes-gray: #546A7B;
     --cadet-gray: #9EA3B0;
-    --misty-rose: #F1FAEE;
+    --misty-rose: #FAE1DF;
     --desert-sand: #E4C3AD;
-    --font-family-heading: 'Open Sans', sans-serif;
+    --font-family-heading: 'Merriweather', serif;
     --font-family-body: 'Open Sans', sans-serif;
   }
 
 body {
     margin: 0;
     padding: 0;
-    background-image: linear-gradient(
-    to right,
-    #264653 0%, #264653 20%, /* Color 1 */
-    #2A9D8F 20%, #2A9D8F 40%, /* Color 2 */
-    #E9C46A 40%, #E9C46A 60%, /* Color 3 */
-    #F4A261 60%, #F4A261 80%, /* Color 4 */
-    #E76F51 80%, #E76F51 100%  /* Color 5 */
-    );
-    color: #264653;
+    background-color: var(--misty-rose);
+    color: var(--cadet-gray);
     font-family: var(--font-family-body);
-    height: 100vh; /* Full height of the viewport */
 }
 
 h1, h2, h3 {
-  color: #264653;
+  color: var(--cadet-gray);
   font-family: var(--font-family-heading);
 }
 
 .container {
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 20px auto; /* Centers the container with auto margins on left and right */
     padding: 0 15px; /* Adds some padding inside the container */
 }
@@ -40,12 +32,12 @@ h1, h2, h3 {
     top: 0;
     z-index: 1000;
     text-align: center; /* Ensures the header text is centered */
-    color: #f5f5f5;
+    color: var(--misty-rose);;
 }
 
 .header h1 {
-    color: #f5f5f5;
-    font-size: 3.4em;
+    color: var(--rich-black);
+    font-size: 3em;
     margin: 20px 0;
 }
 
@@ -60,7 +52,6 @@ h1, h2, h3 {
     width: 80%;
     max-width: 500px; /* Limits the width of the search box */
     padding: 10px;
-    text-align: center;
     font-size: 1em;
     font-family: var(--font-family-body);
     border: 1px solid #ccc;
@@ -74,25 +65,20 @@ h1, h2, h3 {
 }
 
 .grid {
-    display: flex; /* Use flexbox instead of grid */
-    flex-wrap: wrap; /* Allow wrapping of items */
-    gap: 20px; /* Keep the gap */
-    justify-content: center; /* Center the items horizontally */
-    align-items: stretch; /* Stretch items to fill the container vertically */
+    display: grid;
+    justify-content: center; /* Centers grid items horizontally */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Makes the grid responsive */
+    gap: 20px;
+    text-align: center;
 }
 
 .recipe-box {
-    flex: 1 1 200px; /* Grow and shrink equally, basis at 200px */
-    max-width: calc(50% - 20px); /* Adjust max-width for 2 items per row with gap considered */
     border: 1px solid #ccc;
-    padding: 15px;
+    padding: 20px;
     border-radius: 5px;
     background-color: #fff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    display: flex; /* Use flexbox for content alignment */
-    justify-content: center; /* Center content horizontally */
-    align-items: center; /* Center content vertically */
-    text-align: center; /* Center text */
+    cursor: pointer; /* Indicates the box is clickable */
+    margin-bottom: 20px; /* Space between recipe boxes */
 }
 
 #recipe-details-container {
@@ -109,7 +95,7 @@ h1, h2, h3 {
     z-index: 1000;
     max-height: 80vh;
     overflow-y: auto;
-    width: 57%;
+    width: 80%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -140,10 +126,6 @@ h3 {
     font-weight: bold;
     font-size: 1.2em;
     color: var(--rich-black);
-}
-
-.recipe-box h3 {
-    font-size: 1.2em; /* Increase the font size of the title in the results */
 }
 
 ul, ol {
@@ -198,23 +180,9 @@ li {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    #results {
-        width: 85%; /* Adjust the width as needed */
-        margin: 0 auto; /* Centers the container */
-    }
     .search-box {
         width: 90%;
     }
-    
-    #recipe-details-container {
-    width: 80%;
-    }
-    .header h1 {
-        font-size: 2.8em; /* Smaller font size for mobile */
-        font-family: 'Comic Neue', sans-serif; /* Comic Sans font */
-        margin: 0px 0;
-    }
-    
     .grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -224,9 +192,6 @@ li {
     }
     h3 {
         font-size: 1em;
-    }
-    .recipe-box {
-        max-width: calc(100% - 20px); /* Full width on smaller screens */
     }
 }
 
