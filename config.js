@@ -10,7 +10,6 @@ const firebaseConfig = {
   measurementId: '{{ secrets.FIREBASE_MEASUREMENT_ID }}'
 };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+export { firebaseConfig };
 
 
