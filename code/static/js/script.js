@@ -1,5 +1,4 @@
 // script.js
-import { firebaseConfig } from './config.js';
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
