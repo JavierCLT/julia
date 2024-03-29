@@ -10,6 +10,5 @@ const firebaseConfig = {
   measurementId: '{{ secrets.FIREBASE_MEASUREMENT_ID }}'
 };
 
-export { firebaseConfig };
 
 
