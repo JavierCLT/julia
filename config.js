@@ -1,13 +1,13 @@
 // config.js
 const firebaseConfig = {
-  apiKey: '{{ secrets.FIREBASE_API_KEY }}',
-  authDomain: '{{ secrets.FIREBASE_AUTH_DOMAIN }}',
-  databaseURL: '{{ secrets.FIREBASE_DATABASE_URL }}',
-  projectId: '{{ secrets.FIREBASE_PROJECT_ID }}',
-  storageBucket: '{{ secrets.FIREBASE_STORAGE_BUCKET }}',
-  messagingSenderId: '{{ secrets.FIREBASE_MESSAGING_SENDER_ID }}',
-  appId: '{{ secrets.FIREBASE_APP_ID }}',
-  measurementId: '{{ secrets.FIREBASE_MEASUREMENT_ID }}'
+  apiKey: "AIzaSyAf_ctPJrXjlrUsmxIlZB2fYsrX4DAJ3Hs",
+  authDomain: "jhrecipes1.firebaseapp.com",
+  databaseURL: "https://jhrecipes1-default-rtdb.firebaseio.com",
+  projectId: "jhrecipes1",
+  storageBucket: "jhrecipes1.appspot.com",
+  messagingSenderId: "319004682120",
+  appId: "1:319004682120:web:787f15928e249e6ea43c3d",
+  measurementId: "G-W9SJVFNSWD"
 };
 
 
