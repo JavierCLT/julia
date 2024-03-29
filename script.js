@@ -1,82 +1,70 @@
-// script.js
-
+// Assuming firebaseConfig is defined in your config.js and Firebase is correctly initialized in your project
 import { firebaseConfig } from './config.js';
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
-// Get a reference to the database
-const database = firebase.database();
+document.getElementById('search-box').addEventListener('input', function(event) {
+    const searchQuery = this.value.trim().toLowerCase();
+    const resultsContainer = document.getElementById('results');
+    clearTimeout(this.delay);
+    this.delay = setTimeout(() => {
+        if (searchQuery.length > 2) {
+            firebase.database().ref('/recipes').once('value').then(snapshot => {
+                const firebaseData = snapshot.val() ? Object.values(snapshot.val()) : [];
 
-// Get the search input element
-const searchInput = document.getElementById('search-box');
+                const filteredResults = firebaseData.filter(recipe => {
+                    const recipeDataString = JSON.stringify(Object.values(recipe)).toLowerCase();
+                    return recipeDataString.includes(searchQuery);
+                });
 
-// Add an event listener to the search input
-searchInput.addEventListener('input', function() {
-  const searchTerm = this.value.trim().toLowerCase();
-
-  // Query the Firebase database for matching recipes
-  const recipesRef = database.ref('recipes');
-  recipesRef.orderByChild('title').startAt(searchTerm).endAt(searchTerm + '\uf8ff').on('value', function(snapshot) {
-    const searchResults = [];
-    snapshot.forEach(function(childSnapshot) {
-      searchResults.push(childSnapshot.val());
-    });
-
-    // Display the search results on the page
-    displaySearchResults(searchResults);
-  });
+                displaySearchResults(filteredResults, resultsContainer);
+            });
+        } else {
+            resultsContainer.innerHTML = '';
+        }
+    }, 300);
 });
 
-// Function to display the search results
-function displaySearchResults(results) {
-  const resultsContainer = document.getElementById('results');
-  resultsContainer.innerHTML = '';
-
-  results.forEach(recipe => {
-    const recipeElement = document.createElement('div');
-    recipeElement.classList.add('recipe-box');
-    recipeElement.innerHTML = `
-      <h3 class="recipe-title" data-id="${recipe.id}">${recipe.title}</h3>
-    `;
-    recipeElement.addEventListener('click', function() {
-      const recipeId = this.querySelector('.recipe-title').getAttribute('data-id');
-      fetchAndDisplayRecipeDetails(recipeId);
+function displaySearchResults(results, resultsContainer) {
+    resultsContainer.innerHTML = '';
+    let grid = document.createElement('div');
+    grid.className = 'grid';
+    results.forEach(recipe => {
+        const recipeElement = document.createElement('div');
+        recipeElement.className = 'recipe-box';
+        recipeElement.innerHTML = `<div class="recipe-content">
+                                      <h3 class="recipe-title">${recipe.Title}</h3>
+                                      <!-- Other recipe info can go here -->
+                                   </div>`;
+        // Assuming recipe.Title uniquely identifies your recipes, adjust as necessary
+        recipeElement.addEventListener('click', () => {
+            const detailsContainer = document.getElementById('recipe-details-container');
+            // This assumes you have a function or logic to populate the recipe details based on the clicked recipe
+            populateRecipeDetails(recipe, detailsContainer);
+            toggleBlurAndOverlay(true);
+        });
+        grid.appendChild(recipeElement);
     });
-    resultsContainer.appendChild(recipeElement);
-  });
+    resultsContainer.appendChild(grid);
 }
 
-// Function to fetch and display recipe details
-function fetchAndDisplayRecipeDetails(recipeId) {
-  const recipeRef = database.ref(`recipes/${recipeId}`);
-  recipeRef.once('value', function(snapshot) {
-    const recipe = snapshot.val();
-    const detailsContainer = document.getElementById('recipe-details-container');
+// This function should populate the recipe details in your details container
+// Modify this function based on how you want to display the details
+function populateRecipeDetails(recipe, detailsContainer) {
+    // Example of setting the title
     const titleElement = document.getElementById('recipe-title');
+    titleElement.textContent = recipe.Title;
 
-    titleElement.textContent = recipe.title;
-    detailsContainer.querySelector('.ingredients-card ul').innerHTML = recipe.ingredients.map(ingredient => `<li>${ingredient}</li>`).join('');
-    detailsContainer.querySelector('.instructions-card ul').innerHTML = recipe.instructions.map(instruction => `<li>${instruction}</li>`).join('');
-
-    detailsContainer.style.display = 'block';
-    toggleBlurAndOverlay(true);
-  });
+    // You'll need to add logic here to populate ingredients, instructions, etc.
 }
 
-// Function to toggle blur and overlay
 function toggleBlurAndOverlay(show) {
   const overlay = document.getElementById('darkOverlay');
   const backgroundContent = document.querySelector('.container');
-  if (show) {
-    overlay.style.display = 'block';
-    backgroundContent.classList.add('blur-background');
-  } else {
-    overlay.style.display = 'none';
-    backgroundContent.classList.remove('blur-background');
-  }
+  overlay.style.display = show ? 'block' : 'none';
+  backgroundContent.classList.toggle('blur-background', show);
 }
 
-// Close recipe details when clicking outside the container
+// Event listener to close the recipe details view when clicking outside
 window.addEventListener('click', function(event) {
   const detailsContainer = document.getElementById('recipe-details-container');
   if (!detailsContainer.contains(event.target) && detailsContainer.style.display === 'block') {
