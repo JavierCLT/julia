@@ -15,7 +15,7 @@ searchInput.addEventListener('input', function() {
 
   // Query the Firebase database for matching recipes
   const recipesRef = database.ref('recipes');
-  recipesRef.orderByChild('title').startAt(searchTerm).endAt(searchTerm + '\uf8ff').on('value', function(snapshot) {
+  recipesRef.orderByChild('Title').startAt(searchTerm).endAt(searchTerm + '\uf8ff').on('value', function(snapshot) {
     const searchResults = [];
     snapshot.forEach(function(childSnapshot) {
       searchResults.push(childSnapshot.val());
