@@ -1,5 +1,5 @@
 // config.js
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: '{{ secrets.FIREBASE_API_KEY }}',
   authDomain: '{{ secrets.FIREBASE_AUTH_DOMAIN }}',
   databaseURL: '{{ secrets.FIREBASE_DATABASE_URL }}',
@@ -10,4 +10,4 @@ const firebaseConfig = {
   measurementId: '{{ secrets.FIREBASE_MEASUREMENT_ID }}'
 };
 
-export { firebaseConfig };
+
