@@ -1,7 +1,7 @@
 // script.js
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+import { firebaseConfig } from './config.js';
 
 // Get a reference to the database
 const database = firebase.database();
