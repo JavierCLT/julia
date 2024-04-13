@@ -2,6 +2,7 @@
 
 // Initialize Firebase
 import { firebaseConfig } from './config.js';
+firebase.initializeApp(firebaseConfig);
 
 // Get a reference to the database
 const database = firebase.database();
