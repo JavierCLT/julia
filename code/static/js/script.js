@@ -35,7 +35,7 @@ function displaySearchResults(results) {
     const recipeElement = document.createElement('div');
     recipeElement.classList.add('recipe-box');
     recipeElement.innerHTML = `
-      <h3 class="recipe-title" data-id="${recipe.id}">${recipe.title}</h3>
+      <h3 class="recipe-title">${recipe.Title}</h3>
     `;
     recipeElement.addEventListener('click', function() {
       const recipeId = this.querySelector('.recipe-title').getAttribute('data-id');
@@ -53,9 +53,9 @@ function fetchAndDisplayRecipeDetails(recipeId) {
     const detailsContainer = document.getElementById('recipe-details-container');
     const titleElement = document.getElementById('recipe-title');
 
-    titleElement.textContent = recipe.title;
-    detailsContainer.querySelector('.ingredients-card ul').innerHTML = recipe.ingredients.map(ingredient => `<li>${ingredient}</li>`).join('');
-    detailsContainer.querySelector('.instructions-card ul').innerHTML = recipe.instructions.map(instruction => `<li>${instruction}</li>`).join('');
+    titleElement.textContent = recipe.Title;
+    detailsContainer.querySelector('.ingredients-card ul').innerHTML = recipe.Ingredients.map(ingredient => `<li>${ingredient.Name} - ${ingredient.Quantity} ${ingredient.Unit}</li>`).join('');
+    detailsContainer.querySelector('.instructions-card ul').innerHTML = recipe['Numbered Instructions'].map(instruction => `<li>${instruction}</li>`).join('');
 
     detailsContainer.style.display = 'block';
     toggleBlurAndOverlay(true);
