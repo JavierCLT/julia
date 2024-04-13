@@ -1,7 +1,7 @@
 // script.js
 
 // Initialize Firebase
-import { firebaseConfig } from './config.js';
+require { firebaseConfig } from './config.js';
 firebase.initializeApp(firebaseConfig);
 
 // Get a reference to the database
