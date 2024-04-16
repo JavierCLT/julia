@@ -1,39 +1,25 @@
-// Import the necessary functions from the Firebase modules
-import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, query, orderByChild, startAt, endAt, onValue } from 'firebase/database';
-import { firebaseConfig } from './config.js';
-firebaseConfig = require('./config.js');
+// Import the functions you need from the Firebase SDKs you need
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js';
+import { getDatabase, ref, query, orderByChild, startAt, endAt, onValue } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js';
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAf_ctPJrXjlrUsmxIlZB2fYsrX4DAJ3Hs",
+  authDomain: "jhrecipes1.firebaseapp.com",
+  databaseURL: "https://jhrecipes1-default-rtdb.firebaseio.com",
+  projectId: "jhrecipes1",
+  storageBucket: "jhrecipes1.appspot.com",
+  messagingSenderId: "319004682120",
+  appId: "1:319004682120:web:787f15928e249e6ea43c3d",
+  measurementId: "G-W9SJVFNSWD"
+};
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+const database = getDatabase(app);
 
 // Get the search input element
 const searchInput = document.getElementById('search-box');
-
-// Add an event listener to the search input
-searchInput.addEventListener('input', function() {
-  const searchTerm = this.value.trim().toLowerCase();
-
-  if (searchTerm.length > 2) {
-    // Reference to your database path
-    const recipesRef = query(ref(database, 'recipes'), orderByChild('Title'), startAt(searchTerm), endAt(searchTerm + '\uf8ff'));
-    
-    onValue(recipesRef, (snapshot) => {
-      const searchResults = [];
-      snapshot.forEach((childSnapshot) => {
-        searchResults.push(childSnapshot.val());
-      });
-
-      // Call function to display the search results
-      displaySearchResults(searchResults);
-    }, {
-      onlyOnce: true
-    });
-  } else {
-    document.getElementById('results').innerHTML = '';
-  }
-});
 
 // Function to display the search results
 function displaySearchResults(results) {
@@ -73,6 +59,30 @@ function toggleBlurAndOverlay(show) {
   overlay.style.display = show ? 'block' : 'none';
   backgroundContent.classList.toggle('blur-background', show);
 }
+
+// Add an event listener to the search input
+searchInput.addEventListener('input', function() {
+  const searchTerm = this.value.trim().toLowerCase();
+
+  if (searchTerm.length > 2) {
+    // Reference to your database path
+    const recipesRef = query(ref(database, 'recipes'), orderByChild('Title'), startAt(searchTerm), endAt(searchTerm + '\uf8ff'));
+    
+    onValue(recipesRef, (snapshot) => {
+      const searchResults = [];
+      snapshot.forEach((childSnapshot) => {
+        searchResults.push(childSnapshot.val());
+      });
+
+      // Call function to display the search results
+      displaySearchResults(searchResults);
+    }, {
+      onlyOnce: true
+    });
+  } else {
+    document.getElementById('results').innerHTML = '';
+  }
+});
 
 // Event listener for closing the recipe details view
 window.addEventListener('click', (event) => {
