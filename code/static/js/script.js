@@ -6,7 +6,7 @@ firebaseConfig = require('./config.js');
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
+  const analytics = getAnalytics(app);
 
 // Get the search input element
 const searchInput = document.getElementById('search-box');
