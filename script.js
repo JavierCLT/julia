@@ -21,51 +21,45 @@ const database = getDatabase(app);
 // Get the search input element
 const searchInput = document.getElementById('search-box');
 
-// Function to check if the recipe matches the search term in any of the 4 buckets
 // Function to filter recipes based on search criteria
 function filterRecipes(recipes, searchTerm) {
   return recipes.filter(recipe => {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
     // Search in title
-    if (recipe.Title && recipe.Title.toLowerCase().includes(lowerCaseSearchTerm)) {
-      return true;
-    }
+    const matchTitle = recipe.Title && recipe.Title.toLowerCase().includes(lowerCaseSearchTerm);
     // Search in ingredients
-    if (recipe.Ingredients && recipe.Ingredients.some(ingredient => ingredient.Name.toLowerCase().includes(lowerCaseSearchTerm))) {
-      return true;
-    }
+    const matchIngredients = recipe.Ingredients && recipe.Ingredients.some(ingredient => ingredient.Name.toLowerCase().includes(lowerCaseSearchTerm));
     // Search in categories
-    if (recipe.Category && recipe.Category.some(category => category.toLowerCase().includes(lowerCaseSearchTerm))) {
-      return true;
-    }
+    const matchCategory = recipe.Category && recipe.Category.some(category => category.toLowerCase().includes(lowerCaseSearchTerm));
     // Search in tags
-    if (recipe.Tags && recipe.Tags.some(tag => tag.toLowerCase().includes(lowerCaseSearchTerm))) {
-      return true;
-    }
-    return false; // If no match was found
+    const matchTags = recipe.Tags && recipe.Tags.some(tag => tag.toLowerCase().includes(lowerCaseSearchTerm));
+  
+    return matchTitle || matchIngredients || matchCategory || matchTags;
   });
 }
 
 // Add an event listener to the search input
 searchInput.addEventListener('input', function() {
   const searchTerm = this.value.trim();
-  console.log(`Searching for: ${searchTerm}`);
-  
+
+  // Check the length of the search term and log it
+  console.log(`Search term length: ${searchTerm.length}`);
+
   if (searchTerm.length > 2) {
     const recipesRef = ref(database, 'recipes');
     onValue(recipesRef, (snapshot) => {
-      const recipes = snapshot.val();
-      if (!recipes) {
-        console.log('No recipes found in database.');
-        return;
-      }
-      const searchResults = filterRecipes(recipes, searchTerm);
-      console.log('Filtered results:', searchResults);
+      const recipes = snapshot.val() || [];
+      const searchResults = filterRecipes(Object.values(recipes), searchTerm);
+
+      // Log the search results to see what we get
+      console.log(`Search results for '${searchTerm}':`, searchResults);
+
       displaySearchResults(searchResults);
     }, {
       onlyOnce: true
     });
   } else {
+    // Update the message when there are less than 3 characters
     document.getElementById('results').innerHTML = '<p>Please enter at least 3 characters to search.</p>';
   }
 });
@@ -74,6 +68,7 @@ searchInput.addEventListener('input', function() {
 function displaySearchResults(results) {
   const resultsContainer = document.getElementById('results');
   resultsContainer.innerHTML = '';
+
   results.forEach((recipe) => {
     if (recipe) { // Check if the recipe object is not null
       const recipeElement = document.createElement('div');
