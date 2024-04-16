@@ -1,5 +1,5 @@
 // config.js
-export const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyAf_ctPJrXjlrUsmxIlZB2fYsrX4DAJ3Hs",
   authDomain: "jhrecipes1.firebaseapp.com",
   databaseURL: "https://jhrecipes1-default-rtdb.firebaseio.com",
