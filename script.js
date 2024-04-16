@@ -22,25 +22,45 @@ const database = getDatabase(app);
 const searchInput = document.getElementById('search-box');
 
 // Function to check if the recipe matches the search term in any of the 4 buckets
-const doesRecipeMatchSearchTerm = (recipe, searchTerm) => {
-  if (!recipe) return false; // If the recipe doesn't exist, return false
-  const lowerCaseSearchTerm = searchTerm.toLowerCase();
-  const matchTitle = recipe.Title && recipe.Title.toLowerCase().includes(lowerCaseSearchTerm);
-  const matchIngredients = recipe.Ingredients && recipe.Ingredients.some(ingredient => ingredient.Name.toLowerCase().includes(lowerCaseSearchTerm));
-  const matchCategory = recipe.Category && recipe.Category.some(category => category.toLowerCase().includes(lowerCaseSearchTerm));
-  const matchTags = recipe.Tags && recipe.Tags.some(tag => tag.toLowerCase().includes(lowerCaseSearchTerm));
-  
-  return matchTitle || matchIngredients || matchCategory || matchTags;
-};
+// Function to filter recipes based on search criteria
+function filterRecipes(recipes, searchTerm) {
+  return recipes.filter(recipe => {
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    // Search in title
+    if (recipe.Title && recipe.Title.toLowerCase().includes(lowerCaseSearchTerm)) {
+      return true;
+    }
+    // Search in ingredients
+    if (recipe.Ingredients && recipe.Ingredients.some(ingredient => ingredient.Name.toLowerCase().includes(lowerCaseSearchTerm))) {
+      return true;
+    }
+    // Search in categories
+    if (recipe.Category && recipe.Category.some(category => category.toLowerCase().includes(lowerCaseSearchTerm))) {
+      return true;
+    }
+    // Search in tags
+    if (recipe.Tags && recipe.Tags.some(tag => tag.toLowerCase().includes(lowerCaseSearchTerm))) {
+      return true;
+    }
+    return false; // If no match was found
+  });
+}
 
 // Add an event listener to the search input
 searchInput.addEventListener('input', function() {
   const searchTerm = this.value.trim();
+  console.log(`Searching for: ${searchTerm}`);
+  
   if (searchTerm.length > 2) {
     const recipesRef = ref(database, 'recipes');
     onValue(recipesRef, (snapshot) => {
       const recipes = snapshot.val();
-      const searchResults = recipes.filter(recipe => doesRecipeMatchSearchTerm(recipe, searchTerm));
+      if (!recipes) {
+        console.log('No recipes found in database.');
+        return;
+      }
+      const searchResults = filterRecipes(recipes, searchTerm);
+      console.log('Filtered results:', searchResults);
       displaySearchResults(searchResults);
     }, {
       onlyOnce: true
