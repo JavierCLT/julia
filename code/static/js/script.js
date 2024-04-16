@@ -1,5 +1,6 @@
 // script.js
 import { firebaseConfig } from './config.js';
+firebaseConfig = require('./config.js');
 
 // Initialize Firebase
 const app = firebase.initializeApp(firebaseConfig);
