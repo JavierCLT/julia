@@ -1,8 +1,8 @@
 // Import the necessary functions from the Firebase modules
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, query, orderByChild, startAt, endAt, onValue } from 'firebase/database';
-import { firebaseConfig } from './config.js';
-firebaseConfig = require('./config.js');
+import { firebaseConfig } from 'config.js';
+firebaseConfig = require('config.js');
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
