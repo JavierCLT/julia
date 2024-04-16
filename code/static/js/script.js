@@ -1,27 +1,51 @@
-// script.js
+// Import the necessary functions from the Firebase modules
+import { initializeApp } from 'firebase/app';
+import { getDatabase, ref, query, orderByChild, startAt, endAt, onValue } from 'firebase/database';
 import { firebaseConfig } from './config.js';
-firebaseConfig = require('./config.js');
 
 // Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
 
 // Get the search input element
 const searchInput = document.getElementById('search-box');
+
+// Add an event listener to the search input
+searchInput.addEventListener('input', function() {
+  const searchTerm = this.value.trim().toLowerCase();
+
+  if (searchTerm.length > 2) {
+    // Reference to your database path
+    const recipesRef = query(ref(database, 'recipes'), orderByChild('Title'), startAt(searchTerm), endAt(searchTerm + '\uf8ff'));
+    
+    onValue(recipesRef, (snapshot) => {
+      const searchResults = [];
+      snapshot.forEach((childSnapshot) => {
+        searchResults.push(childSnapshot.val());
+      });
+
+      // Call function to display the search results
+      displaySearchResults(searchResults);
+    }, {
+      onlyOnce: true
+    });
+  } else {
+    document.getElementById('results').innerHTML = '';
+  }
+});
 
 // Function to display the search results
 function displaySearchResults(results) {
   const resultsContainer = document.getElementById('results');
   resultsContainer.innerHTML = '';
 
-  results.forEach(recipe => {
+  results.forEach((recipe) => {
     const recipeElement = document.createElement('div');
     recipeElement.classList.add('recipe-box');
     recipeElement.innerHTML = `
       <h3 class="recipe-title">${recipe.Title}</h3>
     `;
-    // Add event listener for displaying recipe details
-    recipeElement.addEventListener('click', () => {
+    recipeElement.addEventListener('click', function() {
       populateRecipeDetails(recipe);
     });
     resultsContainer.appendChild(recipeElement);
@@ -34,8 +58,8 @@ function populateRecipeDetails(recipe) {
   const titleElement = document.getElementById('recipe-title');
 
   titleElement.textContent = recipe.Title;
-  detailsContainer.querySelector('.ingredients-card ul').innerHTML = recipe.Ingredients.map(ingredient => `<li>${ingredient.Name} - ${ingredient.Quantity} ${ingredient.Unit}</li>`).join('');
-  detailsContainer.querySelector('.instructions-card ul').innerHTML = recipe['Numbered Instructions'].map(instruction => `<li>${instruction}</li>`).join('');
+  detailsContainer.querySelector('.ingredients-card ul').innerHTML = recipe.Ingredients.map((ingredient) => `<li>${ingredient.Name} - ${ingredient.Quantity} ${ingredient.Unit}</li>`).join('');
+  detailsContainer.querySelector('.instructions-card ul').innerHTML = recipe['Numbered Instructions'].map((instruction) => `<li>${instruction}</li>`).join('');
 
   detailsContainer.style.display = 'block';
   toggleBlurAndOverlay(true);
@@ -49,32 +73,8 @@ function toggleBlurAndOverlay(show) {
   backgroundContent.classList.toggle('blur-background', show);
 }
 
-// Add an event listener to the search input
-searchInput.addEventListener('input', function() {
-  const searchTerm = this.value.trim().toLowerCase();
-  
-  clearTimeout(this.delay);
-  this.delay = setTimeout(() => {
-    if (searchTerm.length > 2) {
-      // Fetch and filter recipes from Firebase
-      database.ref('/recipes').once('value').then(snapshot => {
-        const recipes = snapshot.val() ? Object.values(snapshot.val()) : [];
-        const filteredRecipes = recipes.filter(recipe => {
-          return recipe.Title.toLowerCase().includes(searchTerm) ||
-                 recipe.Ingredients.some(ing => ing.Name.toLowerCase().includes(searchTerm)) ||
-                 recipe.Tags.some(tag => tag.toLowerCase().includes(searchTerm)) ||
-                 recipe.Category.some(cat => cat.toLowerCase().includes(searchTerm));
-        });
-        displaySearchResults(filteredRecipes);
-      });
-    } else {
-      document.getElementById('results').innerHTML = '';
-    }
-  }, 300);
-});
-
 // Event listener for closing the recipe details view
-window.addEventListener('click', function(event) {
+window.addEventListener('click', (event) => {
   const detailsContainer = document.getElementById('recipe-details-container');
   if (!detailsContainer.contains(event.target) && detailsContainer.style.display === 'block') {
     detailsContainer.style.display = 'none';
