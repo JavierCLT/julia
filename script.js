@@ -21,22 +21,26 @@ const database = getDatabase(app);
 // Get the search input element
 const searchInput = document.getElementById('search-box');
 
+// Function to check if the recipe matches the search term in any of the 4 buckets
+const doesRecipeMatchSearchTerm = (recipe, searchTerm) => {
+  if (!recipe) return false; // If the recipe doesn't exist, return false
+  const lowerCaseSearchTerm = searchTerm.toLowerCase();
+  const matchTitle = recipe.Title && recipe.Title.toLowerCase().includes(lowerCaseSearchTerm);
+  const matchIngredients = recipe.Ingredients && recipe.Ingredients.some(ingredient => ingredient.Name.toLowerCase().includes(lowerCaseSearchTerm));
+  const matchCategory = recipe.Category && recipe.Category.some(category => category.toLowerCase().includes(lowerCaseSearchTerm));
+  const matchTags = recipe.Tags && recipe.Tags.some(tag => tag.toLowerCase().includes(lowerCaseSearchTerm));
+  
+  return matchTitle || matchIngredients || matchCategory || matchTags;
+};
+
 // Add an event listener to the search input
 searchInput.addEventListener('input', function() {
-  const searchTerm = this.value.trim().toLowerCase();
-  console.log('Search term entered:', searchTerm); // To check what term is being searched
-
+  const searchTerm = this.value.trim();
   if (searchTerm.length > 2) {
-    // Query the database for recipes
-    const recipesRef = query(ref(database, 'recipes'), orderByChild('Title'), startAt(searchTerm), endAt(`${searchTerm}\uf8ff`));
-    
+    const recipesRef = ref(database, 'recipes');
     onValue(recipesRef, (snapshot) => {
-      const searchResults = [];
-      snapshot.forEach((childSnapshot) => {
-        searchResults.push(childSnapshot.val());
-      });
-
-      console.log('Recipes found:', searchResults); // To check what results are returned
+      const recipes = snapshot.val();
+      const searchResults = recipes.filter(recipe => doesRecipeMatchSearchTerm(recipe, searchTerm));
       displaySearchResults(searchResults);
     }, {
       onlyOnce: true
@@ -50,15 +54,16 @@ searchInput.addEventListener('input', function() {
 function displaySearchResults(results) {
   const resultsContainer = document.getElementById('results');
   resultsContainer.innerHTML = '';
-
   results.forEach((recipe) => {
-    const recipeElement = document.createElement('div');
-    recipeElement.classList.add('recipe-box');
-    recipeElement.innerHTML = `<h3 class="recipe-title">${recipe.Title}</h3>`;
-    recipeElement.addEventListener('click', function() {
-      populateRecipeDetails(recipe);
-    });
-    resultsContainer.appendChild(recipeElement);
+    if (recipe) { // Check if the recipe object is not null
+      const recipeElement = document.createElement('div');
+      recipeElement.classList.add('recipe-box');
+      recipeElement.innerHTML = `<h3 class="recipe-title">${recipe.Title}</h3>`;
+      recipeElement.addEventListener('click', function() {
+        populateRecipeDetails(recipe);
+      });
+      resultsContainer.appendChild(recipeElement);
+    }
   });
 
   // If no results are found, display a message
@@ -66,6 +71,7 @@ function displaySearchResults(results) {
     resultsContainer.innerHTML = '<p>No recipes found.</p>';
   }
 }
+
 
 // Function to populate recipe details
 function populateRecipeDetails(recipe) {
