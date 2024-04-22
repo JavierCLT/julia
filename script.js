@@ -27,29 +27,28 @@ document.addEventListener('DOMContentLoaded', function() {
   searchInput.addEventListener('input', function() {
     const searchTerm = this.value.trim().toLowerCase();
 
-    if (searchTerm.length > 2) {
-      const recipesRef = ref(database, 'recipes');
-      onValue(recipesRef, (snapshot) => {
-      const recipesArray = snapshot.val();
-      const searchResults = [];
-    
-      if (recipesArray) {
-        // Iterate through the array-like object of recipes
-        Object.values(recipesArray).forEach(recipe => {
-          if (doesRecipeMatchSearchTerm(recipe, searchTerm)) {
-            searchResults.push(recipe);
-          }
-        });
-      }
-    
-      displaySearchResults(searchResults);
-    }, {
-      onlyOnce: true
-    });
-    } else {
-      document.getElementById('results').innerHTML = '<p>Please enter at least 3 characters to search.</p>';
+if (searchTerm.length > 2) {
+  const recipesRef = ref(database, 'recipes');
+  onValue(recipesRef, (snapshot) => {
+    const recipesArray = snapshot.val();
+    const searchResults = [];
+
+    if (recipesArray) {
+      // Iterate through the array-like object of recipes
+      Object.values(recipesArray).forEach(recipe => {
+        if (doesRecipeMatchSearchTerm(recipe, searchTerm)) {
+          searchResults.push(recipe);
+        }
+      });
     }
+
+    displaySearchResults(searchResults);
+  }, {
+    onlyOnce: true
   });
+} else {
+  document.getElementById('results').innerHTML = '<p>Please enter at least 3 characters to search.</p>';
+}
 
   // Function to filter recipes based on search criteria
   function doesRecipeMatchSearchTerm(recipe, searchTerm) {
