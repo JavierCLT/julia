@@ -18,74 +18,82 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-// Get the search input element
-const searchInput = document.getElementById('search-box');
+// Ensure the DOM is fully loaded before querying for elements
+document.addEventListener('DOMContentLoaded', function() {
+  // Get the search input element
+  const searchInput = document.getElementById('search-box');
 
-// Function to filter recipes based on search criteria
-function filterRecipes(recipes, searchTerm) {
-  return recipes.filter(recipe => {
-    const lowerCaseSearchTerm = searchTerm.toLowerCase();
-    // Search in title
-    const matchTitle = recipe.Title && recipe.Title.toLowerCase().includes(lowerCaseSearchTerm);
-    // Search in ingredients
-    const matchIngredients = recipe.Ingredients && recipe.Ingredients.some(ingredient => ingredient.Name.toLowerCase().includes(lowerCaseSearchTerm));
-    // Search in categories
-    const matchCategory = recipe.Category && recipe.Category.some(category => category.toLowerCase().includes(lowerCaseSearchTerm));
-    // Search in tags
-    const matchTags = recipe.Tags && recipe.Tags.some(tag => tag.toLowerCase().includes(lowerCaseSearchTerm));
-  
-    return matchTitle || matchIngredients || matchCategory || matchTags;
-  });
-}
+  // Add an event listener to the search input
+  searchInput.addEventListener('input', function() {
+    const searchTerm = this.value.trim().toLowerCase();
 
-// Add an event listener to the search input
-searchInput.addEventListener('input', function() {
-  const searchTerm = this.value.trim();
+    if (searchTerm.length > 2) {
+      const recipesRef = ref(database, 'recipes');
+      onValue(recipesRef, (snapshot) => {
+        const recipesArray = snapshot.val();
+        const searchResults = [];
 
-  // Check the length of the search term and log it
-  console.log(`Search term length: ${searchTerm.length}`);
+        // Iterate through the array-like object of recipes
+        Object.values(recipesArray).forEach(recipe => {
+          if (doesRecipeMatchSearchTerm(recipe, searchTerm)) {
+            searchResults.push(recipe);
+          }
+        });
 
-  if (searchTerm.length > 2) {
-    const recipesRef = ref(database, 'recipes');
-    onValue(recipesRef, (snapshot) => {
-      const recipes = snapshot.val() || [];
-      const searchResults = filterRecipes(Object.values(recipes), searchTerm);
-
-      // Log the search results to see what we get
-      console.log(`Search results for '${searchTerm}':`, searchResults);
-
-      displaySearchResults(searchResults);
-    }, {
-      onlyOnce: true
-    });
-  } else {
-    // Update the message when there are less than 3 characters
-    document.getElementById('results').innerHTML = '<p>Please enter at least 3 characters to search.</p>';
-  }
-});
-
-// Function to display the search results
-function displaySearchResults(results) {
-  const resultsContainer = document.getElementById('results');
-  resultsContainer.innerHTML = '';
-
-  results.forEach((recipe) => {
-    if (recipe) { // Check if the recipe object is not null
-      const recipeElement = document.createElement('div');
-      recipeElement.classList.add('recipe-box');
-      recipeElement.innerHTML = `<h3 class="recipe-title">${recipe.Title}</h3>`;
-      recipeElement.addEventListener('click', function() {
-        populateRecipeDetails(recipe);
+        displaySearchResults(searchResults);
+      }, {
+        onlyOnce: true
       });
-      resultsContainer.appendChild(recipeElement);
+    } else {
+      document.getElementById('results').innerHTML = '<p>Please enter at least 3 characters to search.</p>';
     }
   });
 
-  // If no results are found, display a message
-  if (results.length === 0) {
-    resultsContainer.innerHTML = '<p>No recipes found.</p>';
+  // Function to filter recipes based on search criteria
+  function doesRecipeMatchSearchTerm(recipe, searchTerm) {
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+
+    // Check if the Title matches the search term
+    if (recipe.Title && recipe.Title.toLowerCase().includes(lowerCaseSearchTerm)) {
+      return true;
+    }
+
+    // Check if any Ingredient matches the search term
+    if (recipe.Ingredients && recipe.Ingredients.some(ingredient => 
+      ingredient.Name.toLowerCase().includes(lowerCaseSearchTerm))) {
+      return true;
+    }
+
+    // Check if any Category matches the search term
+    if (recipe.Category && recipe.Category.includes(lowerCaseSearchTerm)) {
+      return true;
+    }
+
+    // Check if any Tag matches the search term
+    if (recipe.Tags && recipe.Tags.includes(lowerCaseSearchTerm)) {
+      return true;
+    }
+
+    return false; // No match found
   }
-}
+
+  // Function to display the search results
+  function displaySearchResults(searchResults) {
+    const resultsContainer = document.getElementById('results');
+    resultsContainer.innerHTML = '';
+
+    searchResults.forEach(recipe => {
+      const recipeElement = document.createElement('div');
+      recipeElement.classList.add('recipe-box');
+      recipeElement.innerHTML = `<h3 class="recipe-title">${recipe.Title}</h3>`;
+      // ... Add click event listener or any additional logic here
+      resultsContainer.appendChild(recipeElement);
+    });
+
+    if (searchResults.length === 0) {
+      resultsContainer.innerHTML = '<p>No recipes found.</p>';
+    }
+  }
 
 
 // Function to populate recipe details
