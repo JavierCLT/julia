@@ -1,6 +1,6 @@
 // Import the functions you need from the Firebase SDKs you need
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js';
-import { getDatabase, ref, query, orderByChild, startAt, endAt, onValue } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js';
+import { getDatabase, ref, onChildAdded } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -27,44 +27,28 @@ document.addEventListener('DOMContentLoaded', function() {
   searchInput.addEventListener('input', function() {
     const searchTerm = this.value.trim().toLowerCase();
 
-if (searchTerm.length > 2) {
-  const recipesRef = ref(database, 'recipes');
-onValue(recipesRef, (snapshot) => {
-  // Log the snapshot for debugging purposes
-  console.log('Snapshot from Firebase:', snapshot);
+    if (searchTerm.length > 2) {
+      const recipesRef = ref(database, 'recipes');
+      console.log('Recipes Reference:', recipesRef.toString());
 
-  const recipesObject = snapshot.val();
-  console.log('Data from Firebase:', recipesObject);
-  
-  // Check if the recipesObject is not null or undefined
-  if (recipesObject) {
-    const recipesArray = Object.values(recipesObject);
-    const searchResults = [];
+      const searchResults = [];
 
-    // Iterate through the array-like object of recipes
-    recipesArray.forEach(recipe => {
-      if (doesRecipeMatchSearchTerm(recipe, searchTerm)) {
-        searchResults.push(recipe);
-      }
-    });
+      onChildAdded(recipesRef, (snapshot) => {
+        const recipe = snapshot.val();
+        console.log('Recipe:', recipe);
 
-    displaySearchResults(searchResults);
-  } else {
-    // Handle the case where no data exists at the reference
-    console.log('No recipes found at the reference:', recipesRef);
-    document.getElementById('results').innerHTML = '<p>No recipes found.</p>';
-  }
-}, (error) => {
-  // Handle any errors that occur during the read operation
-  console.error('Error reading recipes:', error);
-}, {
-  onlyOnce: true
-});
+        if (doesRecipeMatchSearchTerm(recipe, searchTerm)) {
+          searchResults.push(recipe);
+        }
+      }, (error) => {
+        console.error('Error retrieving recipe:', error);
+      });
 
-    
-} else {
-  document.getElementById('results').innerHTML = '<p>Please enter at least 3 characters to search.</p>';
-}
+      displaySearchResults(searchResults);
+    } else {
+      document.getElementById('results').innerHTML = '<p>Please enter at least 3 characters to search.</p>';
+    }
+  });
 
   // Function to filter recipes based on search criteria
   function doesRecipeMatchSearchTerm(recipe, searchTerm) {
@@ -112,35 +96,33 @@ onValue(recipesRef, (snapshot) => {
     }
   }
 
+  // Function to populate recipe details
+  function populateRecipeDetails(recipe) {
+    const detailsContainer = document.getElementById('recipe-details-container');
+    const titleElement = document.getElementById('recipe-title');
 
-// Function to populate recipe details
-function populateRecipeDetails(recipe) {
-  const detailsContainer = document.getElementById('recipe-details-container');
-  const titleElement = document.getElementById('recipe-title');
+    titleElement.textContent = recipe.Title;
+    detailsContainer.querySelector('.ingredients-card ul').innerHTML = recipe.Ingredients.map(ingredient => `<li>${ingredient.Name} - ${ingredient.Quantity} ${ingredient.Unit}</li>`).join('');
+    detailsContainer.querySelector('.instructions-card ul').innerHTML = recipe['Numbered Instructions'].map(instruction => `<li>${instruction}</li>`).join('');
 
-  titleElement.textContent = recipe.Title;
-  detailsContainer.querySelector('.ingredients-card ul').innerHTML = recipe.Ingredients.map(ingredient => `<li>${ingredient.Name} - ${ingredient.Quantity} ${ingredient.Unit}</li>`).join('');
-  detailsContainer.querySelector('.instructions-card ul').innerHTML = recipe['Numbered Instructions'].map(instruction => `<li>${instruction}</li>`).join('');
-
-  detailsContainer.style.display = 'block';
-  toggleBlurAndOverlay(true);
-}
-
-// Function to toggle blur and overlay
-function toggleBlurAndOverlay(show) {
-  const overlay = document.getElementById('darkOverlay');
-  const backgroundContent = document.querySelector('.container');
-  overlay.style.display = show ? 'block' : 'none';
-  backgroundContent.classList.toggle('blur-background', show);
-}
-
-// Event listener for closing the recipe details view
-window.addEventListener('click', (event) => {
-  const detailsContainer = document.getElementById('recipe-details-container');
-  if (!detailsContainer.contains(event.target) && detailsContainer.style.display === 'block') {
-    detailsContainer.style.display = 'none';
-    toggleBlurAndOverlay(false);
+    detailsContainer.style.display = 'block';
+    toggleBlurAndOverlay(true);
   }
-});
-    });
+
+  // Function to toggle blur and overlay
+  function toggleBlurAndOverlay(show) {
+    const overlay = document.getElementById('darkOverlay');
+    const backgroundContent = document.querySelector('.container');
+    overlay.style.display = show ? 'block' : 'none';
+    backgroundContent.classList.toggle('blur-background', show);
+  }
+
+  // Event listener for closing the recipe details view
+  window.addEventListener('click', (event) => {
+    const detailsContainer = document.getElementById('recipe-details-container');
+    if (!detailsContainer.contains(event.target) && detailsContainer.style.display === 'block') {
+      detailsContainer.style.display = 'none';
+      toggleBlurAndOverlay(false);
+    }
   });
+});
