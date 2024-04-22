@@ -133,3 +133,5 @@ window.addEventListener('click', (event) => {
     toggleBlurAndOverlay(false);
   }
 });
+    });
+  });
