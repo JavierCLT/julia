@@ -29,23 +29,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
 if (searchTerm.length > 2) {
   const recipesRef = ref(database, 'recipes');
-  onValue(recipesRef, (snapshot) => {
-    const recipesArray = snapshot.val();
+onValue(recipesRef, (snapshot) => {
+  const recipesObject = snapshot.val();
+  
+  // Check if the recipesObject is not null or undefined
+  if (recipesObject) {
+    const recipesArray = Object.values(recipesObject);
     const searchResults = [];
 
-    if (recipesArray) {
-      // Iterate through the array-like object of recipes
-      Object.values(recipesArray).forEach(recipe => {
-        if (doesRecipeMatchSearchTerm(recipe, searchTerm)) {
-          searchResults.push(recipe);
-        }
-      });
-    }
+    // Iterate through the array-like object of recipes
+    recipesArray.forEach(recipe => {
+      if (doesRecipeMatchSearchTerm(recipe, searchTerm)) {
+        searchResults.push(recipe);
+      }
+    });
 
     displaySearchResults(searchResults);
-  }, {
-    onlyOnce: true
-  });
+  } else {
+    // Handle the case where no data exists at the reference
+    console.log('No recipes found at the reference:', recipesRef);
+    document.getElementById('results').innerHTML = '<p>No recipes found.</p>';
+  }
+}, {
+  onlyOnce: true
+});
 } else {
   document.getElementById('results').innerHTML = '<p>Please enter at least 3 characters to search.</p>';
 }
