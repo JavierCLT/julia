@@ -30,7 +30,11 @@ document.addEventListener('DOMContentLoaded', function() {
 if (searchTerm.length > 2) {
   const recipesRef = ref(database, 'recipes');
 onValue(recipesRef, (snapshot) => {
+  // Log the snapshot for debugging purposes
+  console.log('Snapshot from Firebase:', snapshot);
+
   const recipesObject = snapshot.val();
+  console.log('Data from Firebase:', recipesObject);
   
   // Check if the recipesObject is not null or undefined
   if (recipesObject) {
@@ -50,9 +54,14 @@ onValue(recipesRef, (snapshot) => {
     console.log('No recipes found at the reference:', recipesRef);
     document.getElementById('results').innerHTML = '<p>No recipes found.</p>';
   }
+}, (error) => {
+  // Handle any errors that occur during the read operation
+  console.error('Error reading recipes:', error);
 }, {
   onlyOnce: true
 });
+
+    
 } else {
   document.getElementById('results').innerHTML = '<p>Please enter at least 3 characters to search.</p>';
 }
