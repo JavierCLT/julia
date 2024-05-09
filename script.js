@@ -27,44 +27,38 @@ document.addEventListener('DOMContentLoaded', function() {
   searchInput.addEventListener('input', function() {
     const searchTerm = this.value.trim().toLowerCase();
 
-if (searchTerm.length > 2) {
-  const recipesRef = ref(database, 'recipes');
-onValue(recipesRef, (snapshot) => {
-  // Log the snapshot for debugging purposes
-  console.log('Snapshot from Firebase:', snapshot);
+    if (searchTerm.length > 2) {
+      const recipesRef = ref(database, 'recipes');
+      const recipesQuery = query(
+        recipesRef,
+        orderByChild('Title'),
+        startAt(searchTerm),
+        endAt(searchTerm + '\uf8ff')
+      );
 
-  const recipesObject = snapshot.val();
-  console.log('Data from Firebase:', recipesObject);
-  
-  // Check if the recipesObject is not null or undefined
-  if (recipesObject) {
-    const recipesArray = Object.values(recipesObject);
-    const searchResults = [];
+      onValue(recipesQuery, (snapshot) => {
+        console.log('Snapshot from Firebase:', snapshot);
 
-    // Iterate through the array-like object of recipes
-    recipesArray.forEach(recipe => {
-      if (doesRecipeMatchSearchTerm(recipe, searchTerm)) {
-        searchResults.push(recipe);
-      }
-    });
+        const recipesObject = snapshot.val();
+        console.log('Data from Firebase:', recipesObject);
 
-    displaySearchResults(searchResults);
-  } else {
-    // Handle the case where no data exists at the reference
-    console.log('No recipes found at the reference:', recipesRef);
-    document.getElementById('results').innerHTML = '<p>No recipes found.</p>';
-  }
-}, (error) => {
-  // Handle any errors that occur during the read operation
-  console.error('Error reading recipes:', error);
-}, {
-  onlyOnce: true
-});
+        if (recipesObject) {
+          const recipesArray = Object.values(recipesObject);
+          const searchResults = recipesArray.filter(recipe => doesRecipeMatchSearchTerm(recipe, searchTerm));
 
-    
-} else {
-  document.getElementById('results').innerHTML = '<p>Please enter at least 3 characters to search.</p>';
-}
+          displaySearchResults(searchResults);
+        } else {
+          console.log('No recipes found at the reference:', recipesRef);
+          document.getElementById('results').innerHTML = '<p>No recipes found.</p>';
+        }
+      }, (error) => {
+        console.error('Error reading recipes:', error);
+        document.getElementById('results').innerHTML = '<p>Error loading recipes.</p>';
+      });
+    } else {
+      document.getElementById('results').innerHTML = '<p>Please enter at least 3 characters to search.</p>';
+    }
+  });
 
   // Function to filter recipes based on search criteria
   function doesRecipeMatchSearchTerm(recipe, searchTerm) {
@@ -82,12 +76,12 @@ onValue(recipesRef, (snapshot) => {
     }
 
     // Check if any Category matches the search term
-    if (recipe.Category && recipe.Category.includes(lowerCaseSearchTerm)) {
+    if (recipe.Category && recipe.Category.toLowerCase().includes(lowerCaseSearchTerm)) {
       return true;
     }
 
     // Check if any Tag matches the search term
-    if (recipe.Tags && recipe.Tags.includes(lowerCaseSearchTerm)) {
+    if (recipe.Tags && recipe.Tags.some(tag => tag.toLowerCase().includes(lowerCaseSearchTerm))) {
       return true;
     }
 
@@ -103,7 +97,6 @@ onValue(recipesRef, (snapshot) => {
       const recipeElement = document.createElement('div');
       recipeElement.classList.add('recipe-box');
       recipeElement.innerHTML = `<h3 class="recipe-title">${recipe.Title}</h3>`;
-      // ... Add click event listener or any additional logic here
       resultsContainer.appendChild(recipeElement);
     });
 
@@ -112,35 +105,33 @@ onValue(recipesRef, (snapshot) => {
     }
   }
 
+  // Function to populate recipe details
+  function populateRecipeDetails(recipe) {
+    const detailsContainer = document.getElementById('recipe-details-container');
+    const titleElement = document.getElementById('recipe-title');
 
-// Function to populate recipe details
-function populateRecipeDetails(recipe) {
-  const detailsContainer = document.getElementById('recipe-details-container');
-  const titleElement = document.getElementById('recipe-title');
+    titleElement.textContent = recipe.Title;
+    detailsContainer.querySelector('.ingredients-card ul').innerHTML = recipe.Ingredients.map(ingredient => `<li>${ingredient.Name} - ${ingredient.Quantity} ${ingredient.Unit}</li>`).join('');
+    detailsContainer.querySelector('.instructions-card ul').innerHTML = recipe['Numbered Instructions'].map(instruction => `<li>${instruction}</li>`).join('');
 
-  titleElement.textContent = recipe.Title;
-  detailsContainer.querySelector('.ingredients-card ul').innerHTML = recipe.Ingredients.map(ingredient => `<li>${ingredient.Name} - ${ingredient.Quantity} ${ingredient.Unit}</li>`).join('');
-  detailsContainer.querySelector('.instructions-card ul').innerHTML = recipe['Numbered Instructions'].map(instruction => `<li>${instruction}</li>`).join('');
-
-  detailsContainer.style.display = 'block';
-  toggleBlurAndOverlay(true);
-}
-
-// Function to toggle blur and overlay
-function toggleBlurAndOverlay(show) {
-  const overlay = document.getElementById('darkOverlay');
-  const backgroundContent = document.querySelector('.container');
-  overlay.style.display = show ? 'block' : 'none';
-  backgroundContent.classList.toggle('blur-background', show);
-}
-
-// Event listener for closing the recipe details view
-window.addEventListener('click', (event) => {
-  const detailsContainer = document.getElementById('recipe-details-container');
-  if (!detailsContainer.contains(event.target) && detailsContainer.style.display === 'block') {
-    detailsContainer.style.display = 'none';
-    toggleBlurAndOverlay(false);
+    detailsContainer.style.display = 'block';
+    toggleBlurAndOverlay(true);
   }
+
+  // Function to toggle blur and overlay
+  function toggleBlurAndOverlay(show) {
+    const overlay = document.getElementById('darkOverlay');
+    const backgroundContent = document.querySelector('.container');
+    overlay.style.display = show ? 'block' : 'none';
+    backgroundContent.classList.toggle('blur-background', show);
+  }
+
+  // Event listener for closing the recipe details view
+  window.addEventListener('click', (event) => {
+    const detailsContainer = document.getElementById('recipe-details-container');
+    if (!detailsContainer.contains(event.target) && detailsContainer.style.display === 'block') {
+      detailsContainer.style.display = 'none';
+      toggleBlurAndOverlay(false);
+    }
+  });
 });
-    });
-  }); 
