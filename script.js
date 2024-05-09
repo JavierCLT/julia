@@ -60,7 +60,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Function to filter recipes based on search criteria
   function doesRecipeMatchSearchTerm(recipe, searchTerm) {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
 
@@ -88,7 +87,6 @@ document.addEventListener('DOMContentLoaded', function() {
     return false; // No match found
   }
 
-  // Function to display the search results
   function displaySearchResults(searchResults) {
     const resultsContainer = document.getElementById('results');
     resultsContainer.innerHTML = '';
@@ -105,7 +103,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // Function to populate recipe details
   function populateRecipeDetails(recipe) {
     const detailsContainer = document.getElementById('recipe-details-container');
     const titleElement = document.getElementById('recipe-title');
@@ -118,7 +115,6 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleBlurAndOverlay(true);
   }
 
-  // Function to toggle blur and overlay
   function toggleBlurAndOverlay(show) {
     const overlay = document.getElementById('darkOverlay');
     const backgroundContent = document.querySelector('.container');
@@ -126,7 +122,6 @@ document.addEventListener('DOMContentLoaded', function() {
     backgroundContent.classList.toggle('blur-background', show);
   }
 
-  // Event listener for closing the recipe details view
   window.addEventListener('click', (event) => {
     const detailsContainer = document.getElementById('recipe-details-container');
     if (!detailsContainer.contains(event.target) && detailsContainer.style.display === 'block') {
