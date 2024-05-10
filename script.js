@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+import { getDatabase, ref, query, orderByChild, equalTo, get, orderByKey } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAf_ctPJrXjlrUsmxIlZB2fYsrX4DAJ3Hs",
@@ -13,31 +13,41 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = getDatabase(app);
 
 document.getElementById('search-box').addEventListener('input', async function(e) {
   const searchText = e.target.value.toLowerCase();
   if (searchText.length >= 3) {
     const resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = ''; // clear previous results
+    resultsDiv.innerHTML = ''; // Clear previous results
 
-    // Constructing a more complex query to search in multiple fields
-    const recipesRef = collection(db, "recipes");
-    const q = query(recipesRef, 
-      where("Title", ">=", searchText),
-      where("Title", "<=", searchText + '\uf8ff'));
-    
-    const querySnapshot = await getDocs(q);
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      const resultElement = document.createElement('div');
-      resultElement.classList.add('recipe-box');
-      resultElement.textContent = data.Title;
-      resultElement.onclick = () => showRecipeDetails(data);
-      resultsDiv.appendChild(resultElement);
+    // Search in the "recipes" node by Title
+    const recipesRef = ref(db, 'recipes');
+    const recipesQuery = query(recipesRef, orderByChild('Title'));
+
+    get(recipesQuery).then((snapshot) => {
+      if (snapshot.exists()) {
+        snapshot.forEach((childSnapshot) => {
+          const data = childSnapshot.val();
+          if (data.Title && data.Title.toLowerCase().includes(searchText)) {
+            appendRecipeResult(data, resultsDiv);
+          }
+        });
+      } else {
+        // If no results by Title, display no results info
+        resultsDiv.innerHTML = '<p>No recipes found.</p>';
+      }
     });
   }
 });
+
+function appendRecipeResult(data, resultsDiv) {
+  const resultElement = document.createElement('div');
+  resultElement.classList.add('recipe-box');
+  resultElement.textContent = data.Title;
+  resultElement.onclick = () => showRecipeDetails(data);
+  resultsDiv.appendChild(resultElement);
+}
 
 function showRecipeDetails(data) {
   const detailsContainer = document.getElementById('recipe-details-container');
@@ -46,13 +56,15 @@ function showRecipeDetails(data) {
   // Populate ingredients
   const ingredientsList = detailsContainer.querySelector('.ingredients-card ul');
   ingredientsList.innerHTML = '';
-  data.Ingredients.forEach(ingredient => {
-    const li = document.createElement('li');
-    li.textContent = ingredient;
-    ingredientsList.appendChild(li);
-  });
+  if (data.Ingredients) {
+    data.Ingredients.forEach(ingredient => {
+      const li = document.createElement('li');
+      li.textContent = ingredient;
+      ingredientsList.appendChild(li);
+    });
+  }
 
-  // Populate instructions if available
+  // Populate instructions
   const instructionsCard = detailsContainer.querySelector('.instructions-card ul');
   instructionsCard.innerHTML = '';
   if (data['Numbered Instructions']) {
