@@ -37,10 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
       );
 
       onValue(recipesQuery, (snapshot) => {
-        console.log('Snapshot from Firebase:', snapshot);
-
         const recipesObject = snapshot.val();
-        console.log('Data from Firebase:', recipesObject);
 
         if (recipesObject) {
           const recipesArray = Object.values(recipesObject);
@@ -48,7 +45,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
           displaySearchResults(searchResults);
         } else {
-          console.log('No recipes found at the reference:', recipesRef);
           document.getElementById('results').innerHTML = '<p>No recipes found.</p>';
         }
       }, (error) => {
