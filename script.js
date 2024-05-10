@@ -1,6 +1,8 @@
+// Import Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-import { getDatabase, ref, query, orderByChild, equalTo, get, orderByKey } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+import { getDatabase, ref, query, orderByChild, get } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAf_ctPJrXjlrUsmxIlZB2fYsrX4DAJ3Hs",
   authDomain: "jhrecipes1.firebaseapp.com",
@@ -41,7 +43,6 @@ document.getElementById('search-box').addEventListener('input', async function(e
       }
     });
   } else {
-    // Optionally clear results if under 3 characters
     document.getElementById('results').innerHTML = '';
   }
 });
