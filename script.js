@@ -12,6 +12,7 @@ const firebaseConfig = {
   measurementId: "G-W9SJVFNSWD"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
@@ -26,18 +27,22 @@ document.getElementById('search-box').addEventListener('input', async function(e
     const recipesQuery = query(recipesRef, orderByChild('Title'));
 
     get(recipesQuery).then((snapshot) => {
-      if (snapshot.exists()) {
-        snapshot.forEach((childSnapshot) => {
-          const data = childSnapshot.val();
-          if (data.Title && data.Title.toLowerCase().includes(searchText)) {
-            appendRecipeResult(data, resultsDiv);
-          }
-        });
-      } else {
-        // If no results by Title, display no results info
+      let hasResults = false;
+      snapshot.forEach((childSnapshot) => {
+        const data = childSnapshot.val();
+        if (data.Title && data.Title.toLowerCase().includes(searchText)) {
+          appendRecipeResult(data, resultsDiv);
+          hasResults = true;
+        }
+      });
+
+      if (!hasResults) {
         resultsDiv.innerHTML = '<p>No recipes found.</p>';
       }
     });
+  } else {
+    // Optionally clear results if under 3 characters
+    document.getElementById('results').innerHTML = '';
   }
 });
 
@@ -62,17 +67,21 @@ function showRecipeDetails(data) {
       li.textContent = ingredient;
       ingredientsList.appendChild(li);
     });
+  } else {
+    ingredientsList.innerHTML = '<li>No ingredients listed.</li>';
   }
 
   // Populate instructions
   const instructionsCard = detailsContainer.querySelector('.instructions-card ul');
   instructionsCard.innerHTML = '';
   if (data['Numbered Instructions']) {
-    Object.keys(data['Numbered Instructions']).forEach((key) => {
+    Object.keys(data['Numbered Instructions']).forEach(key => {
       const li = document.createElement('li');
       li.textContent = data['Numbered Instructions'][key];
       instructionsCard.appendChild(li);
     });
+  } else {
+    instructionsCard.innerHTML = '<li>No instructions provided.</li>';
   }
 
   // Show details container
