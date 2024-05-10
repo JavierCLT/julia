@@ -1,6 +1,6 @@
-// Import the functions you need from the Firebase SDKs you need
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js';
-import { getDatabase, ref, query, orderByChild, startAt, endAt, onValue } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js';
+<!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -14,115 +14,117 @@ const firebaseConfig = {
   measurementId: "G-W9SJVFNSWD"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
+const db = getFirestore(app);
 
-// Ensure the DOM is fully loaded before querying for elements
-document.addEventListener('DOMContentLoaded', function() {
-  // Get the search input element
-  const searchInput = document.getElementById('search-box');
+// DOM Elements
+const searchBox = document.getElementById('search-box');
+const resultsDiv = document.getElementById('results');
+const recipeDetailsContainer = document.getElementById('recipe-details-container');
+const darkOverlay = document.getElementById('darkOverlay');
 
-  // Add an event listener to the search input
-  searchInput.addEventListener('input', function() {
-    const searchTerm = this.value.trim().toLowerCase();
+// Function to search recipes by title, category, or tags
+async function searchRecipes(text) {
+  if (text.length < 3) {
+    resultsDiv.innerHTML = '';
+    return;
+  }
 
-    if (searchTerm.length > 2) {
-      const recipesRef = ref(database, 'recipes');
-      const recipesQuery = query(
-        recipesRef,
-        orderByChild('Title'),
-        startAt(searchTerm),
-        endAt(searchTerm + '\uf8ff')
-      );
+  // Normalize the text for case-insensitive searching
+  const lowerCaseText = text.toLowerCase();
 
-      onValue(recipesQuery, (snapshot) => {
-        const recipesObject = snapshot.val();
+  // Build a query to search recipes by title, category, or tags
+  const recipesRef = collection(db, 'recipes');
+  const q = query(recipesRef, 
+    where('Title', '>=', lowerCaseText),
+    where('Title', '<=', lowerCaseText + '\uf8ff')
+  );
 
-        if (recipesObject) {
-          const recipesArray = Object.values(recipesObject);
-          const searchResults = recipesArray.filter(recipe => doesRecipeMatchSearchTerm(recipe, searchTerm));
+  const querySnapshot = await getDocs(q);
+  
+  // Clear previous results
+  resultsDiv.innerHTML = '';
 
-          displaySearchResults(searchResults);
-        } else {
-          document.getElementById('results').innerHTML = '<p>No recipes found.</p>';
-        }
-      }, (error) => {
-        console.error('Error reading recipes:', error);
-        document.getElementById('results').innerHTML = '<p>Error loading recipes.</p>';
-      });
-    } else {
-      document.getElementById('results').innerHTML = '<p>Please enter at least 3 characters to search.</p>';
-    }
+  querySnapshot.forEach(doc => {
+    const recipe = doc.data();
+    const recipeDiv = document.createElement('div');
+    recipeDiv.classList.add('recipe-box');
+    recipeDiv.textContent = recipe.Title;
+
+    // Click on a recipe box to show recipe details
+    recipeDiv.addEventListener('click', () => showRecipeDetails(recipe));
+
+    resultsDiv.appendChild(recipeDiv);
   });
 
-  function doesRecipeMatchSearchTerm(recipe, searchTerm) {
-    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+  if (!querySnapshot.empty) return;
 
-    // Check if the Title matches the search term
-    if (recipe.Title && recipe.Title.toLowerCase().includes(lowerCaseSearchTerm)) {
-      return true;
-    }
+  // If no results by Title, try searching by Category and Tags
+  const categoryQuery = query(recipesRef, 
+    where('Category', '==', lowerCaseText)
+  );
+  const categorySnapshot = await getDocs(categoryQuery);
 
-    // Check if any Ingredient matches the search term
-    if (recipe.Ingredients && recipe.Ingredients.some(ingredient => 
-      ingredient.Name.toLowerCase().includes(lowerCaseSearchTerm))) {
-      return true;
-    }
+  categorySnapshot.forEach(doc => {
+    const recipe = doc.data();
+    const recipeDiv = document.createElement('div');
+    recipeDiv.classList.add('recipe-box');
+    recipeDiv.textContent = recipe.Title;
 
-    // Check if any Category matches the search term
-    if (recipe.Category && recipe.Category.toLowerCase().includes(lowerCaseSearchTerm)) {
-      return true;
-    }
-
-    // Check if any Tag matches the search term
-    if (recipe.Tags && recipe.Tags.some(tag => tag.toLowerCase().includes(lowerCaseSearchTerm))) {
-      return true;
-    }
-
-    return false; // No match found
-  }
-
-  function displaySearchResults(searchResults) {
-    const resultsContainer = document.getElementById('results');
-    resultsContainer.innerHTML = '';
-
-    searchResults.forEach(recipe => {
-      const recipeElement = document.createElement('div');
-      recipeElement.classList.add('recipe-box');
-      recipeElement.innerHTML = `<h3 class="recipe-title">${recipe.Title}</h3>`;
-      resultsContainer.appendChild(recipeElement);
-    });
-
-    if (searchResults.length === 0) {
-      resultsContainer.innerHTML = '<p>No recipes found.</p>';
-    }
-  }
-
-  function populateRecipeDetails(recipe) {
-    const detailsContainer = document.getElementById('recipe-details-container');
-    const titleElement = document.getElementById('recipe-title');
-
-    titleElement.textContent = recipe.Title;
-    detailsContainer.querySelector('.ingredients-card ul').innerHTML = recipe.Ingredients.map(ingredient => `<li>${ingredient.Name} - ${ingredient.Quantity} ${ingredient.Unit}</li>`).join('');
-    detailsContainer.querySelector('.instructions-card ul').innerHTML = recipe['Numbered Instructions'].map(instruction => `<li>${instruction}</li>`).join('');
-
-    detailsContainer.style.display = 'block';
-    toggleBlurAndOverlay(true);
-  }
-
-  function toggleBlurAndOverlay(show) {
-    const overlay = document.getElementById('darkOverlay');
-    const backgroundContent = document.querySelector('.container');
-    overlay.style.display = show ? 'block' : 'none';
-    backgroundContent.classList.toggle('blur-background', show);
-  }
-
-  window.addEventListener('click', (event) => {
-    const detailsContainer = document.getElementById('recipe-details-container');
-    if (!detailsContainer.contains(event.target) && detailsContainer.style.display === 'block') {
-      detailsContainer.style.display = 'none';
-      toggleBlurAndOverlay(false);
-    }
+    recipeDiv.addEventListener('click', () => showRecipeDetails(recipe));
+    resultsDiv.appendChild(recipeDiv);
   });
+
+  if (!categorySnapshot.empty) return;
+
+  // Tags might need to be searched differently because they are in array
+  const tagsQuery = query(recipesRef, 
+    where('Tags', 'array-contains', lowerCaseText)
+  );
+  const tagsSnapshot = await getDocs(tagsQuery);
+
+  tagsSnapshot.forEach(doc => {
+    const recipe = doc.data();
+    const recipeDiv = document.createElement('div');
+    recipeDiv.classList.add('recipe-box');
+    recipeDiv.textContent = recipe.Title;
+
+    recipeDiv.addEventListener('click', () => showRecipeDetails(recipe));
+    resultsDiv.appendChild(recipeDiv);
+  });
+}
+
+// Show Recipe Details
+function showRecipeDetails(recipe) {
+  recipeDetailsContainer.style.display = 'block';
+  darkOverlay.style.display = 'block';
+  document.body.classList.add('blur-background');
+
+  document.getElementById('recipe-title').textContent = recipe.Title;
+
+  const ingredientsList = recipeDetailsContainer.querySelector('.ingredients-card ul');
+  ingredientsList.innerHTML = '';
+  recipe.Ingredients.forEach(ingredient => {
+    const li = document.createElement('li');
+    li.textContent = ingredient;
+    ingredientsList.appendChild(li);
+  });
+
+  const instructionsList = recipeDetailsContainer.querySelector('.instructions-card ul');
+  instructionsList.innerHTML = '';
+  recipe["Numbered Instructions"].forEach((instruction, index) => {
+    const li = document.createElement('li');
+    li.textContent = `${index + 1}. ${instruction}`;
+    instructionsList.appendChild(li);
+  });
+}
+
+// Close the recipe details
+darkOverlay.addEventListener('click', () => {
+  recipeDetailsContainer.style.display = 'none';
+  darkOverlay.style.display = 'none';
+  document.body.classList.remove('blur-background');
 });
+
+// Event listener for search box
+searchBox.addEventListener('input', (e) => searchRecipes(e.target.value));
