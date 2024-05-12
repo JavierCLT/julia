@@ -18,21 +18,19 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-// Get the search input element
+// Reference to the search box and results container
 const searchInput = document.getElementById('search-box');
+const resultsContainer = document.getElementById('results');
+let searchDelay;
 
-// Function to display the search results
+// Function to display search results
 function displaySearchResults(results) {
-  const resultsContainer = document.getElementById('results');
   resultsContainer.innerHTML = '';
-
   results.forEach((recipe) => {
     const recipeElement = document.createElement('div');
-    recipeElement.classList.add('recipe-box');
-    recipeElement.innerHTML = `
-      <h3 class="recipe-title">${recipe.Title}</h3>
-    `;
-    recipeElement.addEventListener('click', function() {
+    recipeElement.className = 'recipe-box';
+    recipeElement.innerHTML = `<h3 class="recipe-title">${recipe.Title}</h3>`;
+    recipeElement.addEventListener('click', () => {
       populateRecipeDetails(recipe);
     });
     resultsContainer.appendChild(recipeElement);
@@ -42,12 +40,11 @@ function displaySearchResults(results) {
 // Function to populate recipe details
 function populateRecipeDetails(recipe) {
   const detailsContainer = document.getElementById('recipe-details-container');
-  const titleElement = document.getElementById('recipe-title');
-
-  titleElement.textContent = recipe.Title;
-  detailsContainer.querySelector('.ingredients-card ul').innerHTML = recipe.Ingredients.map((ingredient) => `<li>${ingredient.Name} - ${ingredient.Quantity} ${ingredient.Unit}</li>`).join('');
-  detailsContainer.querySelector('.instructions-card ul').innerHTML = recipe['Numbered Instructions'].map((instruction) => `<li>${instruction}</li>`).join('');
-
+  document.getElementById('recipe-title').textContent = recipe.Title;
+  const ingredientsList = detailsContainer.querySelector('.ingredients-card ul');
+  ingredientsList.innerHTML = recipe.Ingredients.map(ingredient => `<li>${ingredient.Name} - ${ingredient.Quantity} ${ingredient.Unit}</li>`).join('');
+  const instructionsList = detailsContainer.querySelector('.instructions-card ul');
+  instructionsList.innerHTML = recipe['Numbered Instructions'].map(instruction => `<li>${instruction}</li>`).join('');
   detailsContainer.style.display = 'block';
   toggleBlurAndOverlay(true);
 }
@@ -61,27 +58,29 @@ function toggleBlurAndOverlay(show) {
 }
 
 // Add an event listener to the search input
-searchInput.addEventListener('input', function() {
-  const searchTerm = this.value.trim().toLowerCase();
-
-  if (searchTerm.length > 2) {
-    // Reference to your database path
-    const recipesRef = query(ref(database, 'recipes'), orderByChild('Title'), startAt(searchTerm), endAt(searchTerm + '\uf8ff'));
-    
-    onValue(recipesRef, (snapshot) => {
-      const searchResults = [];
-      snapshot.forEach((childSnapshot) => {
-        searchResults.push(childSnapshot.val());
+searchInput.addEventListener('input', () => {
+  const searchTerm = searchInput.value.trim().toLowerCase();
+  clearTimeout(searchDelay);
+  searchDelay = setTimeout(() => {
+    if (searchTerm.length > 2) {
+      const recipesRef = query(ref(database, 'recipes'), orderByChild('Title'), startAt(searchTerm), endAt(searchTerm + '\uf8ff'));
+      onValue(recipesRef, (snapshot) => {
+        const searchResults = [];
+        if (snapshot.exists()) {
+          snapshot.forEach((childSnapshot) => {
+            searchResults.push(childSnapshot.val());
+          });
+          displaySearchResults(searchResults);
+        } else {
+          resultsContainer.innerHTML = 'No results found.';
+        }
+      }, {
+        onlyOnce: true
       });
-
-      // Call function to display the search results
-      displaySearchResults(searchResults);
-    }, {
-      onlyOnce: true
-    });
-  } else {
-    document.getElementById('results').innerHTML = '';
-  }
+    } else {
+      resultsContainer.innerHTML = '';
+    }
+  }, 300);  // Adjust delay as needed
 });
 
 // Event listener for closing the recipe details view
@@ -91,21 +90,4 @@ window.addEventListener('click', (event) => {
     detailsContainer.style.display = 'none';
     toggleBlurAndOverlay(false);
   }
-});
-
-// Enhanced error handling in Firebase fetch
-onValue(recipesRef, (snapshot) => {
-  const searchResults = [];
-  if (snapshot.exists()) {
-    snapshot.forEach((childSnapshot) => {
-      searchResults.push(childSnapshot.val());
-    });
-    displaySearchResults(searchResults);
-  } else {
-    console.log("No data available");
-  }
-}, (error) => {
-  console.error('Error fetching data: ', error);
-}, {
-  onlyOnce: true
 });
