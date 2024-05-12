@@ -92,3 +92,20 @@ window.addEventListener('click', (event) => {
     toggleBlurAndOverlay(false);
   }
 });
+
+// Enhanced error handling in Firebase fetch
+onValue(recipesRef, (snapshot) => {
+  const searchResults = [];
+  if (snapshot.exists()) {
+    snapshot.forEach((childSnapshot) => {
+      searchResults.push(childSnapshot.val());
+    });
+    displaySearchResults(searchResults);
+  } else {
+    console.log("No data available");
+  }
+}, (error) => {
+  console.error('Error fetching data: ', error);
+}, {
+  onlyOnce: true
+});
