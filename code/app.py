@@ -59,41 +59,45 @@ def search_recipes():
 # New route for fetching recipe details
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
 def recipe_details(recipe_id):
-    # Connect to the database and retrieve details
-    connection = mysql.connector.connect(**db_config)
-    cursor = connection.cursor(dictionary=True)
+    try:
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor(dictionary=True)
 
-    print(f"Executing query with recipe_id: {recipe_id}")
+        print(f"Executing query with recipe_id: {recipe_id}")
 
-    # Fetch ingredients
-    cursor.execute("""
-        SELECT Name, Unit, Quantity
-        FROM ingredients
-        WHERE RecipeID = %s
-        ORDER BY IngredientID
-    """, (recipe_id,))
-    ingredients = cursor.fetchall()
+        # Fetch ingredients
+        cursor.execute("""
+            SELECT Name, Unit, Quantity
+            FROM ingredients
+            WHERE RecipeID = %s
+            ORDER BY IngredientID
+        """, (recipe_id,))
+        ingredients = cursor.fetchall()
 
-    # Fetch instructions
-    cursor.execute("""
-        SELECT StepNumber, Description
-        FROM instructions
-        WHERE RecipeID = %s
-        ORDER BY StepNumber
-    """, (recipe_id,))
-    instructions = cursor.fetchall()
+        # Fetch instructions
+        cursor.execute("""
+            SELECT StepNumber, Description
+            FROM instructions
+            WHERE RecipeID = %s
+            ORDER BY StepNumber
+        """, (recipe_id,))
+        instructions = cursor.fetchall()
 
-    # Close connection
-    cursor.close()
-    connection.close()
+        # Combine data into one response
+        details = {
+            'ingredients': ingredients,
+            'instructions': instructions
+        }
 
-    # Combine data into one response
-    details = {
-        'ingredients': ingredients,
-        'instructions': instructions
-    }
+    except Error as e:
+        print(f"Error while connecting to MySQL or executing query: {e}")
+        details = {'error': 'An error occurred while fetching recipe details.'}
+    finally:
+        if connection and connection.is_connected():
+            cursor.close()
+            connection.close()
 
     return jsonify(details)
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
