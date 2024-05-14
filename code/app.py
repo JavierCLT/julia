@@ -2,16 +2,21 @@ from flask import Flask, request, jsonify, render_template
 import mysql.connector
 from mysql.connector import Error
 from flask_cors import CORS
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app, resources={r"/search*": {"origins": "*"}})  # Adjust as needed for production
 
-# Replace the below configuration with your MySQL database details
+# Database configuration using environment variables
 db_config = {
-    'host': 'localhost',  # Replace with your GoogieHost MySQL host
-    'user': 'jhrecipe_recipes',  # Replace with your GoogieHost MySQL username
-    'password': 'Googiehost1',  # Replace with your GoogieHost MySQL password
-    'database': 'jhrecipe_recipes',  # Replace with your GoogieHost MySQL database name
+    'host': os.getenv('DB_HOST'),
+    'user': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASSWORD'),
+    'database': os.getenv('DB_NAME'),
 }
 
 @app.route('/')
