@@ -1,22 +1,19 @@
-# Use the official Python image from the Docker Hub
 FROM python:3.9-slim
 
 # Set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Set the working directory
+# Set working directory
 WORKDIR /app
 
-# Copy the requirements file
+# Install dependencies
 COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install the dependencies
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
-
-# Copy the application code
+# Copy project
 COPY . /app/
 
-# Command to run the app
-CMD ["gunicorn", "-b", "0.0.0.0:8080", "app:app"]
+# Command to run the app using Gunicorn
+CMD ["gunicorn", "code.app:app", "--bind", "0.0.0.0:8000"]
+
