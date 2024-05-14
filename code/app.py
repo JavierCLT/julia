@@ -15,7 +15,7 @@ CORS(app, resources={r"/search*": {"origins": "*"}})  # Adjust as needed for pro
 db_config = {
     'host': os.getenv('DB_HOST'),
     'user': os.getenv('DB_USER'),
-    'password': os.getenv('DB_PASSWORD'),
+    'password': os.getenv('DB_PASS'),  # Changed to match the .env variable
     'database': os.getenv('DB_NAME'),
 }
 
@@ -100,6 +100,5 @@ def recipe_details(recipe_id):
     return jsonify(details)
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
-
-
+    port = int(os.environ.get('PORT', 8080))  # Default to 8080 for Cloud Run
+    app.run(debug=True, host='0.0.0.0', port=port)
