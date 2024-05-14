@@ -96,4 +96,5 @@ def recipe_details(recipe_id):
     return jsonify(details)
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    port = int(os.environ.get('PORT', 8080))  # Default to 8080 for Cloud Run
+    app.run(debug=True, host='0.0.0.0', port=port)
