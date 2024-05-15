@@ -1,9 +1,51 @@
+document.getElementById('add-recipe-button').addEventListener('click', function() {
+    document.getElementById('add-recipe-form').style.display = 'block';
+});
+
+document.getElementById('cancel-button').addEventListener('click', function() {
+    document.getElementById('add-recipe-form').style.display = 'none';
+});
+
+document.getElementById('recipe-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const title = document.getElementById('title').value;
+    const ingredients = document.getElementById('ingredients').value;
+    const instructions = document.getElementById('instructions').value;
+
+    fetch('/add_recipe', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            title: title,
+            ingredients: ingredients,
+            instructions: instructions
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Recipe added successfully!');
+            document.getElementById('add-recipe-form').style.display = 'none';
+            // Optionally, clear the form fields
+            document.getElementById('recipe-form').reset();
+        } else {
+            alert('Error adding recipe');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+});
+
 document.getElementById('search-box').addEventListener('input', function(event) {
     const searchQuery = this.value.trim();
     const resultsContainer = document.getElementById('results');
     clearTimeout(this.delay);
     this.delay = setTimeout(() => {
-        if (searchQuery.length > 2) {
+        if (searchQuery.length > 3) {
             fetch(`/search?query=${encodeURIComponent(searchQuery)}`)
                 .then(response => response.json())
                 .then(data => {
@@ -20,7 +62,6 @@ document.getElementById('search-box').addEventListener('input', function(event) 
                         recipeElement.setAttribute('data-recipe-id', recipe.RecipeID); // Set the recipe ID here
                         recipeElement.innerHTML = `<div class="recipe-content">
                                                       <h3 class="recipe-title">${recipe.Title}</h3>
-                                                      <!-- Other recipe info can go here -->
                                                    </div>`;
                         grid.appendChild(recipeElement);
                     });
@@ -33,46 +74,40 @@ document.getElementById('search-box').addEventListener('input', function(event) 
     }, 100);
 });
 
-// JavaScript function to fetch and display recipe details
 function fetchAndDisplayRecipeDetails(recipeId) {
-    const startTime = performance.now();
-
     fetch(`/recipe_details/${encodeURIComponent(recipeId)}`)
         .then(response => response.json())
         .then(data => {
             const detailsContainer = document.getElementById('recipe-details-container');
-            let contentHtml = '<h3>Ingredients:</h3><ul>';
+            let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
             data.ingredients.forEach(ingredient => {
-                contentHtml += `<li>${ingredient.Quantity} ${ingredient.Unit} of ${ingredient.Name}</li>`;
+                ingredientsHtml += `<li>${ingredient.Quantity} ${ingredient.Unit} of ${ingredient.Name}</li>`;
             });
-            contentHtml += '</ul>';
+            ingredientsHtml += '</ul>';
 
-            contentHtml += '<h3>Instructions:</h3><ul>';
+            let instructionsHtml = '<h3>Instructions:</h3><ul>';
             data.instructions.forEach(instruction => {
-                contentHtml += `<li>${instruction.Description}</li>`;
+                instructionsHtml += `<li>${instruction.Description}</li>`;
             });
-            contentHtml += '</ul>';
+            instructionsHtml += '</ul>';
 
             let titleElement = document.getElementById('recipe-title');
             while (titleElement.nextSibling) {
                 detailsContainer.removeChild(titleElement.nextSibling);
             }
 
-            document.getElementById('recipe-title').insertAdjacentHTML('afterend', contentHtml);
-            detailsContainer.style.display = 'block';
+            document.getElementById('recipe-title').insertAdjacentHTML('afterend', ingredientsHtml + instructionsHtml);
 
-            const endTime = performance.now();
-            console.log(`Fetch and display took ${endTime - startTime} milliseconds`);
+            detailsContainer.style.display = 'block';
         })
         .catch(error => {
             console.error('Error fetching recipe details:', error);
         });
 }
 
-
 function toggleBlurAndOverlay(show) {
     const overlay = document.getElementById('darkOverlay');
-    const backgroundContent = document.querySelector('.container'); // This should be the container of your background content.
+    const backgroundContent = document.querySelector('.container');
     if (show) {
         overlay.style.display = 'block';
         backgroundContent.classList.add('blur-background');
@@ -82,37 +117,25 @@ function toggleBlurAndOverlay(show) {
     }
 }
 
-
-// Event delegation to handle clicks on recipe titles
 document.addEventListener('click', function(event) {
     let targetElement = event.target.closest('.recipe-box');
-    
-    // Check if a recipe-box was clicked
     if (targetElement) {
         const recipeId = targetElement.getAttribute('data-recipe-id');
         if (recipeId) {
-            // Retrieve the title from the clicked element and update the yellow area
             const recipeTitle = targetElement.querySelector('.recipe-title').textContent;
             document.getElementById('recipe-title').textContent = recipeTitle;
-            
-            // Fetch and display recipe details
             fetchAndDisplayRecipeDetails(recipeId);
-
-            // Call this function when a recipe is clicked to show the details and the overlay
             toggleBlurAndOverlay(true);
         }
     }
 });
 
-// JavaScript to close the recipe details view when clicking outside
 window.addEventListener('click', function(event) {
     const detailsContainer = document.getElementById('recipe-details-container');
     const recipeTitle = document.getElementById('recipe-title');
-    // Check if the click is outside the recipe details and if the details container is currently shown
     if (!detailsContainer.contains(event.target) && detailsContainer.style.display === 'block') {
         detailsContainer.style.display = 'none';
-        recipeTitle.textContent = ''; // Clear the title when the details view is closed
+        recipeTitle.textContent = '';
         toggleBlurAndOverlay(false);
     }
 });
-
