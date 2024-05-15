@@ -21,14 +21,13 @@ def index():
 
 @app.route('/search', methods=['GET'])
 def search_recipes():
-    query_param = request.args.get('query')  # This is the search term
+    query_param = request.args.get('query')
     print(f"Search Query: {query_param}")
     result = []
 
     connection = None
     try:
         connection = mysql.connector.connect(**db_config)
-        print("Connected to the database.")
         cursor = connection.cursor(dictionary=True)
         query = """
         SELECT MIN(recipes.RecipeID) as RecipeID, recipes.Title
@@ -51,7 +50,7 @@ def search_recipes():
         print(f"Query Result: {result}")
     except Error as e:
         print(f"Error while connecting to MySQL or executing query: {e}")
-        result = []  # Return an empty list in case of error
+        result = []
     finally:
         if connection and connection.is_connected():
             connection.close()
