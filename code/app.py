@@ -25,17 +25,10 @@ def search_recipes():
     print(f"Search Query: {query_param}")
     result = []
 
-    # Log database configuration
-    print(f"Database Configuration: {db_config}")
-
     connection = None
     try:
         connection = mysql.connector.connect(**db_config)
-        if connection.is_connected():
-            print("Connected to the database.")
-        else:
-            print("Failed to connect to the database.")
-            
+        print("Connected to the database.")
         cursor = connection.cursor(dictionary=True)
         query = """
         SELECT MIN(recipes.RecipeID) as RecipeID, recipes.Title
@@ -65,16 +58,10 @@ def search_recipes():
 
     return jsonify(result)
 
-# New route for fetching recipe details
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
 def recipe_details(recipe_id):
     try:
         connection = mysql.connector.connect(**db_config)
-        if connection.is_connected():
-            print("Connected to the database for recipe details.")
-        else:
-            print("Failed to connect to the database for recipe details.")
-
         cursor = connection.cursor(dictionary=True)
 
         print(f"Executing query with recipe_id: {recipe_id}")
@@ -114,4 +101,4 @@ def recipe_details(recipe_id):
     return jsonify(details)
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORTG', 8080)))
+    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
