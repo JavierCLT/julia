@@ -6,7 +6,7 @@
     --desert-sand: #E4C3AD;
     --font-family-heading: 'Merriweather', serif;
     --font-family-body: 'Open Sans', sans-serif;
-  }
+}
 
 body {
     margin: 0;
@@ -17,28 +17,45 @@ body {
 }
 
 h1, h2, h3 {
-  color: var(--cadet-gray);
-  font-family: var(--font-family-heading);
+    color: var(--cadet-gray);
+    font-family: var(--font-family-heading);
 }
 
 .container {
     max-width: 1200px;
-    margin: 20px auto; /* Centers the container with auto margins on left and right */
-    padding: 0 15px; /* Adds some padding inside the container */
+    margin: 20px auto;
+    padding: 0 15px;
 }
 
 .header {
     position: sticky;
     top: 0;
     z-index: 1000;
-    text-align: center; /* Ensures the header text is centered */
-    color: var(--misty-rose);;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--misty-rose);
 }
 
 .header h1 {
     color: var(--rich-black);
     font-size: 3em;
     margin: 20px 0;
+}
+
+.add-recipe-btn {
+    background-color: var(--desert-sand);
+    color: var(--rich-black);
+    border: none;
+    padding: 10px 20px;
+    font-size: 1em;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.add-recipe-btn:hover {
+    background-color: var(--cadet-gray);
+    color: var(--desert-sand);
 }
 
 .search-container {
@@ -50,14 +67,14 @@ h1, h2, h3 {
 
 .search-box {
     width: 80%;
-    max-width: 500px; /* Limits the width of the search box */
+    max-width: 500px;
     padding: 10px;
     font-size: 1em;
     font-family: var(--font-family-body);
     border: 1px solid #ccc;
     color: var(--rich-black);
     border-radius: 20px;
-    margin: 0 auto; /* Centers the search box */
+    margin: 0 auto;
 }
 
 #results {
@@ -66,8 +83,8 @@ h1, h2, h3 {
 
 .grid {
     display: grid;
-    justify-content: center; /* Centers grid items horizontally */
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Makes the grid responsive */
+    justify-content: center;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 20px;
     text-align: center;
 }
@@ -77,8 +94,8 @@ h1, h2, h3 {
     padding: 20px;
     border-radius: 5px;
     background-color: #fff;
-    cursor: pointer; /* Indicates the box is clickable */
-    margin-bottom: 20px; /* Space between recipe boxes */
+    cursor: pointer;
+    margin-bottom: 20px;
 }
 
 #recipe-details-container {
@@ -102,23 +119,36 @@ h1, h2, h3 {
 }
 
 #recipe-title-container {
-    position: fixed; /* Fixed like the details container */
-    top: 10%; /* Adjust this value as needed */
+    position: fixed;
+    top: 10%;
     left: 50%;
     transform: translateX(-50%);
-    width: 100%; /* Full width */
+    width: 100%;
     text-align: center;
-    z-index: 1050; /* Ensure it's above other content */
+    z-index: 1050;
 }
 
 #recipe-title {
-    background-color: var(--misty-rose); /* Yellow background */
+    background-color: var(--misty-rose);
     color: var(--rich-black);
     padding: 10px;
-    border-radius: 5px; /* Rounded corners */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional shadow */
-    /* Remove properties that are no longer necessary */
-    /* position, top, left, transform, margin, width */
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.delete-recipe-btn {
+    background-color: #ff4c4c;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1em;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.delete-recipe-btn:hover {
+    background-color: #ff0000;
 }
 
 h3 {
@@ -129,13 +159,13 @@ h3 {
 }
 
 ul, ol {
-    list-style: none; /* Removes all list markers */
+    list-style: none;
     margin: 0;
     color: var(--rich-black);
 }
 
 li {
-    margin-bottom: 5px; /* Space between list items */
+    margin-bottom: 5px;
     font-weight: normal;
     font-size: 1em;
     color: var(--rich-black);
@@ -147,7 +177,7 @@ li {
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    margin-bottom: 20px; /* Space between cards */
+    margin-bottom: 20px;
 }
 
 .recipe-box {
@@ -155,30 +185,92 @@ li {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     border-radius: 8px;
     border: none;
-    transition: transform 0.3s ease; /* Smooth transition for hover effects */
-  }
+    transition: transform 0.3s ease;
+}
 
 .recipe-box:hover {
-    transform: translateY(-5px); /* Slightly raises the card on hover for a 'pop' effect */
-    background-color:var(--desert-sand);
+    transform: translateY(-5px);
+    background-color: var(--desert-sand);
 }
 
 .dark-overlay {
-    display: none; /* Hidden by default */
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
-    z-index: 999; /* High z-index, but lower than the recipe details */
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
 }
 
 .blur-background > *:not(#recipe-details-container) {
     filter: blur(5px);
 }
 
-/* Responsive adjustments */
+.form-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-height: 80vh;
+    overflow-y: auto;
+    width: 80%;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin: 10px 0 5px;
+}
+
+input[type="text"],
+input[type="password"],
+textarea {
+    padding: 10px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+button[type="submit"],
+button[type="button"] {
+    padding: 10px 20px;
+    font-size: 1em;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+button[type="submit"] {
+    background-color: var(--desert-sand);
+    color: var(--rich-black);
+}
+
+button[type="button"] {
+    background-color: #ccc;
+    color: var(--rich-black);
+}
+
+button[type="submit"]:hover {
+    background-color: var(--cadet-gray);
+    color: var(--desert-sand);
+}
+
+button[type="button"]:hover {
+    background-color: var(--cadet-gray);
+}
+
 @media (max-width: 768px) {
     .search-box {
         width: 90%;
@@ -200,4 +292,3 @@ li {
         grid-template-columns: 1fr;
     }
 }
-
