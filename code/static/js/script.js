@@ -1,45 +1,3 @@
-document.getElementById('add-recipe-button').addEventListener('click', function() {
-    document.getElementById('add-recipe-form').style.display = 'block';
-});
-
-document.getElementById('cancel-button').addEventListener('click', function() {
-    document.getElementById('add-recipe-form').style.display = 'none';
-});
-
-document.getElementById('recipe-form').addEventListener('submit', function(event) {
-    event.preventDefault();
-
-    const title = document.getElementById('title').value;
-    const ingredients = document.getElementById('ingredients').value;
-    const instructions = document.getElementById('instructions').value;
-
-    fetch('/add_recipe', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            title: title,
-            ingredients: ingredients,
-            instructions: instructions
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Recipe added successfully!');
-            document.getElementById('add-recipe-form').style.display = 'none';
-            // Optionally, clear the form fields
-            document.getElementById('recipe-form').reset();
-        } else {
-            alert('Error adding recipe');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
-});
-
 document.getElementById('search-box').addEventListener('input', function(event) {
     const searchQuery = this.value.trim();
     const resultsContainer = document.getElementById('results');
@@ -106,7 +64,6 @@ document.getElementById('add-recipe-form').addEventListener('submit', function(e
     })
     .catch(error => console.error('Error:', error));
 });
-
 
 function fetchAndDisplayRecipeDetails(recipeId) {
     fetch(`/recipe_details/${encodeURIComponent(recipeId)}`)
