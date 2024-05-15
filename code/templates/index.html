@@ -20,42 +20,39 @@
             <input type="text" id="search-box" class="search-box" placeholder="Search by recipe, category, ingredient...">
         </div>
         <div id="results"></div>
-        <button id="add-recipe-btn">Add New Recipe</button>
-        <div id="add-recipe-form-container" style="display: none;">
-            <form id="add-recipe-form">
-                <label for="title">Title:</label>
-                <input type="text" id="title" name="title" required>
-        
-                <label for="ingredients">Ingredients (one per line, format: name, unit, quantity):</label>
-                <textarea id="ingredients" name="ingredients" rows="5" required></textarea>
-        
-                <label for="instructions">Instructions (one per line):</label>
-                <textarea id="instructions" name="instructions" rows="5" required></textarea>
-        
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
-        
-                <button type="submit">Submit</button>
-                <button type="button" id="cancel-btn">Cancel</button>
-            </form>
-        </div>
-        
-            <!-- Add delete button -->
-            <button id="delete-recipe-btn" style="display: none;">Delete Recipe</button>
+        <div id="recipe-details-container" class="yellow-area" style="display:none;">
+            <h2 id="recipe-title" class="recipe-title"></h2>
+            <button id="delete-recipe-btn" class="delete-recipe-btn">Delete Recipe</button>
+            <div class="card ingredients-card">
+                <h3><i class="fas fa-utensils"></i> Ingredients:</h3>
+                <ul>
+                  <!-- Ingredient items will be inserted here by JavaScript -->
+                </ul>
+            </div>
+            <div class="card instructions-card">
+                <h3><i class="fas fa-utensils"></i> Instructions:</h3>
+                <ul>
+                  <!-- Instruction items will be inserted here by JavaScript -->
+                </ul>
+            </div>
         </div>
     </div>
-    <div id="add-recipe-form-container" class="form-container" style="display:none;">
-        <h2>Add New Recipe</h2>
+    <button id="add-recipe-btn">Add New Recipe</button>
+    <div id="add-recipe-form-container" style="display: none;">
         <form id="add-recipe-form">
-            <label for="recipe-title-input">Title:</label>
-            <input type="text" id="recipe-title-input" name="title" required>
-            <label for="recipe-ingredients-input">Ingredients (name,unit,quantity per line):</label>
-            <textarea id="recipe-ingredients-input" name="ingredients" required></textarea>
-            <label for="recipe-instructions-input">Instructions (one per line):</label>
-            <textarea id="recipe-instructions-input" name="instructions" required></textarea>
-            <label for="password-input">Password:</label>
-            <input type="password" id="password-input" name="password" required>
-            <button type="submit">Add Recipe</button>
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" required>
+    
+            <label for="ingredients">Ingredients (one per line, format: name, unit, quantity):</label>
+            <textarea id="ingredients" name="ingredients" rows="5" required></textarea>
+    
+            <label for="instructions">Instructions (one per line):</label>
+            <textarea id="instructions" name="instructions" rows="5" required></textarea>
+    
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+    
+            <button type="submit">Submit</button>
             <button type="button" id="cancel-btn">Cancel</button>
         </form>
     </div>
