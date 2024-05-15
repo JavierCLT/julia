@@ -133,6 +133,31 @@ function fetchAndDisplayRecipeDetails(recipeId) {
             document.getElementById('recipe-title').insertAdjacentHTML('afterend', ingredientsHtml + instructionsHtml);
 
             detailsContainer.style.display = 'block';
+
+            document.getElementById('delete-recipe-btn').onclick = function() {
+                const password = prompt("Enter password to delete this recipe:");
+                if (password) {
+                    fetch(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
+                        method: 'POST',
+                        body: JSON.stringify({ password: password }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(data.message);
+                        if (data.success) {
+                            detailsContainer.style.display = 'none';
+                            toggleBlurAndOverlay(false);
+                            // Optionally, refresh the search results or remove the deleted recipe from the results dynamically
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                }
+            };
+
+            console.log(data);
         })
         .catch(error => {
             console.error('Error fetching recipe details:', error);
