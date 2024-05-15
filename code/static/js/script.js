@@ -66,53 +66,62 @@ document.getElementById('add-recipe-form').addEventListener('submit', function(e
 });
 
 function fetchAndDisplayRecipeDetails(recipeId) {
+    // Fetch the details from the server
     fetch(`/recipe_details/${encodeURIComponent(recipeId)}`)
         .then(response => response.json())
         .then(data => {
+            // Reference to the container
             const detailsContainer = document.getElementById('recipe-details-container');
+            const deleteBtn = document.getElementById('delete-recipe-btn');
+            deleteBtn.style.display = 'block'; // Show the delete button
+
+            // Add event listener for delete button
+            deleteBtn.onclick = function() {
+                const password = prompt("Enter the password to delete the recipe:");
+                fetch(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ password: password })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.success) {
+                        detailsContainer.style.display = 'none';
+                        toggleBlurAndOverlay(false);
+                        // Optionally, refresh the search results to remove the deleted recipe
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            };
+
+            // Create HTML for ingredients
             let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
             data.ingredients.forEach(ingredient => {
                 ingredientsHtml += `<li>${ingredient.Quantity} ${ingredient.Unit} of ${ingredient.Name}</li>`;
             });
             ingredientsHtml += '</ul>';
 
+            // Create HTML for instructions
             let instructionsHtml = '<h3>Instructions:</h3><ul>';
             data.instructions.forEach(instruction => {
                 instructionsHtml += `<li>${instruction.Description}</li>`;
             });
             instructionsHtml += '</ul>';
 
+            // Empty the container without removing the title
             let titleElement = document.getElementById('recipe-title');
             while (titleElement.nextSibling) {
                 detailsContainer.removeChild(titleElement.nextSibling);
             }
 
+            // Insert the ingredients and instructions HTML after the title
             document.getElementById('recipe-title').insertAdjacentHTML('afterend', ingredientsHtml + instructionsHtml);
 
+            // Show the container
             detailsContainer.style.display = 'block';
-
-            document.getElementById('delete-recipe-btn').onclick = function() {
-                const password = prompt("Enter password to delete this recipe:");
-                if (password) {
-                    fetch(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
-                        method: 'POST',
-                        body: JSON.stringify({ password: password }),
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        alert(data.message);
-                        if (data.success) {
-                            detailsContainer.style.display = 'none';
-                            toggleBlurAndOverlay(false);
-                            // Optionally, refresh the search results or remove the deleted recipe from the results dynamically
-                        }
-                    })
-                    .catch(error => console.error('Error:', error));
-                }
-            };
 
             console.log(data);
         })
