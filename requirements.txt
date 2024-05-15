@@ -3,3 +3,4 @@ mysql-connector-python==8.0.23
 Flask-CORS==3.0.10
 gunicorn==21.2.0
 python-dotenv
+Flask-Caching
