@@ -25,10 +25,17 @@ def search_recipes():
     print(f"Search Query: {query_param}")
     result = []
 
+    # Log database configuration
+    print(f"Database Configuration: {db_config}")
+
     connection = None
     try:
         connection = mysql.connector.connect(**db_config)
-        print(f"Connected to the database.")
+        if connection.is_connected():
+            print("Connected to the database.")
+        else:
+            print("Failed to connect to the database.")
+            
         cursor = connection.cursor(dictionary=True)
         query = """
         SELECT MIN(recipes.RecipeID) as RecipeID, recipes.Title
@@ -63,6 +70,11 @@ def search_recipes():
 def recipe_details(recipe_id):
     try:
         connection = mysql.connector.connect(**db_config)
+        if connection.is_connected():
+            print("Connected to the database for recipe details.")
+        else:
+            print("Failed to connect to the database for recipe details.")
+
         cursor = connection.cursor(dictionary=True)
 
         print(f"Executing query with recipe_id: {recipe_id}")
