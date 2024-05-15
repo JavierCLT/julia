@@ -118,37 +118,72 @@ def recipe_details(recipe_id):
 
 @app.route('/add_recipe', methods=['POST'])
 def add_recipe():
-    data = request.get_json()
+    data = request.json
     title = data.get('title')
-    ingredients = data.get('ingredients')
-    instructions = data.get('instructions')
+    ingredients = data.get('ingredients').split('\n')
+    instructions = data.get('instructions').split('\n')
+    password = data.get('password')
 
+    if password != os.getenv('SECRET_PASSWORD'):
+        return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
+
+    connection = None
     try:
-        connection = connection_pool.get_connection()
+        connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
-        
+
         cursor.execute("INSERT INTO recipes (Title) VALUES (%s)", (title,))
         recipe_id = cursor.lastrowid
-        
-        for ingredient in ingredients.split('\n'):
+
+        for ingredient in ingredients:
             name, unit, quantity = ingredient.split(',')
-            cursor.execute("INSERT INTO ingredients (RecipeID, Name, Unit, Quantity) VALUES (%s, %s, %s, %s)",
-                           (recipe_id, name.strip(), unit.strip(), quantity.strip()))
-        
-        for step_number, instruction in enumerate(instructions.split('\n'), start=1):
-            cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)",
-                           (recipe_id, step_number, instruction.strip()))
-        
+            cursor.execute("""
+                INSERT INTO ingredients (RecipeID, Name, Unit, Quantity)
+                VALUES (%s, %s, %s, %s)
+            """, (recipe_id, name.strip(), unit.strip(), quantity.strip()))
+
+        for step_number, instruction in enumerate(instructions, start=1):
+            cursor.execute("""
+                INSERT INTO instructions (RecipeID, StepNumber, Description)
+                VALUES (%s, %s, %s)
+            """, (recipe_id, step_number, instruction.strip()))
+
         connection.commit()
         cursor.close()
     except Error as e:
-        print(f"Error while connecting to MySQL or executing query: {e}")
-        return jsonify({'success': False, 'error': str(e)})
+        return jsonify({'success': False, 'message': 'An error occurred while adding the recipe.'}), 500
     finally:
-        if connection.is_connected():
+        if connection and connection.is_connected():
             connection.close()
 
-    return jsonify({'success': True})
+    return jsonify({'success': True, 'message': 'Recipe added successfully!'})
+
+@app.route('/delete_recipe/<int:recipe_id>', methods=['POST'])
+def delete_recipe(recipe_id):
+    data = request.json
+    password = data.get('password')
+
+    if password != os.getenv('SECRET_PASSWORD'):
+        return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
+
+    connection = None
+    try:
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+
+        cursor.execute("DELETE FROM instructions WHERE RecipeID = %s", (recipe_id,))
+        cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
+        cursor.execute("DELETE FROM recipes WHERE RecipeID = %s", (recipe_id,))
+
+        connection.commit()
+        cursor.close()
+    except Error as e:
+        return jsonify({'success': False, 'message': 'An error occurred while deleting the recipe.'}), 500
+    finally:
+        if connection and connection.is_connected():
+            connection.close()
+
+    return jsonify({'success': True, 'message': 'Recipe deleted successfully!'})
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
