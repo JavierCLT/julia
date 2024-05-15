@@ -59,7 +59,7 @@ document.getElementById('search-box').addEventListener('input', function(event) 
                     data.forEach(recipe => {
                         const recipeElement = document.createElement('div');
                         recipeElement.className = 'recipe-box';
-                        recipeElement.setAttribute('data-recipe-id', recipe.RecipeID); // Set the recipe ID here
+                        recipeElement.setAttribute('data-recipe-id', recipe.RecipeID);
                         recipeElement.innerHTML = `<div class="recipe-content">
                                                       <h3 class="recipe-title">${recipe.Title}</h3>
                                                    </div>`;
@@ -73,6 +73,40 @@ document.getElementById('search-box').addEventListener('input', function(event) 
         }
     }, 100);
 });
+
+document.getElementById('add-recipe-btn').addEventListener('click', function() {
+    document.getElementById('add-recipe-form-container').style.display = 'block';
+    toggleBlurAndOverlay(true);
+});
+
+document.getElementById('cancel-btn').addEventListener('click', function() {
+    document.getElementById('add-recipe-form-container').style.display = 'none';
+    toggleBlurAndOverlay(false);
+});
+
+document.getElementById('add-recipe-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const formData = new FormData(this);
+    fetch('/add_recipe', {
+        method: 'POST',
+        body: JSON.stringify(Object.fromEntries(formData)),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        if (data.success) {
+            document.getElementById('add-recipe-form').reset();
+            document.getElementById('add-recipe-form-container').style.display = 'none';
+            toggleBlurAndOverlay(false);
+            // Optionally, refresh the search results or add the new recipe to the results dynamically
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
+
 
 function fetchAndDisplayRecipeDetails(recipeId) {
     fetch(`/recipe_details/${encodeURIComponent(recipeId)}`)
