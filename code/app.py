@@ -116,5 +116,39 @@ def recipe_details(recipe_id):
 
     return jsonify(details)
 
+@app.route('/add_recipe', methods=['POST'])
+def add_recipe():
+    data = request.get_json()
+    title = data.get('title')
+    ingredients = data.get('ingredients')
+    instructions = data.get('instructions')
+
+    try:
+        connection = connection_pool.get_connection()
+        cursor = connection.cursor()
+        
+        cursor.execute("INSERT INTO recipes (Title) VALUES (%s)", (title,))
+        recipe_id = cursor.lastrowid
+        
+        for ingredient in ingredients.split('\n'):
+            name, unit, quantity = ingredient.split(',')
+            cursor.execute("INSERT INTO ingredients (RecipeID, Name, Unit, Quantity) VALUES (%s, %s, %s, %s)",
+                           (recipe_id, name.strip(), unit.strip(), quantity.strip()))
+        
+        for step_number, instruction in enumerate(instructions.split('\n'), start=1):
+            cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)",
+                           (recipe_id, step_number, instruction.strip()))
+        
+        connection.commit()
+        cursor.close()
+    except Error as e:
+        print(f"Error while connecting to MySQL or executing query: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+    finally:
+        if connection.is_connected():
+            connection.close()
+
+    return jsonify({'success': True})
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
