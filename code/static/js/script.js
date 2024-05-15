@@ -35,13 +35,12 @@ document.getElementById('search-box').addEventListener('input', function(event) 
 
 // JavaScript function to fetch and display recipe details
 function fetchAndDisplayRecipeDetails(recipeId) {
-    // Fetch the details from the server
+    const startTime = performance.now();
+
     fetch(`/recipe_details/${encodeURIComponent(recipeId)}`)
         .then(response => response.json())
         .then(data => {
-            // Reference to the container
             const detailsContainer = document.getElementById('recipe-details-container');
-            // Create HTML for ingredients and instructions
             let contentHtml = '<h3>Ingredients:</h3><ul>';
             data.ingredients.forEach(ingredient => {
                 contentHtml += `<li>${ingredient.Quantity} ${ingredient.Unit} of ${ingredient.Name}</li>`;
@@ -54,19 +53,16 @@ function fetchAndDisplayRecipeDetails(recipeId) {
             });
             contentHtml += '</ul>';
 
-            // Empty the container without removing the title
             let titleElement = document.getElementById('recipe-title');
             while (titleElement.nextSibling) {
                 detailsContainer.removeChild(titleElement.nextSibling);
             }
 
-            // Insert the ingredients and instructions HTML after the title
             document.getElementById('recipe-title').insertAdjacentHTML('afterend', contentHtml);
-
-            // Show the container
             detailsContainer.style.display = 'block';
 
-            console.log(data);
+            const endTime = performance.now();
+            console.log(`Fetch and display took ${endTime - startTime} milliseconds`);
         })
         .catch(error => {
             console.error('Error fetching recipe details:', error);
