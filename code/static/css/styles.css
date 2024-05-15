@@ -43,19 +43,21 @@ h1, h2, h3 {
     margin: 20px 0;
 }
 
-.add-recipe-btn {
+#add-recipe-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
     background-color: var(--desert-sand);
     color: var(--rich-black);
     border: none;
-    padding: 10px 20px;
-    font-size: 1em;
     border-radius: 5px;
+    padding: 10px 20px;
     cursor: pointer;
+    z-index: 999; /* Ensure it's above the overlay */
 }
 
-.add-recipe-btn:hover {
-    background-color: var(--cadet-gray);
-    color: var(--desert-sand);
+#add-recipe-btn:hover {
+    background-color: var(--paynes-gray);
 }
 
 .search-container {
@@ -193,14 +195,14 @@ li {
 }
 
 .dark-overlay {
-    display: none;
+    display: none; /* Hidden by default */
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 999;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    z-index: 998; /* Slightly lower z-index than the recipe details */
 }
 
 .blur-background > *:not(#recipe-details-container) {
