@@ -41,19 +41,18 @@ function fetchAndDisplayRecipeDetails(recipeId) {
         .then(data => {
             // Reference to the container
             const detailsContainer = document.getElementById('recipe-details-container');
-            // Create HTML for ingredients
-            let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
+            // Create HTML for ingredients and instructions
+            let contentHtml = '<h3>Ingredients:</h3><ul>';
             data.ingredients.forEach(ingredient => {
-                ingredientsHtml += `<li>${ingredient.Quantity} ${ingredient.Unit} of ${ingredient.Name}</li>`;
+                contentHtml += `<li>${ingredient.Quantity} ${ingredient.Unit} of ${ingredient.Name}</li>`;
             });
-            ingredientsHtml += '</ul>';
+            contentHtml += '</ul>';
 
-            // Create HTML for instructions
-            let instructionsHtml = '<h3>Instructions:</h3><ul>';
+            contentHtml += '<h3>Instructions:</h3><ul>';
             data.instructions.forEach(instruction => {
-                instructionsHtml += `<li>${instruction.Description}</li>`;
+                contentHtml += `<li>${instruction.Description}</li>`;
             });
-            instructionsHtml += '</ul>';
+            contentHtml += '</ul>';
 
             // Empty the container without removing the title
             let titleElement = document.getElementById('recipe-title');
@@ -62,7 +61,7 @@ function fetchAndDisplayRecipeDetails(recipeId) {
             }
 
             // Insert the ingredients and instructions HTML after the title
-            document.getElementById('recipe-title').insertAdjacentHTML('afterend', ingredientsHtml + instructionsHtml);
+            document.getElementById('recipe-title').insertAdjacentHTML('afterend', contentHtml);
 
             // Show the container
             detailsContainer.style.display = 'block';
@@ -73,6 +72,7 @@ function fetchAndDisplayRecipeDetails(recipeId) {
             console.error('Error fetching recipe details:', error);
         });
 }
+
 
 function toggleBlurAndOverlay(show) {
     const overlay = document.getElementById('darkOverlay');
