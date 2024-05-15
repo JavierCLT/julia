@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, render_template
 from flask_caching import Cache
 import mysql.connector
-from mysql.connector import Error
+from mysql.connector import Error, pooling
 from flask_cors import CORS
 import os
 
@@ -22,6 +22,15 @@ db_config = {
     'pool_size': 5,
 }
 
+# Create a connection pool
+connection_pool = mysql.connector.pooling.MySQLConnectionPool(pool_name=db_config['pool_name'],
+                                                              pool_size=db_config['pool_size'],
+                                                              pool_reset_session=True,
+                                                              host=db_config['host'],
+                                                              database=db_config['database'],
+                                                              user=db_config['user'],
+                                                              password=db_config['password'])
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -34,7 +43,7 @@ def search_recipes():
     result = []
 
     try:
-        connection = mysql.connector.connect(**db_config)
+        connection = connection_pool.get_connection()
         cursor = connection.cursor(dictionary=True)
         query = """
         SELECT MIN(recipes.RecipeID) as RecipeID, recipes.Title
@@ -59,7 +68,7 @@ def search_recipes():
         print(f"Error while connecting to MySQL or executing query: {e}")
         result = []
     finally:
-        if connection and connection.is_connected():
+        if connection.is_connected():
             connection.close()
 
     return jsonify(result)
@@ -68,7 +77,7 @@ def search_recipes():
 @cache.cached(timeout=60)
 def recipe_details(recipe_id):
     try:
-        connection = mysql.connector.connect(**db_config)
+        connection = connection_pool.get_connection()
         cursor = connection.cursor(dictionary=True)
 
         print(f"Executing query with recipe_id: {recipe_id}")
@@ -101,7 +110,7 @@ def recipe_details(recipe_id):
         print(f"Error while connecting to MySQL or executing query: {e}")
         details = {'error': 'An error occurred while fetching recipe details.'}
     finally:
-        if connection and connection.is_connected():
+        if connection.is_connected():
             cursor.close()
             connection.close()
 
