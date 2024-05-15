@@ -1,11 +1,16 @@
 from flask import Flask, request, jsonify, render_template
+from flask_caching import Cache
 import mysql.connector
 from mysql.connector import Error
 from flask_cors import CORS
 import os
 
 app = Flask(__name__)
-CORS(app, resources={r"/search*": {"origins": "*"}})  # Adjust as needed for production
+CORS(app, resources={r"/search*": {"origins": "*"}})
+
+# Cache configuration
+cache = Cache(config={'CACHE_TYPE': 'simple'})
+cache.init_app(app)
 
 # Database configuration using environment variables
 db_config = {
@@ -13,6 +18,8 @@ db_config = {
     'user': os.getenv('DB_USER'),
     'password': os.getenv('DB_PASSWORD'),
     'database': os.getenv('DB_NAME'),
+    'pool_name': 'mypool',
+    'pool_size': 5,
 }
 
 @app.route('/')
@@ -20,12 +27,12 @@ def index():
     return render_template('index.html')
 
 @app.route('/search', methods=['GET'])
+@cache.cached(timeout=60, query_string=True)
 def search_recipes():
     query_param = request.args.get('query')
     print(f"Search Query: {query_param}")
     result = []
 
-    connection = None
     try:
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor(dictionary=True)
@@ -58,6 +65,7 @@ def search_recipes():
     return jsonify(result)
 
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
+@cache.cached(timeout=60)
 def recipe_details(recipe_id):
     try:
         connection = mysql.connector.connect(**db_config)
