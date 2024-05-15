@@ -28,6 +28,7 @@ def search_recipes():
     connection = None
     try:
         connection = mysql.connector.connect(**db_config)
+        print(f"Connected to the database.")
         cursor = connection.cursor(dictionary=True)
         query = """
         SELECT MIN(recipes.RecipeID) as RecipeID, recipes.Title
@@ -47,6 +48,7 @@ def search_recipes():
         cursor.execute(query, (like_pattern, like_pattern, like_pattern, like_pattern))
         result = cursor.fetchall()
         cursor.close()
+        print(f"Query Result: {result}")
     except Error as e:
         print(f"Error while connecting to MySQL or executing query: {e}")
         result = []  # Return an empty list in case of error
