@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const handleSearch = debounce(async (event) => {
         const searchQuery = event.target.value.trim();
-        if (searchQuery.length > 3) {
+        if (searchQuery.length > 2) {
             const recipes = await fetchRecipes(searchQuery);
             renderRecipes(recipes);
         } else {
