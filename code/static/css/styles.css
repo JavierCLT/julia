@@ -39,11 +39,13 @@ h1, h2, h3 {
 }
 
 .header h1 {
+    position: absolute; /* Position the title absolutely */
+    left: 50%;
+    transform: translateX(-50%);
     color: var(--rich-black);
     font-size: 3em;
     margin: 20px 0;
-    flex-grow: 1; /* Allows the title to take up remaining space */
-    text-align: center; /* Centers the title text */
+    text-align: center;
 }
 
 #add-recipe-btn {
