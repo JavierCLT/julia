@@ -124,12 +124,15 @@ function fetchAndDisplayRecipeDetails(recipeId) {
 function toggleBlurAndOverlay(show) {
     const overlay = document.getElementById('darkOverlay');
     const backgroundContent = document.querySelector('.container');
+    const header = document.querySelector('.header'); // Ensure header is also blurred
     if (show) {
         overlay.style.display = 'block';
         backgroundContent.classList.add('blur-background');
+        header.classList.add('blur-background'); // Add blur to header
     } else {
         overlay.style.display = 'none';
         backgroundContent.classList.remove('blur-background');
+        header.classList.remove('blur-background'); // Remove blur from header
     }
 }
 
@@ -152,6 +155,11 @@ window.addEventListener('click', function(event) {
     if (!detailsContainer.contains(event.target) && detailsContainer.style.display === 'block') {
         detailsContainer.style.display = 'none';
         recipeTitle.textContent = '';
+        toggleBlurAndOverlay(false);
+    }
+    const addRecipeForm = document.getElementById('add-recipe-form-container');
+    if (!addRecipeForm.contains(event.target) && addRecipeForm.style.display === 'block') {
+        addRecipeForm.style.display = 'none';
         toggleBlurAndOverlay(false);
     }
 });
