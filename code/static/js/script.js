@@ -91,7 +91,8 @@ function fetchAndDisplayRecipeDetails(recipeId) {
 
             detailsContainer.style.display = 'block';
 
-            document.getElementById('delete-recipe-btn').onclick = function() {
+            const deleteButton = document.getElementById('delete-recipe-btn');
+            deleteButton.onclick = function() {
                 const password = prompt("Enter password to delete this recipe:");
                 if (password) {
                     fetch(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
