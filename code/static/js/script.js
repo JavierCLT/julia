@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const toggleBlurAndOverlay = (show) => {
-        console.log(`toggleBlurAndOverlay called with show = ${show}`);
         if (show) {
             darkOverlay.style.display = 'block';
             container.classList.add('blur-background');
@@ -118,13 +117,11 @@ document.addEventListener('DOMContentLoaded', () => {
     searchBox.addEventListener('input', handleSearch);
 
     document.getElementById('add-recipe-btn').addEventListener('click', () => {
-        console.log('Add Recipe button clicked');
         addRecipeFormContainer.style.display = 'block';
         toggleBlurAndOverlay(true);
     });
 
     document.getElementById('cancel-btn').addEventListener('click', () => {
-        console.log('Cancel button clicked');
         addRecipeFormContainer.style.display = 'none';
         toggleBlurAndOverlay(false);
     });
@@ -171,14 +168,11 @@ document.addEventListener('DOMContentLoaded', () => {
             recipeTitle.textContent = '';
             toggleBlurAndOverlay(false);
         }
-
+    });
+    window.addEventListener('click', (event) => {
         if (!addRecipeFormContainer.contains(event.target) && addRecipeFormContainer.style.display === 'block') {
             addRecipeFormContainer.style.display = 'none';
             toggleBlurAndOverlay(false);
         }
-    });
-
-    addRecipeFormContainer.addEventListener('click', (event) => {
-        event.stopPropagation();
     });
 });
