@@ -168,14 +168,5 @@ document.addEventListener('DOMContentLoaded', () => {
             recipeTitle.textContent = '';
             toggleBlurAndOverlay(false);
         }
-
-        if (!addRecipeFormContainer.contains(event.target) && addRecipeFormContainer.style.display === 'block') {
-            addRecipeFormContainer.style.display = 'none';
-            toggleBlurAndOverlay(false);
-        }
-    });
-
-    addRecipeFormContainer.addEventListener('click', (event) => {
-        event.stopPropagation();
     });
 });
