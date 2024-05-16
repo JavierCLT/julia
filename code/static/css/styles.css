@@ -55,7 +55,8 @@ h1, h2, h3 {
     border-radius: 5px;
     padding: 10px 20px;
     cursor: pointer;
-    margin-left: auto; /* Pushes the button to the right */
+    z-index: 999;
+    margin-left: auto;
 }
 
 #add-recipe-btn:hover {
@@ -140,21 +141,6 @@ h1, h2, h3 {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.delete-recipe-btn {
-    background-color: #ff4c4c;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    font-size: 1em;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-bottom: 20px;
-}
-
-.delete-recipe-btn:hover {
-    background-color: #ff0000;
-}
-
 h3 {
     margin: 10px 0;
     font-weight: bold;
@@ -194,7 +180,7 @@ li {
 
 .recipe-box:hover {
     transform: translateY(-5px);
-    background-color: var(--desert-sand);
+    background-color:var(--desert-sand);
 }
 
 .dark-overlay {
@@ -210,69 +196,6 @@ li {
 
 .blur-background > *:not(#recipe-details-container):not(#add-recipe-form-container) {
     filter: blur(5px);
-}
-
-.form-container {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-    max-height: 80vh;
-    overflow-y: auto;
-    width: 80%;
-}
-
-form {
-    display: flex;
-    flex-direction: column;
-}
-
-label {
-    margin: 10px 0 5px;
-}
-
-input[type="text"],
-input[type="password"],
-textarea {
-    padding: 10px;
-    font-size: 1em;
-    border: 1px solid #ccc;
-    border-radius: 20px;
-    margin-bottom: 10px;
-}
-
-button[type="submit"],
-button[type="button"] {
-    padding: 10px 20px;
-    font-size: 1em;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
-button[type="submit"] {
-    background-color: var(--desert-sand);
-    color: var(--rich-black);
-}
-
-button[type="button"] {
-    background-color: #ccc;
-    color: var(--rich-black);
-}
-
-button[type="submit"]:hover {
-    background-color: var(--cadet-gray);
-    color: var(--desert-sand);
-}
-
-button[type="button"]:hover {
-    background-color: var(--cadet-gray);
 }
 
 @media (max-width: 768px) {
