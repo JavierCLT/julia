@@ -169,4 +169,15 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleBlurAndOverlay(false);
         }
     });
+    window.addEventListener('click', (event) => {
+        if (!addRecipeFormContainer.contains(event.target) && addRecipeFormContainer.style.display === 'block') {
+            addRecipeFormContainer.style.display = 'none';
+            toggleBlurAndOverlay(false);
+        }
+    });
+
+    // Prevent click inside the form from closing it
+    addRecipeFormContainer.addEventListener('click', (event) => {
+        event.stopPropagation();
+    });
 });
