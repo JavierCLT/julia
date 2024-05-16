@@ -28,10 +28,10 @@ h1, h2, h3 {
 }
 
 .header {
+    position: relative;
     display: flex;
-    justify-content: space-between; /* Distributes space between children */
-    align-items: center; /* Centers items vertically */
-    padding: 0 20px; /* Adds some padding on left and right */
+    justify-content: center;
+    align-items: center;
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -39,7 +39,7 @@ h1, h2, h3 {
 }
 
 .header h1 {
-    position: absolute; /* Position the title absolutely */
+    position: absolute;
     left: 50%;
     transform: translateX(-50%);
     color: var(--rich-black);
