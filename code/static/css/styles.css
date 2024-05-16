@@ -1,3 +1,5 @@
+
+
 :root {
     --rich-black: #0D1F2D;
     --paynes-gray: #546A7B;
@@ -39,6 +41,9 @@ h1, h2, h3 {
 }
 
 .header h1 {
+    position: absolute; /* Position the title absolutely */
+    left: 50%;
+    transform: translateX(-50%);
     color: var(--rich-black);
     font-size: 3em;
     margin: 20px 0;
@@ -174,7 +179,7 @@ li {
 
 .card {
     background-color: var(--cadet-gray);
-    color: var (--desert-sand);
+    color: var(--desert-sand);
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     padding: 20px;
@@ -205,7 +210,11 @@ li {
     z-index: 999;
 }
 
-.blur-background > *:not(#recipe-details-container):not(#add-recipe-form-container):not(.dark-overlay) {
+.blur-background > *:not(#recipe-details-container) {
+    filter: blur(5px);
+}
+
+.blur-background .header {
     filter: blur(5px);
 }
 
