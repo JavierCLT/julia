@@ -45,18 +45,28 @@ def search_recipes():
         connection = connection_pool.get_connection()
         cursor = connection.cursor(dictionary=True)
         query = """
-        SELECT MIN(recipes.RecipeID) as RecipeID, recipes.Title
-        FROM recipes
-        LEFT JOIN recipecategory ON recipes.RecipeID = recipecategory.RecipeID
-        LEFT JOIN category ON recipecategory.CategoryID = category.CategoryID
-        LEFT JOIN recipetags ON recipes.RecipeID = recipetags.RecipeID
-        LEFT JOIN tags ON recipetags.TagID = tags.TagID
-        LEFT JOIN ingredients ON recipes.RecipeID = ingredients.RecipeID
-        WHERE recipes.Title LIKE %s 
-            OR ingredients.Name LIKE %s 
-            OR category.CategoryName LIKE %s 
-            OR tags.TagName LIKE %s
-        GROUP BY recipes.Title
+        SELECT 
+    MIN(recipes.RecipeID) as RecipeID, 
+    recipes.Title
+FROM 
+    recipes
+LEFT JOIN 
+    recipecategory ON recipes.RecipeID = recipecategory.RecipeID
+LEFT JOIN 
+    category ON recipecategory.CategoryID = category.CategoryID
+LEFT JOIN 
+    recipetags ON recipes.RecipeID = recipetags.RecipeID
+LEFT JOIN 
+    tags ON recipetags.TagID = tags.TagID
+LEFT JOIN 
+    ingredients ON recipes.RecipeID = ingredients.RecipeID
+WHERE 
+    recipes.Title LIKE %s 
+    OR ingredients.Name LIKE %s 
+    OR category.CategoryName LIKE %s 
+    OR tags.TagName LIKE %s
+GROUP BY 
+    recipes.Title
         """
         like_pattern = f"%{query_param}%"
         cursor.execute(query, (like_pattern, like_pattern, like_pattern, like_pattern))
