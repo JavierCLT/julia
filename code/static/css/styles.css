@@ -34,23 +34,21 @@ h1, h2, h3 {
     padding: 0 20px; /* Adds some padding on left and right */
     position: sticky;
     top: 0;
-    z-index: 998;
+    z-index: 1000;
     background-color: var(--misty-rose);
 }
 
 .header h1 {
-    position: absolute; /* Position the title absolutely */
-    left: 50%;
-    transform: translateX(-50%);
     color: var(--rich-black);
     font-size: 3em;
     margin: 20px 0;
-    text-align: center;
+    flex-grow: 1; /* Allows the title to take up remaining space */
+    text-align: center; /* Centers the title text */
 }
 
 #add-recipe-btn {
     background-color: var(--desert-sand);
-    color: var (--rich-black);
+    color: var(--rich-black);
     border: none;
     border-radius: 5px;
     padding: 10px 20px;
@@ -134,7 +132,7 @@ h1, h2, h3 {
 
 #recipe-title {
     background-color: var(--misty-rose);
-    color: var (--rich-black);
+    color: var(--rich-black);
     padding: 10px;
     border-radius: 5px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -176,7 +174,7 @@ li {
 }
 
 .card {
-    background-color: var (--cadet-gray);
+    background-color: var(--cadet-gray);
     color: var(--desert-sand);
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -208,7 +206,7 @@ li {
     z-index: 999;
 }
 
-.blur-background > *:not(#recipe-details-container):not(#add-recipe-form-container):not(.dark-overlay) {
+.blur-background > *:not(#recipe-details-container) {
     filter: blur(5px);
 }
 
@@ -242,7 +240,7 @@ textarea {
     padding: 10px;
     font-size: 1em;
     border: 1px solid #ccc;
-    border-radius: 20px;
+    border-radius: 5px;
     margin-bottom: 10px;
 }
 
@@ -258,58 +256,40 @@ button[type="button"] {
 
 button[type="submit"] {
     background-color: var(--desert-sand);
-    color: var (--rich-black);
+    color: var(--rich-black);
 }
 
 button[type="button"] {
     background-color: #ccc;
-    color: var (--rich-black);
+    color: var(--rich-black);
 }
 
 button[type="submit"]:hover {
-    background-color: var (--cadet-gray);
-    color: var (--desert-sand);
+    background-color: var(--cadet-gray);
+    color: var(--desert-sand);
 }
 
 button[type="button"]:hover {
-    background-color: var (--cadet-gray);
+    background-color: var(--cadet-gray);
 }
 
 @media (max-width: 768px) {
-    .header {
-        flex-direction: column; /* Stack elements vertically on smaller screens */
-    }
-    
-    .header h1 {
-        font-size: 2em; /* Adjust font size for smaller screens */
-        position: static; /* Remove absolute positioning */
-        transform: none; /* Remove transform */
-        margin: 10px 0; /* Adjust margin */
-    }
-
     .search-box {
         width: 90%;
     }
-
     .grid {
         grid-template-columns: repeat(2, 1fr);
     }
-
     .container, .card {
         width: 90%;
         padding: 10px;
     }
-
     h3 {
         font-size: 1em;
     }
 }
 
 @media (max-width: 480px) {
-    .header h1 {
-        font-size: 1.5em; /* Further adjust font size for very small screens */
-    }
-
     .grid {
         grid-template-columns: 1fr;
     }
