@@ -39,7 +39,6 @@ def index():
 @cache.cached(timeout=60, query_string=True)
 def search_recipes():
     query_param = request.args.get('query')
-    print(f"Search Query: {query_param}")
     result = []
 
     try:
@@ -63,7 +62,6 @@ def search_recipes():
         cursor.execute(query, (like_pattern, like_pattern, like_pattern, like_pattern))
         result = cursor.fetchall()
         cursor.close()
-        print(f"Query Result: {result}")
     except Error as e:
         print(f"Error while connecting to MySQL or executing query: {e}")
         result = []
@@ -76,11 +74,10 @@ def search_recipes():
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
 @cache.cached(timeout=60)
 def recipe_details(recipe_id):
+    details = {'ingredients': [], 'instructions': []}
     try:
         connection = connection_pool.get_connection()
         cursor = connection.cursor(dictionary=True)
-
-        print(f"Executing query with recipe_id: {recipe_id}")
 
         # Fetch ingredients
         cursor.execute("""
@@ -89,7 +86,7 @@ def recipe_details(recipe_id):
             WHERE RecipeID = %s
             ORDER BY IngredientID
         """, (recipe_id,))
-        ingredients = cursor.fetchall()
+        details['ingredients'] = cursor.fetchall()
 
         # Fetch instructions
         cursor.execute("""
@@ -98,13 +95,7 @@ def recipe_details(recipe_id):
             WHERE RecipeID = %s
             ORDER BY StepNumber
         """, (recipe_id,))
-        instructions = cursor.fetchall()
-
-        # Combine data into one response
-        details = {
-            'ingredients': ingredients,
-            'instructions': instructions
-        }
+        details['instructions'] = cursor.fetchall()
 
     except Error as e:
         print(f"Error while connecting to MySQL or executing query: {e}")
