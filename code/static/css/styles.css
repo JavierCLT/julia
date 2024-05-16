@@ -28,39 +28,35 @@ h1, h2, h3 {
 }
 
 .header {
-    position: relative;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     position: sticky;
     top: 0;
     z-index: 1000;
     background-color: var(--misty-rose);
+    padding: 10px 0;
 }
 
 .header h1 {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
     color: var(--rich-black);
     font-size: 3em;
-    margin: 20px 0;
-    text-align: center;
+    margin: 0;
 }
 
-#add-recipe-btn {
+.add-recipe-btn {
     background-color: var(--desert-sand);
     color: var(--rich-black);
     border: none;
-    border-radius: 5px;
     padding: 10px 20px;
+    font-size: 1em;
+    border-radius: 5px;
     cursor: pointer;
-    z-index: 999;
-    margin-left: auto;
+    transition: background-color 0.3s;
 }
 
-#add-recipe-btn:hover {
-    background-color: var(--paynes-gray);
+.add-recipe-btn:hover {
+    background-color: var(--cadet-gray);
 }
 
 .search-container {
@@ -75,7 +71,6 @@ h1, h2, h3 {
     max-width: 500px;
     padding: 10px;
     font-size: 1em;
-    font-family: var(--font-family-body);
     border: 1px solid #ccc;
     color: var(--rich-black);
     border-radius: 20px;
@@ -101,6 +96,12 @@ h1, h2, h3 {
     background-color: #fff;
     cursor: pointer;
     margin-bottom: 20px;
+    transition: transform 0.3s ease;
+}
+
+.recipe-box:hover {
+    transform: translateY(-5px);
+    background-color: var(--desert-sand);
 }
 
 #recipe-details-container {
@@ -109,9 +110,7 @@ h1, h2, h3 {
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: white;
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-bottom: 20px;
+    padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     z-index: 1000;
@@ -139,6 +138,22 @@ h1, h2, h3 {
     padding: 10px;
     border-radius: 5px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.delete-recipe-btn {
+    background-color: var(--desert-sand);
+    color: var(--rich-black);
+    border: none;
+    padding: 10px 20px;
+    font-size: 1em;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+}
+
+.delete-recipe-btn:hover {
+    background-color: var(--cadet-gray);
 }
 
 h3 {
@@ -170,19 +185,6 @@ li {
     margin-bottom: 20px;
 }
 
-.recipe-box {
-    color: var(--desert-sand);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    border-radius: 8px;
-    border: none;
-    transition: transform 0.3s ease;
-}
-
-.recipe-box:hover {
-    transform: translateY(-5px);
-    background-color:var(--desert-sand);
-}
-
 .dark-overlay {
     display: none;
     position: fixed;
@@ -194,10 +196,72 @@ li {
     z-index: 999;
 }
 
-.blur-background > *:not(#recipe-details-container):not(#add-recipe-form-container) {
+.blur-background > *:not(#recipe-details-container):not(.header) {
     filter: blur(5px);
 }
 
+.form-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-height: 80vh;
+    overflow-y: auto;
+    width: 80%;
+}
+
+form label {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: bold;
+    color: var(--rich-black);
+}
+
+form input[type="text"],
+form input[type="password"],
+form textarea {
+    width: calc(100% - 20px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-family: var(--font-family-body);
+    font-size: 1em;
+    margin-bottom: 10px;
+}
+
+form button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    margin: 10px 5px 0 0;
+}
+
+form button[type="submit"] {
+    background-color: var(--desert-sand);
+    color: var(--rich-black);
+}
+
+form button[type="submit"]:hover {
+    background-color: var(--cadet-gray);
+}
+
+form button[type="button"] {
+    background-color: #ccc;
+    color: var(--rich-black);
+}
+
+form button[type="button"]:hover {
+    background-color: #999;
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
     .search-box {
         width: 90%;
