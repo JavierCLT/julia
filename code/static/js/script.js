@@ -169,4 +169,17 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleBlurAndOverlay(false);
         }
     });
+
+    // Add this event listener to close the add recipe form when clicking outside
+    window.addEventListener('click', (event) => {
+        if (!addRecipeFormContainer.contains(event.target) && addRecipeFormContainer.style.display === 'block') {
+            addRecipeFormContainer.style.display = 'none';
+            toggleBlurAndOverlay(false);
+        }
+    });
+
+    // Prevent click inside the form from closing it
+    addRecipeFormContainer.addEventListener('click', (event) => {
+        event.stopPropagation();
+    });
 });
