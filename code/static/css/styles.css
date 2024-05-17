@@ -1,3 +1,5 @@
+
+
 :root {
     --rich-black: #0D1F2D;
     --paynes-gray: #546A7B;
@@ -28,13 +30,13 @@ h1, h2, h3 {
 }
 
 .header {
-    position: relative; /* Ensure the header is positioned relative to its container */
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: space-between; /* Distributes space between children */
+    align-items: center; /* Centers items vertically */
+    padding: 0 20px; /* Adds some padding on left and right */
     position: sticky;
     top: 0;
-    z-index: 998;
+    z-index: 1000;
     background-color: var(--misty-rose);
 }
 
@@ -209,6 +211,10 @@ li {
 }
 
 .blur-background > *:not(#recipe-details-container) {
+    filter: blur(5px);
+}
+
+.blur-background .header {
     filter: blur(5px);
 }
 
