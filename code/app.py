@@ -84,18 +84,19 @@ GROUP BY
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
 @cache.cached(timeout=60)
 def recipe_details(recipe_id):
+    details = {'ingredients': [], 'instructions': []}
     try:
         connection = connection_pool.get_connection()
         cursor = connection.cursor(dictionary=True)
 
         # Fetch ingredients
         cursor.execute("""
-            SELECT Description
+            SELECT Name, Unit, Quantity
             FROM ingredients
             WHERE RecipeID = %s
             ORDER BY IngredientID
         """, (recipe_id,))
-        ingredients = cursor.fetchall()
+        details['ingredients'] = cursor.fetchall()
 
         # Fetch instructions
         cursor.execute("""
@@ -104,13 +105,7 @@ def recipe_details(recipe_id):
             WHERE RecipeID = %s
             ORDER BY StepNumber
         """, (recipe_id,))
-        instructions = cursor.fetchall()
-
-        # Combine data into one response
-        details = {
-            'ingredients': ingredients,
-            'instructions': instructions
-        }
+        details['instructions'] = cursor.fetchall()
 
     except Error as e:
         print(f"Error while connecting to MySQL or executing query: {e}")
@@ -142,10 +137,11 @@ def add_recipe():
         recipe_id = cursor.lastrowid
 
         for ingredient in ingredients:
+            name, unit, quantity = ingredient.split(',')
             cursor.execute("""
-                INSERT INTO ingredients (RecipeID, Description)
-                VALUES (%s, %s)
-            """, (recipe_id, ingredient.strip()))
+                INSERT INTO ingredients (RecipeID, Name, Unit, Quantity)
+                VALUES (%s, %s, %s, %s)
+            """, (recipe_id, name.strip(), unit.strip(), quantity.strip()))
 
         for step_number, instruction in enumerate(instructions, start=1):
             cursor.execute("""
