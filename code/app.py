@@ -46,27 +46,27 @@ def search_recipes():
         cursor = connection.cursor(dictionary=True)
         query = """
         SELECT 
-    MIN(recipes.RecipeID) as RecipeID, 
-    recipes.Title
-FROM 
-    recipes
-LEFT JOIN 
-    recipecategory ON recipes.RecipeID = recipecategory.RecipeID
-LEFT JOIN 
-    category ON recipecategory.CategoryID = category.CategoryID
-LEFT JOIN 
-    recipetags ON recipes.RecipeID = recipetags.RecipeID
-LEFT JOIN 
-    tags ON recipetags.TagID = tags.TagID
-LEFT JOIN 
-    ingredients ON recipes.RecipeID = ingredients.RecipeID
-WHERE 
-    recipes.Title LIKE %s 
-    OR ingredients.Name LIKE %s 
-    OR category.CategoryName LIKE %s 
-    OR tags.TagName LIKE %s
-GROUP BY 
-    recipes.Title
+            MIN(recipes.RecipeID) as RecipeID, 
+            recipes.Title
+        FROM 
+            recipes
+        LEFT JOIN 
+            recipecategory ON recipes.RecipeID = recipecategory.RecipeID
+        LEFT JOIN 
+            category ON recipecategory.CategoryID = category.CategoryID
+        LEFT JOIN 
+            recipetags ON recipes.RecipeID = recipetags.RecipeID
+        LEFT JOIN 
+            tags ON recipetags.TagID = tags.TagID
+        LEFT JOIN 
+            ingredients ON recipes.RecipeID = ingredients.RecipeID
+        WHERE 
+            recipes.Title LIKE %s 
+            OR ingredients.Description LIKE %s 
+            OR category.CategoryName LIKE %s 
+            OR tags.TagName LIKE %s
+        GROUP BY 
+            recipes.Title
         """
         like_pattern = f"%{query_param}%"
         cursor.execute(query, (like_pattern, like_pattern, like_pattern, like_pattern))
@@ -91,7 +91,7 @@ def recipe_details(recipe_id):
 
         # Fetch ingredients
         cursor.execute("""
-            SELECT Name, Unit, Quantity
+            SELECT Description
             FROM ingredients
             WHERE RecipeID = %s
             ORDER BY IngredientID
@@ -137,11 +137,10 @@ def add_recipe():
         recipe_id = cursor.lastrowid
 
         for ingredient in ingredients:
-            name, unit, quantity = ingredient.split(',')
             cursor.execute("""
-                INSERT INTO ingredients (RecipeID, Name, Unit, Quantity)
-                VALUES (%s, %s, %s, %s)
-            """, (recipe_id, name.strip(), unit.strip(), quantity.strip()))
+                INSERT INTO ingredients (RecipeID, Description)
+                VALUES (%s, %s)
+            """, (recipe_id, ingredient.strip()))
 
         for step_number, instruction in enumerate(instructions, start=1):
             cursor.execute("""
