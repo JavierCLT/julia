@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const addRecipeForm = document.getElementById('add-recipe-form');
     const recipeDetailsContainer = document.getElementById('recipe-details-container');
     const recipeTitle = document.getElementById('recipe-title');
-    const deleteRecipeBtn = document.getElementById('delete-recipe-btn');
     const darkOverlay = document.getElementById('darkOverlay');
     const container = document.querySelector('.container');
     let isEdit = false;
@@ -50,7 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
             recipeElement.setAttribute('data-recipe-id', recipe.RecipeID);
             recipeElement.innerHTML = `<div class="recipe-content">
                                           <h3 class="recipe-title">${recipe.Title}</h3>
-                                          <button class="edit-recipe-btn">Edit</button>
                                        </div>`;
             grid.appendChild(recipeElement);
         });
@@ -79,18 +77,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let instructionsHtml = '<h3>Instructions:</h3><ul>';
             data.instructions.forEach(instruction => {
-                instructionsHtml += `<li>${instruction.Description}</li>`;
+                instructionsHtml += `<li>Step ${instruction.StepNumber}: ${instruction.Description}</li>`;
             });
             instructionsHtml += '</ul>';
+
+            const buttonsHtml = `
+                <button id="edit-recipe-btn" class="edit-recipe-btn">Edit Recipe</button>
+                <button id="delete-recipe-btn" class="delete-recipe-btn">Delete Recipe</button>
+            `;
 
             while (recipeTitle.nextSibling) {
                 recipeDetailsContainer.removeChild(recipeTitle.nextSibling);
             }
 
-            recipeTitle.insertAdjacentHTML('afterend', ingredientsHtml + instructionsHtml);
+            recipeTitle.insertAdjacentHTML('afterend', buttonsHtml + ingredientsHtml + instructionsHtml);
             recipeDetailsContainer.style.display = 'block';
 
-            deleteRecipeBtn.onclick = async () => {
+            document.getElementById('delete-recipe-btn').onclick = async () => {
                 const password = prompt("Enter password to delete this recipe:");
                 if (password) {
                     try {
@@ -112,8 +115,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             };
+
+            document.getElementById('edit-recipe-btn').onclick = () => {
+                isEdit = true;
+                editRecipeId = recipeId;
+                populateFormWithRecipeDetails(recipeId);
+                addRecipeFormContainer.style.display = 'block';
+                toggleBlurAndOverlay(true);
+            };
+
         } catch (error) {
             console.error('Error fetching recipe details:', error);
+        }
+    };
+
+    const populateFormWithRecipeDetails = async (recipeId) => {
+        try {
+            const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
+            const data = await response.json();
+            document.getElementById('recipe-title-input').value = recipeTitle.textContent;
+            document.getElementById('recipe-ingredients-input').value = data.ingredients.map(ing => ing.Description).join('\n');
+            document.getElementById('recipe-instructions-input').value = data.instructions.map(ins => ins.Description).join('\n');
+        } catch (error) {
+            console.error('Error populating form with recipe details:', error);
         }
     };
 
@@ -171,9 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetElement = event.target.closest('.recipe-box');
         if (targetElement) {
             const recipeId = targetElement.getAttribute('data-recipe-id');
-            if (event.target.classList.contains('edit-recipe-btn')) {
-                populateFormWithRecipeDetails(recipeId);
-            } else {
+            if (recipeId) {
                 const recipeTitleText = targetElement.querySelector('.recipe-title').textContent;
                 recipeTitle.textContent = recipeTitleText;
                 fetchAndDisplayRecipeDetails(recipeId);
