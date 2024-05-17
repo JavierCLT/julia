@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const handleSearch = debounce(async (event) => {
         const searchQuery = event.target.value.trim();
-        if (searchQuery.length > 3) {
+        if (searchQuery.length > 2) {
             const recipes = await fetchRecipes(searchQuery);
             renderRecipes(recipes);
         } else {
@@ -159,21 +159,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetchAndDisplayRecipeDetails(recipeId);
                 toggleBlurAndOverlay(true);
             }
-        } else if (!addRecipeFormContainer.contains(event.target) && addRecipeFormContainer.style.display === 'block') {
-            addRecipeFormContainer.style.display = 'none';
-            toggleBlurAndOverlay(false);
-        }
-    });
-
-    darkOverlay.addEventListener('click', () => {
-        if (addRecipeFormContainer.style.display === 'block') {
-            addRecipeFormContainer.style.display = 'none';
-            toggleBlurAndOverlay(false);
-        }
-        if (recipeDetailsContainer.style.display === 'block') {
-            recipeDetailsContainer.style.display = 'none';
-            recipeTitle.textContent = '';
-            toggleBlurAndOverlay(false);
         }
     });
 
