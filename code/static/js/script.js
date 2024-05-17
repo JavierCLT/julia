@@ -114,6 +114,7 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
     }
 };
 
+
     searchBox.addEventListener('input', handleSearch);
 
     document.getElementById('add-recipe-btn').addEventListener('click', () => {
