@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteRecipeBtn = document.getElementById('delete-recipe-btn');
     const darkOverlay = document.getElementById('darkOverlay');
     const container = document.querySelector('.container');
+    let isEdit = false;
+    let editRecipeId = null;
 
     const debounce = (func, delay) => {
         let timer;
@@ -48,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
             recipeElement.setAttribute('data-recipe-id', recipe.RecipeID);
             recipeElement.innerHTML = `<div class="recipe-content">
                                           <h3 class="recipe-title">${recipe.Title}</h3>
+                                          <button class="edit-recipe-btn">Edit</button>
                                        </div>`;
             grid.appendChild(recipeElement);
         });
@@ -56,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const handleSearch = debounce(async (event) => {
         const searchQuery = event.target.value.trim();
-        if (searchQuery.length > 2) {
+        if (searchQuery.length > 3) {
             const recipes = await fetchRecipes(searchQuery);
             renderRecipes(recipes);
         } else {
@@ -70,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
             data.ingredients.forEach(ingredient => {
-                ingredientsHtml += `<li>${ingredient.Quantity} ${ingredient.Unit} of ${ingredient.Name}</li>`;
+                ingredientsHtml += `<li>${ingredient.Description}</li>`;
             });
             ingredientsHtml += '</ul>';
 
@@ -119,6 +122,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('add-recipe-btn').addEventListener('click', () => {
         addRecipeFormContainer.style.display = 'block';
         toggleBlurAndOverlay(true);
+        isEdit = false;
+        editRecipeId = null;
     });
 
     document.getElementById('cancel-btn').addEventListener('click', () => {
@@ -129,15 +134,28 @@ document.addEventListener('DOMContentLoaded', () => {
     addRecipeForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const formData = new FormData(addRecipeForm);
+        const formDataJson = JSON.stringify(Object.fromEntries(formData));
+
         try {
-            const response = await fetch('/add_recipe', {
-                method: 'POST',
-                body: JSON.stringify(Object.fromEntries(formData)),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            const data = await response.json();
+            let response, data;
+            if (isEdit && editRecipeId) {
+                response = await fetch(`/update_recipe/${encodeURIComponent(editRecipeId)}`, {
+                    method: 'POST',
+                    body: formDataJson,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+            } else {
+                response = await fetch('/add_recipe', {
+                    method: 'POST',
+                    body: formDataJson,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+            }
+            data = await response.json();
             alert(data.message);
             if (data.success) {
                 addRecipeForm.reset();
@@ -145,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 toggleBlurAndOverlay(false);
             }
         } catch (error) {
-            console.error('Error adding recipe:', error);
+            console.error('Error adding/updating recipe:', error);
         }
     });
 
@@ -153,12 +171,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetElement = event.target.closest('.recipe-box');
         if (targetElement) {
             const recipeId = targetElement.getAttribute('data-recipe-id');
-            if (recipeId) {
+            if (event.target.classList.contains('edit-recipe-btn')) {
+                populateFormWithRecipeDetails(recipeId);
+            } else {
                 const recipeTitleText = targetElement.querySelector('.recipe-title').textContent;
                 recipeTitle.textContent = recipeTitleText;
                 fetchAndDisplayRecipeDetails(recipeId);
                 toggleBlurAndOverlay(true);
             }
+        } else if (!addRecipeFormContainer.contains(event.target) && addRecipeFormContainer.style.display === 'block') {
+            addRecipeFormContainer.style.display = 'none';
+            toggleBlurAndOverlay(false);
+        }
+    });
+
+    darkOverlay.addEventListener('click', () => {
+        if (addRecipeFormContainer.style.display === 'block') {
+            addRecipeFormContainer.style.display = 'none';
+            toggleBlurAndOverlay(false);
+        }
+        if (recipeDetailsContainer.style.display === 'block') {
+            recipeDetailsContainer.style.display = 'none';
+            recipeTitle.textContent = '';
+            toggleBlurAndOverlay(false);
         }
     });
 
