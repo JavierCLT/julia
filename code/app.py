@@ -137,11 +137,10 @@ def add_recipe():
         recipe_id = cursor.lastrowid
 
         for ingredient in ingredients:
-            name, unit, quantity = ingredient.split(',')
             cursor.execute("""
-                INSERT INTO ingredients (RecipeID, Name, Unit, Quantity)
-                VALUES (%s, %s, %s, %s)
-            """, (recipe_id, name.strip(), unit.strip(), quantity.strip()))
+                INSERT INTO ingredients (RecipeID, Description)
+                VALUES (%s, %s)
+            """, (recipe_id, ingredient.strip()))
 
         for step_number, instruction in enumerate(instructions, start=1):
             cursor.execute("""
