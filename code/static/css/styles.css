@@ -29,19 +29,24 @@ h1, h2, h3 {
 }
 
 .header {
+    display: flex;
+    justify-content: space-between; /* Distributes space between children */
+    align-items: center; /* Centers items vertically */
+    padding: 0 20px; /* Adds some padding on left and right */
     position: sticky;
     top: 0;
     z-index: 1000;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: var(--misty-rose);
+    background-color: var(--misty-rose);
 }
 
 .header h1 {
+    position: absolute; /* Position the title absolutely */
+    left: 50%;
+    transform: translateX(-50%);
     color: var(--rich-black);
     font-size: 3em;
     margin: 20px 0;
+    text-align: center;
 }
 
 .add-recipe-btn {
