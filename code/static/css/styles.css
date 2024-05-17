@@ -32,10 +32,10 @@ h1, h2, h3 {
     display: flex;
     justify-content: space-between; /* Distributes space between children */
     align-items: center; /* Centers items vertically */
-    padding: 0 20px; /* Adds some padding on left and right */
+    padding: 20px; /* Adds some padding on left and right */
     position: sticky;
     top: 0;
-    z-index: 1000;
+    z-index: 998;
     background-color: var(--misty-rose);
 }
 
