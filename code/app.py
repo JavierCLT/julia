@@ -84,19 +84,18 @@ GROUP BY
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
 @cache.cached(timeout=60)
 def recipe_details(recipe_id):
-    details = {'ingredients': [], 'instructions': []}
     try:
         connection = connection_pool.get_connection()
         cursor = connection.cursor(dictionary=True)
 
         # Fetch ingredients
         cursor.execute("""
-            SELECT Name, Unit, Quantity
+            SELECT Description
             FROM ingredients
             WHERE RecipeID = %s
             ORDER BY IngredientID
         """, (recipe_id,))
-        details['ingredients'] = cursor.fetchall()
+        ingredients = cursor.fetchall()
 
         # Fetch instructions
         cursor.execute("""
@@ -105,7 +104,13 @@ def recipe_details(recipe_id):
             WHERE RecipeID = %s
             ORDER BY StepNumber
         """, (recipe_id,))
-        details['instructions'] = cursor.fetchall()
+        instructions = cursor.fetchall()
+
+        # Combine data into one response
+        details = {
+            'ingredients': ingredients,
+            'instructions': instructions
+        }
 
     except Error as e:
         print(f"Error while connecting to MySQL or executing query: {e}")
