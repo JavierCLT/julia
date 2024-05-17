@@ -165,6 +165,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    darkOverlay.addEventListener('click', () => {
+        if (addRecipeFormContainer.style.display === 'block') {
+            addRecipeFormContainer.style.display = 'none';
+            toggleBlurAndOverlay(false);
+        }
+        if (recipeDetailsContainer.style.display === 'block') {
+            recipeDetailsContainer.style.display = 'none';
+            recipeTitle.textContent = '';
+            toggleBlurAndOverlay(false);
+        }
+    });
+
     window.addEventListener('click', (event) => {
         if (!recipeDetailsContainer.contains(event.target) && recipeDetailsContainer.style.display === 'block') {
             recipeDetailsContainer.style.display = 'none';
