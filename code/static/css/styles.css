@@ -1,4 +1,3 @@
-
 :root {
     --rich-black: #0D1F2D;
     --paynes-gray: #546A7B;
@@ -59,9 +58,8 @@ h1, h2, h3 {
     margin-left: auto; /* Pushes the button to the right */
 }
 
-.add-recipe-btn:hover {
-    background-color: var(--cadet-gray);
-    color: var(--desert-sand);
+#add-recipe-btn:hover {
+    background-color: var(--paynes-gray);
 }
 
 .search-container {
@@ -210,7 +208,7 @@ li {
     z-index: 999;
 }
 
-.blur-background > *:not(#recipe-details-container) {
+.blur-background > *:not(#recipe-details-container):not(#add-recipe-form-container):not(.dark-overlay) {
     filter: blur(5px);
 }
 
@@ -278,22 +276,45 @@ button[type="button"]:hover {
 }
 
 @media (max-width: 768px) {
+    .header {
+        flex-direction: column; /* Stack elements vertically on smaller screens */
+        align-items: center; /* Center items */
+    }
+    
+    .header h1 {
+        font-size: 2em; /* Adjust font size for smaller screens */
+        position: static; /* Remove absolute positioning */
+        transform: none; /* Remove transform */
+        margin: 10px 0; /* Adjust margin */
+    }
+
+    #add-recipe-btn {
+        margin: 10px 0; /* Adjust margin for the button */
+    }
+
     .search-box {
         width: 90%;
     }
+
     .grid {
         grid-template-columns: repeat(2, 1fr);
     }
+
     .container, .card {
         width: 90%;
         padding: 10px;
     }
+
     h3 {
         font-size: 1em;
     }
 }
 
 @media (max-width: 480px) {
+    .header h1 {
+        font-size: 1.5em; /* Further adjust font size for very small screens */
+    }
+
     .grid {
         grid-template-columns: 1fr;
     }
