@@ -279,6 +279,7 @@ button[type="button"]:hover {
     .header {
         flex-direction: column; /* Stack elements vertically on smaller screens */
         align-items: center; /* Center items */
+        padding: 0px;
     }
     
     .header h1 {
@@ -290,6 +291,7 @@ button[type="button"]:hover {
 
     #add-recipe-btn {
         margin: 10px 0; /* Adjust margin for the button */
+        font-size: 1.2em;
     }
 
     .search-box {
@@ -312,7 +314,7 @@ button[type="button"]:hover {
 
 @media (max-width: 480px) {
     .header h1 {
-        font-size: 1.5em; /* Further adjust font size for very small screens */
+        font-size: 3em; /* Further adjust font size for very small screens */
     }
 
     .grid {
