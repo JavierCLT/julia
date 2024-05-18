@@ -1,223 +1,234 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const searchBox = document.getElementById('search-box');
-    const resultsContainer = document.getElementById('results');
-    const addRecipeFormContainer = document.getElementById('add-recipe-form-container');
-    const addRecipeForm = document.getElementById('add-recipe-form');
-    const recipeDetailsContainer = document.getElementById('recipe-details-container');
-    const recipeTitle = document.getElementById('recipe-title');
-    const darkOverlay = document.getElementById('darkOverlay');
-    const container = document.querySelector('.container');
-    let isEdit = false;
-    let editRecipeId = null;
+from flask import Flask, request, jsonify, render_template
+from flask_caching import Cache
+import mysql.connector
+from mysql.connector import Error, pooling
+from flask_cors import CORS
+import os
 
-    const debounce = (func, delay) => {
-        let timer;
-        return (...args) => {
-            clearTimeout(timer);
-            timer = setTimeout(() => func.apply(this, args), delay);
-        };
-    };
+app = Flask(__name__)
+CORS(app, resources={r"/search*": {"origins": "*"}})
 
-    const toggleBlurAndOverlay = (show) => {
-        if (show) {
-            darkOverlay.style.display = 'block';
-            container.classList.add('blur-background');
-        } else {
-            darkOverlay.style.display = 'none';
-            container.classList.remove('blur-background');
-        }
-    };
+# Cache configuration
+cache = Cache(config={'CACHE_TYPE': 'simple'})
+cache.init_app(app)
 
-    const fetchRecipes = async (query) => {
-        try {
-            const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
-            const data = await response.json();
-            return Array.isArray(data) ? data : [];
-        } catch (error) {
-            console.error('Error fetching recipes:', error);
-            return [];
-        }
-    };
+# Database configuration using environment variables
+db_config = {
+    'host': os.getenv('DB_HOST'),
+    'user': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASSWORD'),
+    'database': os.getenv('DB_NAME'),
+    'pool_name': 'mypool',
+    'pool_size': 5,
+}
 
-    const renderRecipes = (recipes) => {
-        resultsContainer.innerHTML = '';
-        const grid = document.createElement('div');
-        grid.className = 'grid';
-        recipes.forEach(recipe => {
-            const recipeElement = document.createElement('div');
-            recipeElement.className = 'recipe-box';
-            recipeElement.setAttribute('data-recipe-id', recipe.RecipeID);
-            recipeElement.innerHTML = `<div class="recipe-content">
-                                          <h3 class="recipe-title">${recipe.Title}</h3>
-                                       </div>`;
-            grid.appendChild(recipeElement);
-        });
-        resultsContainer.appendChild(grid);
-    };
+# Create a connection pool
+connection_pool = mysql.connector.pooling.MySQLConnectionPool(pool_name=db_config['pool_name'],
+                                                              pool_size=db_config['pool_size'],
+                                                              pool_reset_session=True,
+                                                              host=db_config['host'],
+                                                              database=db_config['database'],
+                                                              user=db_config['user'],
+                                                              password=db_config['password'])
 
-    const handleSearch = debounce(async (event) => {
-        const searchQuery = event.target.value.trim();
-        if (searchQuery.length > 2) {
-            const recipes = await fetchRecipes(searchQuery);
-            renderRecipes(recipes);
-        } else {
-            resultsContainer.innerHTML = '';
-        }
-    }, 300);
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-    const fetchAndDisplayRecipeDetails = async (recipeId) => {
-        try {
-            const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
-            const data = await response.json();
-            let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
-            data.ingredients.forEach(ingredient => {
-                ingredientsHtml += `<li>${ingredient.Description}</li>`;
-            });
-            ingredientsHtml += '</ul>';
+@app.route('/search', methods=['GET'])
+@cache.cached(timeout=60, query_string=True)
+def search_recipes():
+    query_param = request.args.get('query')
+    result = []
 
-            let instructionsHtml = '<h3>Instructions:</h3><ul>';
-            data.instructions.forEach((instruction, index) => {
-                instructionsHtml += `<li>Step ${index + 1}: ${instruction.Description}</li>`;
-            });
-            instructionsHtml += '</ul>';
+    try:
+        connection = connection_pool.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        query = """
+        SELECT 
+            MIN(recipes.RecipeID) as RecipeID, 
+            recipes.Title
+        FROM 
+            recipes
+        LEFT JOIN 
+            recipecategory ON recipes.RecipeID = recipecategory.RecipeID
+        LEFT JOIN 
+            category ON recipecategory.CategoryID = category.CategoryID
+        LEFT JOIN 
+            recipetags ON recipes.RecipeID = recipetags.RecipeID
+        LEFT JOIN 
+            tags ON recipetags.TagID = tags.TagID
+        LEFT JOIN 
+            ingredients ON recipes.RecipeID = ingredients.RecipeID
+        WHERE 
+            recipes.Title LIKE %s 
+            OR ingredients.Description LIKE %s 
+            OR category.CategoryName LIKE %s 
+            OR tags.TagName LIKE %s
+        GROUP BY 
+            recipes.Title
+        """
+        like_pattern = f"%{query_param}%"
+        cursor.execute(query, (like_pattern, like_pattern, like_pattern, like_pattern))
+        result = cursor.fetchall()
+        cursor.close()
+    except Error as e:
+        print(f"Error while connecting to MySQL or executing query: {e}")
+        result = []
+    finally:
+        if connection.is_connected():
+            connection.close()
 
-            while (recipeTitle.nextSibling) {
-                recipeDetailsContainer.removeChild(recipeTitle.nextSibling);
-            }
+    return jsonify(result)
 
-            recipeTitle.insertAdjacentHTML('afterend', ingredientsHtml + instructionsHtml);
+@app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
+@cache.cached(timeout=60)
+def recipe_details(recipe_id):
+    details = {'ingredients': [], 'instructions': []}
+    try:
+        connection = connection_pool.get_connection()
+        cursor = connection.cursor(dictionary=True)
 
-            const recipeButtons = document.createElement('div');
-            recipeButtons.id = 'recipe-buttons';
-            recipeButtons.innerHTML = `
-                <button class="edit-recipe-btn">Edit</button>
-                <button class="delete-recipe-btn">Delete</button>
-            `;
-            recipeDetailsContainer.appendChild(recipeButtons);
+        # Fetch ingredients
+        cursor.execute("""
+            SELECT Description
+            FROM ingredients
+            WHERE RecipeID = %s
+            ORDER BY IngredientID
+        """, (recipe_id,))
+        details['ingredients'] = cursor.fetchall()
 
-            recipeDetailsContainer.style.display = 'block';
+        # Fetch instructions
+        cursor.execute("""
+            SELECT StepNumber, Description
+            FROM instructions
+            WHERE RecipeID = %s
+            ORDER BY StepNumber
+        """, (recipe_id,))
+        details['instructions'] = cursor.fetchall()
 
-            recipeButtons.querySelector('.delete-recipe-btn').onclick = async () => {
-                const password = prompt("Enter password to delete this recipe:");
-                if (password) {
-                    try {
-                        const response = await fetch(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
-                            method: 'POST',
-                            body: JSON.stringify({ password: password }),
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        });
-                        const data = await response.json();
-                        alert(data.message);
-                        if (data.success) {
-                            recipeDetailsContainer.style.display = 'none';
-                            toggleBlurAndOverlay(false);
-                        }
-                    } catch (error) {
-                        console.error('Error deleting recipe:', error);
-                    }
-                }
-            };
+    except Error as e:
+        print(f"Error while connecting to MySQL or executing query: {e}")
+        details = {'error': 'An error occurred while fetching recipe details.'}
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
 
-            recipeButtons.querySelector('.edit-recipe-btn').onclick = async () => {
-                isEdit = true;
-                editRecipeId = recipeId;
-                addRecipeFormContainer.style.display = 'block';
-                toggleBlurAndOverlay(true);
+    return jsonify(details)
 
-                document.getElementById('recipe-title-input').value = data.title;
-                document.getElementById('recipe-ingredients-input').value = data.ingredients.map(ing => ing.Description).join('\n');
-                document.getElementById('recipe-instructions-input').value = data.instructions.map(ins => ins.Description).join('\n');
-            };
-        } catch (error) {
-            console.error('Error fetching recipe details:', error);
-        }
-    };
+@app.route('/add_recipe', methods=['POST'])
+def add_recipe():
+    data = request.json
+    title = data.get('title')
+    ingredients = data.get('ingredients').split('\n')
+    instructions = data.get('instructions').split('\n')
+    password = data.get('password')
 
-    searchBox.addEventListener('input', handleSearch);
+    if password != os.getenv('SECRET_PASSWORD'):
+        return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
 
-    document.getElementById('add-recipe-btn').addEventListener('click', () => {
-        addRecipeFormContainer.style.display = 'block';
-        toggleBlurAndOverlay(true);
-        isEdit = false;
-        editRecipeId = null;
-    });
+    connection = None
+    try:
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
 
-    document.getElementById('cancel-btn').addEventListener('click', () => {
-        addRecipeFormContainer.style.display = 'none';
-        toggleBlurAndOverlay(false);
-    });
+        cursor.execute("INSERT INTO recipes (Title) VALUES (%s)", (title,))
+        recipe_id = cursor.lastrowid
 
-    addRecipeForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const formData = new FormData(addRecipeForm);
-        const formDataJson = JSON.stringify(Object.fromEntries(formData));
+        for ingredient in ingredients:
+            cursor.execute("""
+                INSERT INTO ingredients (RecipeID, Description)
+                VALUES (%s, %s)
+            """, (recipe_id, ingredient.strip()))
 
-        try {
-            let response, data;
-            if (isEdit && editRecipeId) {
-                response = await fetch(`/update_recipe/${encodeURIComponent(editRecipeId)}`, {
-                    method: 'POST',
-                    body: formDataJson,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-            } else {
-                response = await fetch('/add_recipe', {
-                    method: 'POST',
-                    body: formDataJson,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-            }
-            data = await response.json();
-            alert(data.message);
-            if (data.success) {
-                addRecipeForm.reset();
-                addRecipeFormContainer.style.display = 'none';
-                toggleBlurAndOverlay(false);
-            }
-        } catch (error) {
-            console.error('Error adding/updating recipe:', error);
-        }
-    });
+        for step_number, instruction in enumerate(instructions, start=1):
+            cursor.execute("""
+                INSERT INTO instructions (RecipeID, StepNumber, Description)
+                VALUES (%s, %s, %s)
+            """, (recipe_id, step_number, instruction.strip()))
 
-    document.addEventListener('click', (event) => {
-        const targetElement = event.target.closest('.recipe-box');
-        if (targetElement) {
-            const recipeId = targetElement.getAttribute('data-recipe-id');
-            if (recipeId) {
-                const recipeTitleText = targetElement.querySelector('.recipe-title').textContent;
-                recipeTitle.textContent = recipeTitleText;
-                fetchAndDisplayRecipeDetails(recipeId);
-                toggleBlurAndOverlay(true);
-            }
-        } else if (!addRecipeFormContainer.contains(event.target) && addRecipeFormContainer.style.display === 'block') {
-            addRecipeFormContainer.style.display = 'none';
-            toggleBlurAndOverlay(false);
-        }
-    });
+        connection.commit()
+        cursor.close()
+    except Error as e:
+        print(f"Error while adding recipe: {e}")
+        return jsonify({'success': False, 'message': 'An error occurred while adding the recipe.'}), 500
+    finally:
+        if connection and connection.is_connected():
+            connection.close()
 
-    darkOverlay.addEventListener('click', () => {
-        if (addRecipeFormContainer.style.display === 'block') {
-            addRecipeFormContainer.style.display = 'none';
-            toggleBlurAndOverlay(false);
-        }
-        if (recipeDetailsContainer.style.display === 'block') {
-            recipeDetailsContainer.style.display = 'none';
-            recipeTitle.textContent = '';
-            toggleBlurAndOverlay(false);
-        }
-    });
+    return jsonify({'success': True, 'message': 'Recipe added successfully!'})
 
-    window.addEventListener('click', (event) => {
-        if (!recipeDetailsContainer.contains(event.target) && recipeDetailsContainer.style.display === 'block') {
-            recipeDetailsContainer.style.display = 'none';
-            recipeTitle.textContent = '';
-            toggleBlurAndOverlay(false);
-        }
-    });
-});
+@app.route('/delete_recipe/<int:recipe_id>', methods=['POST'])
+def delete_recipe(recipe_id):
+    data = request.json
+    password = data.get('password')
+
+    if password != os.getenv('SECRET_PASSWORD'):
+        return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
+
+    connection = None
+    try:
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+
+        cursor.execute("DELETE FROM instructions WHERE RecipeID = %s", (recipe_id,))
+        cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
+        cursor.execute("DELETE FROM recipes WHERE RecipeID = %s", (recipe_id,))
+
+        connection.commit()
+        cursor.close()
+    except Error as e:
+        print(f"Error while deleting recipe: {e}")
+        return jsonify({'success': False, 'message': 'An error occurred while deleting the recipe.'}), 500
+    finally:
+        if connection and connection.is_connected():
+            connection.close()
+
+    return jsonify({'success': True, 'message': 'Recipe deleted successfully!'})
+
+@app.route('/update_recipe/<int:recipe_id>', methods=['POST'])
+def update_recipe(recipe_id):
+    data = request.json
+    title = data.get('title')
+    ingredients = data.get('ingredients').split('\n')
+    instructions = data.get('instructions').split('\n')
+    password = data.get('password')
+
+    if password != os.getenv('SECRET_PASSWORD'):
+        return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
+
+    connection = None
+    try:
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+
+        cursor.execute("UPDATE recipes SET Title = %s WHERE RecipeID = %s", (title, recipe_id))
+
+        cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
+        for ingredient in ingredients:
+            cursor.execute("""
+                INSERT INTO ingredients (RecipeID, Description)
+                VALUES (%s, %s)
+            """, (recipe_id, ingredient.strip()))
+
+        cursor.execute("DELETE FROM instructions WHERE RecipeID = %s", (recipe_id,))
+        for step_number, instruction in enumerate(instructions, start=1):
+            cursor.execute("""
+                INSERT INTO instructions (RecipeID, StepNumber, Description)
+                VALUES (%s, %s, %s)
+            """, (recipe_id, step_number, instruction.strip()))
+
+        connection.commit()
+        cursor.close()
+    except Error as e:
+        print(f"Error while updating recipe: {e}")
+        return jsonify({'success': False, 'message': 'An error occurred while updating the recipe.'}), 500
+    finally:
+        if connection and connection.is_connected():
+            connection.close()
+
+    return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
