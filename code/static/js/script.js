@@ -24,7 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
             container.classList.add('blur-background');
         } else {
             darkOverlay.style.display = 'none';
-```javascript
             container.classList.remove('blur-background');
         }
     };
