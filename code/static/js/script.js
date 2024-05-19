@@ -88,23 +88,51 @@ document.addEventListener('DOMContentLoaded', () => {
             recipeTitle.insertAdjacentHTML('afterend', ingredientsHtml + instructionsHtml);
             recipeDetailsContainer.style.display = 'block';
 
-            // Append edit and delete buttons
-            const recipeButtons = document.createElement('div');
-            recipeButtons.id = 'recipe-buttons';
-            recipeButtons.innerHTML = `
-                <button id="edit-recipe-btn" class="edit-recipe-btn">Edit Recipe</button>
-                <button id="delete-recipe-btn" class="delete-recipe-btn">Delete Recipe</button>
-            `;
-            recipeDetailsContainer.appendChild(recipeButtons);
+            // Show the edit and delete buttons
+            editRecipeBtn.style.display = 'block';
+            deleteRecipeBtn.style.display = 'block';
 
             // Add event listeners to the buttons
-            document.getElementById('edit-recipe-btn').onclick = () => {
-                // Handle edit functionality
-                console.log('Edit button clicked for recipe ID:', recipeId);
-                // Add your edit functionality here
+            editRecipeBtn.onclick = () => {
+                const titleInput = document.getElementById('recipe-title-input');
+                const ingredientsInput = document.getElementById('recipe-ingredients-input');
+                const instructionsInput = document.getElementById('recipe-instructions-input');
+
+                titleInput.value = recipeTitle.textContent;
+                ingredientsInput.value = data.ingredients.map(ingredient => ingredient.Description).join('\n');
+                instructionsInput.value = data.instructions.map(instruction => instruction.Description).join('\n');
+
+                addRecipeFormContainer.style.display = 'block';
+                toggleBlurAndOverlay(true);
+
+                addRecipeForm.onsubmit = async (event) => {
+                    event.preventDefault();
+                    const formData = new FormData(addRecipeForm);
+                    formData.append('recipe_id', recipeId);
+
+                    try {
+                        const response = await fetch(`/update_recipe/${recipeId}`, {
+                            method: 'POST',
+                            body: JSON.stringify(Object.fromEntries(formData)),
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        const data = await response.json();
+                        alert(data.message);
+                        if (data.success) {
+                            addRecipeForm.reset();
+                            addRecipeFormContainer.style.display = 'none';
+                            toggleBlurAndOverlay(false);
+                            recipeDetailsContainer.style.display = 'none';
+                        }
+                    } catch (error) {
+                        console.error('Error updating recipe:', error);
+                    }
+                };
             };
 
-            document.getElementById('delete-recipe-btn').onclick = async () => {
+            deleteRecipeBtn.onclick = async () => {
                 const password = prompt("Enter password to delete this recipe:");
                 if (password) {
                     try {
@@ -126,7 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             };
-
         } catch (error) {
             console.error('Error fetching recipe details:', error);
         }
