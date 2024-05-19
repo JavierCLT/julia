@@ -112,43 +112,41 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             editRecipeBtn.onclick = () => {
-                const password = prompt("Enter password to edit this recipe:");
-                if (password) {
-                    const updatedTitle = prompt("Enter new title:", recipeTitle.textContent);
-                    const updatedIngredients = prompt("Enter new ingredients (one per line):", ingredientsHtml);
-                    const updatedInstructions = prompt("Enter new instructions (one per line):", instructionsHtml);
+                addRecipeFormContainer.style.display = 'block';
+                toggleBlurAndOverlay(true);
 
-                    if (updatedTitle && updatedIngredients && updatedInstructions) {
-                        const updatedRecipe = {
-                            title: updatedTitle,
-                            ingredients: updatedIngredients,
-                            instructions: updatedInstructions,
-                            password: password
-                        };
+                document.getElementById('recipe-title-input').value = data.title;
+                document.getElementById('recipe-ingredients-input').value = data.ingredients.map(ing => ing.Description).join('\n');
+                document.getElementById('recipe-instructions-input').value = data.instructions.map(instr => instr.Description).join('\n');
 
-                        fetch(`/update_recipe/${recipeId}`, {
+                addRecipeForm.onsubmit = async (event) => {
+                    event.preventDefault();
+                    const formData = new FormData(addRecipeForm);
+                    const updatedData = Object.fromEntries(formData.entries());
+                    updatedData.password = prompt("Enter password to edit this recipe:");
+
+                    try {
+                        const response = await fetch(`/update_recipe/${encodeURIComponent(recipeId)}`, {
                             method: 'POST',
-                            body: JSON.stringify(updatedRecipe),
+                            body: JSON.stringify(updatedData),
                             headers: {
                                 'Content-Type': 'application/json'
                             }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            alert(data.message);
-                            if (data.success) {
-                                recipeDetailsContainer.style.display = 'none';
-                                toggleBlurAndOverlay(false);
-                                // Optionally, refresh the search results
-                                handleSearch({ target: { value: searchBox.value } });
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error updating recipe:', error);
                         });
+                        const data = await response.json();
+                        alert(data.message);
+                        if (data.success) {
+                            addRecipeForm.reset();
+                            addRecipeFormContainer.style.display = 'none';
+                            recipeDetailsContainer.style.display = 'none';
+                            toggleBlurAndOverlay(false);
+                        }
+                    } catch (error) {
+                        console.error('Error updating recipe:', error);
                     }
-                }
+                };
             };
+
         } catch (error) {
             console.error('Error fetching recipe details:', error);
         }
