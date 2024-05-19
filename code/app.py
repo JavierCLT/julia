@@ -51,10 +51,6 @@ def search_recipes():
         FROM 
             recipes
         LEFT JOIN 
-            recipecategory ON recipes.RecipeID = recipecategory.RecipeID
-        LEFT JOIN 
-            category ON recipecategory.CategoryID = category.CategoryID
-        LEFT JOIN 
             recipetags ON recipes.RecipeID = recipetags.RecipeID
         LEFT JOIN 
             tags ON recipetags.TagID = tags.TagID
@@ -63,13 +59,12 @@ def search_recipes():
         WHERE 
             recipes.Title LIKE %s 
             OR ingredients.Description LIKE %s 
-            OR category.CategoryName LIKE %s 
             OR tags.TagName LIKE %s
         GROUP BY 
             recipes.Title
         """
         like_pattern = f"%{query_param}%"
-        cursor.execute(query, (like_pattern, like_pattern, like_pattern, like_pattern))
+        cursor.execute(query, (like_pattern, like_pattern, like_pattern))
         result = cursor.fetchall()
         cursor.close()
     except Error as e:
@@ -84,7 +79,7 @@ def search_recipes():
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
 @cache.cached(timeout=60)
 def recipe_details(recipe_id):
-    details = {'ingredients': [], 'instructions': []}
+    details = {'ingredients': [], 'instructions': [], 'tags': [], 'servings': None}
     try:
         connection = connection_pool.get_connection()
         cursor = connection.cursor(dictionary=True)
@@ -107,6 +102,23 @@ def recipe_details(recipe_id):
         """, (recipe_id,))
         details['instructions'] = cursor.fetchall()
 
+        # Fetch tags
+        cursor.execute("""
+            SELECT TagName
+            FROM tags
+            LEFT JOIN recipetags ON tags.TagID = recipetags.TagID
+            WHERE recipetags.RecipeID = %s
+        """, (recipe_id,))
+        details['tags'] = [tag['TagName'] for tag in cursor.fetchall()]
+
+        # Fetch servings
+        cursor.execute("""
+            SELECT Servings
+            FROM recipes
+            WHERE RecipeID = %s
+        """, (recipe_id,))
+        details['servings'] = cursor.fetchone()['Servings']
+
     except Error as e:
         print(f"Error while connecting to MySQL or executing query: {e}")
         details = {'error': 'An error occurred while fetching recipe details.'}
@@ -123,6 +135,8 @@ def add_recipe():
     title = data.get('title')
     ingredients = data.get('ingredients').split('\n')
     instructions = data.get('instructions').split('\n')
+    tags = data.get('tags').split(',')
+    servings = data.get('servings')
     password = data.get('password')
 
     if password != os.getenv('SECRET_PASSWORD'):
@@ -133,7 +147,7 @@ def add_recipe():
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
 
-        cursor.execute("INSERT INTO recipes (Title) VALUES (%s)", (title,))
+        cursor.execute("INSERT INTO recipes (Title, Servings) VALUES (%s, %s)", (title, servings))
         recipe_id = cursor.lastrowid
 
         for ingredient in ingredients:
@@ -147,6 +161,16 @@ def add_recipe():
                 INSERT INTO instructions (RecipeID, StepNumber, Description)
                 VALUES (%s, %s, %s)
             """, (recipe_id, step_number, instruction.strip()))
+
+        for tag in tags:
+            cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag.strip(),))
+            tag_id = cursor.fetchone()
+            if not tag_id:
+                cursor.execute("INSERT INTO tags (TagName) VALUES (%s)", (tag.strip(),))
+                tag_id = cursor.lastrowid
+            else:
+                tag_id = tag_id['TagID']
+            cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
 
         connection.commit()
         cursor.close()
@@ -174,6 +198,7 @@ def delete_recipe(recipe_id):
 
         cursor.execute("DELETE FROM instructions WHERE RecipeID = %s", (recipe_id,))
         cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
+        cursor.execute("DELETE FROM recipetags WHERE RecipeID = %s", (recipe_id,))
         cursor.execute("DELETE FROM recipes WHERE RecipeID = %s", (recipe_id,))
 
         connection.commit()
@@ -193,6 +218,8 @@ def update_recipe(recipe_id):
     title = data.get('title')
     ingredients = data.get('ingredients').split('\n')
     instructions = data.get('instructions').split('\n')
+    tags = data.get('tags').split(',')
+    servings = data.get('servings')
     password = data.get('password')
 
     if password != os.getenv('SECRET_PASSWORD'):
@@ -203,7 +230,7 @@ def update_recipe(recipe_id):
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
 
-        cursor.execute("UPDATE recipes SET Title = %s WHERE RecipeID = %s", (title, recipe_id))
+        cursor.execute("UPDATE recipes SET Title = %s, Servings = %s WHERE RecipeID = %s", (title, servings, recipe_id))
 
         cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
         for ingredient in ingredients:
@@ -218,6 +245,17 @@ def update_recipe(recipe_id):
                 INSERT INTO instructions (RecipeID, StepNumber, Description)
                 VALUES (%s, %s, %s)
             """, (recipe_id, step_number, instruction.strip()))
+
+        cursor.execute("DELETE FROM recipetags WHERE RecipeID = %s", (recipe_id,))
+        for tag in tags:
+            cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag.strip(),))
+            tag_id = cursor.fetchone()
+            if not tag_id:
+                cursor.execute("INSERT INTO tags (TagName) VALUES (%s)", (tag.strip(),))
+                tag_id = cursor.lastrowid
+            else:
+                tag_id = tag_id['TagID']
+            cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
 
         connection.commit()
         cursor.close()
