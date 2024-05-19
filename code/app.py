@@ -91,7 +91,7 @@ def recipe_details(recipe_id):
 
         # Fetch ingredients
         cursor.execute("""
-            SELECT Name, Unit, Quantity
+            SELECT Description
             FROM ingredients
             WHERE RecipeID = %s
             ORDER BY IngredientID
@@ -108,7 +108,7 @@ def recipe_details(recipe_id):
         details['instructions'] = cursor.fetchall()
 
     except Error as e:
-        print(f"Error while connecting to MySQL or executing query: {e}")
+        print(f"Error while fetching recipe details for recipe ID {recipe_id}: {e}")
         details = {'error': 'An error occurred while fetching recipe details.'}
     finally:
         if connection.is_connected():
@@ -116,6 +116,7 @@ def recipe_details(recipe_id):
             connection.close()
 
     return jsonify(details)
+
 
 @app.route('/add_recipe', methods=['POST'])
 def add_recipe():
