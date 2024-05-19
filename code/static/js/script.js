@@ -5,12 +5,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const addRecipeForm = document.getElementById('add-recipe-form');
     const recipeDetailsContainer = document.getElementById('recipe-details-container');
     const recipeTitle = document.getElementById('recipe-title');
-    const editRecipeBtn = document.getElementById('edit-recipe-btn');
     const deleteRecipeBtn = document.getElementById('delete-recipe-btn');
+    const editRecipeBtn = document.getElementById('edit-recipe-btn');
     const darkOverlay = document.getElementById('darkOverlay');
     const container = document.querySelector('.container');
-
-    let currentRecipeId = null;
 
     const debounce = (func, delay) => {
         let timer;
@@ -90,8 +88,6 @@ document.addEventListener('DOMContentLoaded', () => {
             recipeTitle.insertAdjacentHTML('afterend', ingredientsHtml + instructionsHtml);
             recipeDetailsContainer.style.display = 'block';
 
-            currentRecipeId = recipeId;  // Set the current recipe ID for editing
-
             deleteRecipeBtn.onclick = async () => {
                 const password = prompt("Enter password to delete this recipe:");
                 if (password) {
@@ -114,26 +110,44 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             };
+
+            editRecipeBtn.onclick = () => {
+                // Open the add recipe form with existing data
+                document.getElementById('recipe-title-input').value = data.title;
+                document.getElementById('recipe-ingredients-input').value = data.ingredients.map(ing => ing.Description).join('\n');
+                document.getElementById('recipe-instructions-input').value = data.instructions.map(ins => ins.Description).join('\n');
+                addRecipeFormContainer.style.display = 'block';
+                toggleBlurAndOverlay(true);
+
+                // Submit updated data
+                addRecipeForm.onsubmit = async (event) => {
+                    event.preventDefault();
+                    const formData = new FormData(addRecipeForm);
+                    formData.append('password', prompt('Enter password to update this recipe:'));
+                    try {
+                        const response = await fetch(`/update_recipe/${recipeId}`, {
+                            method: 'POST',
+                            body: JSON.stringify(Object.fromEntries(formData)),
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        const data = await response.json();
+                        alert(data.message);
+                        if (data.success) {
+                            addRecipeForm.reset();
+                            addRecipeFormContainer.style.display = 'none';
+                            toggleBlurAndOverlay(false);
+                            recipeDetailsContainer.style.display = 'none';
+                        }
+                    } catch (error) {
+                        console.error('Error updating recipe:', error);
+                    }
+                };
+            };
         } catch (error) {
             console.error('Error fetching recipe details:', error);
         }
-    };
-
-    const fetchRecipeDetailsForEdit = async (recipeId) => {
-        try {
-            const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
-            const data = await response.json();
-            return data;
-        } catch (error) {
-            console.error('Error fetching recipe details for edit:', error);
-            return null;
-        }
-    };
-
-    const populateEditForm = (recipe) => {
-        document.getElementById('recipe-title-input').value = recipe.title;
-        document.getElementById('recipe-ingredients-input').value = recipe.ingredients.map(ing => ing.Description).join('\n');
-        document.getElementById('recipe-instructions-input').value = recipe.instructions.map(ins => ins.Description).join('\n');
     };
 
     searchBox.addEventListener('input', handleSearch);
@@ -151,9 +165,8 @@ document.addEventListener('DOMContentLoaded', () => {
     addRecipeForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const formData = new FormData(addRecipeForm);
-        const endpoint = currentRecipeId ? `/update_recipe/${currentRecipeId}` : '/add_recipe';
         try {
-            const response = await fetch(endpoint, {
+            const response = await fetch('/add_recipe', {
                 method: 'POST',
                 body: JSON.stringify(Object.fromEntries(formData)),
                 headers: {
@@ -166,23 +179,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 addRecipeForm.reset();
                 addRecipeFormContainer.style.display = 'none';
                 toggleBlurAndOverlay(false);
-                currentRecipeId = null;
             }
         } catch (error) {
-            console.error('Error adding/updating recipe:', error);
-        }
-    });
-
-    editRecipeBtn.addEventListener('click', async () => {
-        const recipe = await fetchRecipeDetailsForEdit(currentRecipeId);
-        if (recipe) {
-            populateEditForm({
-                title: recipe.title,
-                ingredients: recipe.ingredients,
-                instructions: recipe.instructions
-            });
-            addRecipeFormContainer.style.display = 'block';
-            toggleBlurAndOverlay(true);
+            console.error('Error adding recipe:', error);
         }
     });
 
