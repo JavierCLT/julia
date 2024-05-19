@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', () => {
     const searchBox = document.getElementById('search-box');
     const resultsContainer = document.getElementById('results');
@@ -82,11 +81,19 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             instructionsHtml += '</ul>';
 
+            let tagsHtml = '<h3>Tags:</h3><ul>';
+            data.tags.forEach(tag => {
+                tagsHtml += `<li>${tag}</li>`;
+            });
+            tagsHtml += '</ul>';
+
+            let servingsHtml = `<h3>Servings:</h3><p>${data.servings}</p>`;
+
             while (recipeTitle.nextSibling) {
                 recipeDetailsContainer.removeChild(recipeTitle.nextSibling);
             }
 
-            recipeTitle.insertAdjacentHTML('afterend', ingredientsHtml + instructionsHtml);
+            recipeTitle.insertAdjacentHTML('afterend', ingredientsHtml + instructionsHtml + tagsHtml + servingsHtml);
             recipeDetailsContainer.style.display = 'block';
 
             // Append edit and delete buttons
