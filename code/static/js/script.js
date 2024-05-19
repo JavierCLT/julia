@@ -97,10 +97,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             recipeDetailsContainer.style.display = 'block';
 
-            recipeButtons.querySelector('.delete-recipe-btn').onclick = async () => {
+            deleteRecipeBtn.onclick = async () => {
                 const password = prompt("Enter password to delete this recipe:");
                 if (password) {
-                    console.log(`Deleting recipe with ID: ${recipeId}`);
                     try {
                         const response = await fetch(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
                             method: 'POST',
