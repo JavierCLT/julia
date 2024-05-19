@@ -173,7 +173,7 @@ h3 {
 ul, ol {
     list-style: none;
     margin: 0;
-    color: var (--rich-black);
+    color: var(--rich-black);
 }
 
 li {
@@ -185,7 +185,7 @@ li {
 
 .card {
     background-color: var(--cadet-gray);
-    color: var(--desert-sand);
+    color: var (--desert-sand);
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     padding: 20px;
