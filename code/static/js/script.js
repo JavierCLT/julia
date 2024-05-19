@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let instructionsHtml = '<h3>Instructions:</h3><ul>';
             data.instructions.forEach(instruction => {
-                instructionsHtml += `<li>${instruction.Description}</li>`;
+                instructionsHtml += `<li>Step ${instruction.StepNumber}: ${instruction.Description}</li>`;
             });
             instructionsHtml += '</ul>';
 
@@ -111,34 +111,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
 
-            editRecipeBtn.onclick = async () => {
-                const newTitle = prompt("Enter new title:", recipeTitle.textContent);
-                const newIngredients = prompt("Enter new ingredients (one per line):", data.ingredients.map(ing => ing.Description).join('\n'));
-                const newInstructions = prompt("Enter new instructions (one per line):", data.instructions.map(ins => ins.Description).join('\n'));
-                const password = prompt("Enter password to update this recipe:");
+            editRecipeBtn.onclick = () => {
+                const password = prompt("Enter password to edit this recipe:");
+                if (password) {
+                    const updatedTitle = prompt("Enter new title:", recipeTitle.textContent);
+                    const updatedIngredients = prompt("Enter new ingredients (one per line):", ingredientsHtml);
+                    const updatedInstructions = prompt("Enter new instructions (one per line):", instructionsHtml);
 
-                if (newTitle && newIngredients && newInstructions && password) {
-                    try {
-                        const response = await fetch(`/update_recipe/${encodeURIComponent(recipeId)}`, {
+                    if (updatedTitle && updatedIngredients && updatedInstructions) {
+                        const updatedRecipe = {
+                            title: updatedTitle,
+                            ingredients: updatedIngredients,
+                            instructions: updatedInstructions,
+                            password: password
+                        };
+
+                        fetch(`/update_recipe/${recipeId}`, {
                             method: 'POST',
-                            body: JSON.stringify({
-                                title: newTitle,
-                                ingredients: newIngredients,
-                                instructions: newInstructions,
-                                password: password
-                            }),
+                            body: JSON.stringify(updatedRecipe),
                             headers: {
                                 'Content-Type': 'application/json'
                             }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            alert(data.message);
+                            if (data.success) {
+                                recipeDetailsContainer.style.display = 'none';
+                                toggleBlurAndOverlay(false);
+                                // Optionally, refresh the search results
+                                handleSearch({ target: { value: searchBox.value } });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error updating recipe:', error);
                         });
-                        const data = await response.json();
-                        alert(data.message);
-                        if (data.success) {
-                            recipeDetailsContainer.style.display = 'none';
-                            toggleBlurAndOverlay(false);
-                        }
-                    } catch (error) {
-                        console.error('Error updating recipe:', error);
                     }
                 }
             };
