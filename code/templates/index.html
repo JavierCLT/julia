@@ -20,7 +20,7 @@
             <input type="text" id="search-box" class="search-box" placeholder="Search by recipe, category, ingredient...">
         </div>
         <div id="results"></div>
-        <div id="recipe-details-container" class="yellow-area" style="display:none;" data-recipe-id="">
+        <div id="recipe-details-container" class="yellow-area" style="display:none;">
             <h2 id="recipe-title" class="recipe-title"></h2>
             <div id="recipe-buttons">
                 <button id="edit-recipe-btn" class="edit-recipe-btn">Edit Recipe</button>
@@ -56,23 +56,6 @@
             <button type="button" id="cancel-btn">Cancel</button>
         </form>
     </div>
-
-    <div id="edit-recipe-form-container" class="form-container" style="display:none;">
-        <h2>Edit Recipe</h2>
-        <form id="edit-recipe-form">
-            <label for="edit-recipe-title-input">Title:</label>
-            <input type="text" id="edit-recipe-title-input" name="title" required>
-            <label for="edit-recipe-ingredients-input">Ingredients (one per line, e.g., 1 tsp of salt):</label>
-            <textarea id="edit-recipe-ingredients-input" name="ingredients" required></textarea>
-            <label for="edit-recipe-instructions-input">Instructions (one per line):</label>
-            <textarea id="edit-recipe-instructions-input" name="instructions" required></textarea>
-            <label for="edit-password-input">Password:</label>
-            <input type="password" id="edit-password-input" name="password" required>
-            <button type="submit">Update Recipe</button>
-            <button type="button" id="cancel-edit-btn">Cancel</button>
-        </form>
-    </div>
-
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
