@@ -46,27 +46,27 @@ def search_recipes():
         cursor = connection.cursor(dictionary=True)
         query = """
         SELECT 
-            MIN(recipes.RecipeID) as RecipeID, 
-            recipes.Title
-        FROM 
-            recipes
-        LEFT JOIN 
-            recipecategory ON recipes.RecipeID = recipecategory.RecipeID
-        LEFT JOIN 
-            category ON recipecategory.CategoryID = category.CategoryID
-        LEFT JOIN 
-            recipetags ON recipes.RecipeID = recipetags.RecipeID
-        LEFT JOIN 
-            tags ON recipetags.TagID = tags.TagID
-        LEFT JOIN 
-            ingredients ON recipes.RecipeID = ingredients.RecipeID
-        WHERE 
-            recipes.Title LIKE %s 
-            OR ingredients.Description LIKE %s 
-            OR category.CategoryName LIKE %s 
-            OR tags.TagName LIKE %s
-        GROUP BY 
-            recipes.Title
+    MIN(recipes.RecipeID) as RecipeID, 
+    recipes.Title
+FROM 
+    recipes
+LEFT JOIN 
+    recipecategory ON recipes.RecipeID = recipecategory.RecipeID
+LEFT JOIN 
+    category ON recipecategory.CategoryID = category.CategoryID
+LEFT JOIN 
+    recipetags ON recipes.RecipeID = recipetags.RecipeID
+LEFT JOIN 
+    tags ON recipetags.TagID = tags.TagID
+LEFT JOIN 
+    ingredients ON recipes.RecipeID = ingredients.RecipeID
+WHERE 
+    recipes.Title LIKE %s 
+    OR ingredients.Name LIKE %s 
+    OR category.CategoryName LIKE %s 
+    OR tags.TagName LIKE %s
+GROUP BY 
+    recipes.Title
         """
         like_pattern = f"%{query_param}%"
         cursor.execute(query, (like_pattern, like_pattern, like_pattern, like_pattern))
@@ -91,7 +91,7 @@ def recipe_details(recipe_id):
 
         # Fetch ingredients
         cursor.execute("""
-            SELECT Description
+            SELECT Name, Unit, Quantity
             FROM ingredients
             WHERE RecipeID = %s
             ORDER BY IngredientID
@@ -137,10 +137,11 @@ def add_recipe():
         recipe_id = cursor.lastrowid
 
         for ingredient in ingredients:
+            name, unit, quantity = ingredient.split(',')
             cursor.execute("""
-                INSERT INTO ingredients (RecipeID, Description)
-                VALUES (%s, %s)
-            """, (recipe_id, ingredient.strip()))
+                INSERT INTO ingredients (RecipeID, Name, Unit, Quantity)
+                VALUES (%s, %s, %s, %s)
+            """, (recipe_id, name.strip(), unit.strip(), quantity.strip()))
 
         for step_number, instruction in enumerate(instructions, start=1):
             cursor.execute("""
@@ -151,7 +152,6 @@ def add_recipe():
         connection.commit()
         cursor.close()
     except Error as e:
-        print(f"Error while adding recipe: {e}")
         return jsonify({'success': False, 'message': 'An error occurred while adding the recipe.'}), 500
     finally:
         if connection and connection.is_connected():
@@ -179,57 +179,12 @@ def delete_recipe(recipe_id):
         connection.commit()
         cursor.close()
     except Error as e:
-        print(f"Error while deleting recipe with ID {recipe_id}: {e}")
         return jsonify({'success': False, 'message': 'An error occurred while deleting the recipe.'}), 500
     finally:
         if connection and connection.is_connected():
             connection.close()
 
     return jsonify({'success': True, 'message': 'Recipe deleted successfully!'})
-
-    
-@app.route('/update_recipe/<int:recipe_id>', methods=['POST'])
-def update_recipe(recipe_id):
-    data = request.json
-    title = data.get('title')
-    ingredients = data.get('ingredients').split('\n')
-    instructions = data.get('instructions').split('\n')
-    password = data.get('password')
-
-    if password != os.getenv('SECRET_PASSWORD'):
-        return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
-
-    connection = None
-    try:
-        connection = mysql.connector.connect(**db_config)
-        cursor = connection.cursor()
-
-        cursor.execute("UPDATE recipes SET Title = %s WHERE RecipeID = %s", (title, recipe_id))
-
-        cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
-        for ingredient in ingredients:
-            cursor.execute("""
-                INSERT INTO ingredients (RecipeID, Description)
-                VALUES (%s, %s)
-            """, (recipe_id, ingredient.strip()))
-
-        cursor.execute("DELETE FROM instructions WHERE RecipeID = %s", (recipe_id,))
-        for step_number, instruction in enumerate(instructions, start=1):
-            cursor.execute("""
-                INSERT INTO instructions (RecipeID, StepNumber, Description)
-                VALUES (%s, %s, %s)
-            """, (recipe_id, step_number, instruction.strip()))
-
-        connection.commit()
-        cursor.close()
-    except Error as e:
-        print(f"Error while updating recipe: {e}")
-        return jsonify({'success': False, 'message': 'An error occurred while updating the recipe.'}), 500
-    finally:
-        if connection and connection.is_connected():
-            connection.close()
-
-    return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
