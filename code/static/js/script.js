@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const recipeDetailsContainer = document.getElementById('recipe-details-container');
     const recipeTitle = document.getElementById('recipe-title');
     const darkOverlay = document.getElementById('darkOverlay');
-    const deleteRecipeBtn = document.getElementById('delete-recipe-btn');
     const container = document.querySelector('.container');
     let isEdit = false;
     let editRecipeId = null;
@@ -98,9 +97,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             recipeDetailsContainer.style.display = 'block';
 
-            deleteRecipeBtn.onclick = async () => {
+            recipeButtons.querySelector('.delete-recipe-btn').onclick = async () => {
                 const password = prompt("Enter password to delete this recipe:");
                 if (password) {
+                    console.log(`Deleting recipe with ID: ${recipeId}`);
                     try {
                         const response = await fetch(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
                             method: 'POST',
@@ -114,6 +114,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (data.success) {
                             recipeDetailsContainer.style.display = 'none';
                             toggleBlurAndOverlay(false);
+                        } else {
+                            console.error('Failed to delete recipe:', data.message);
                         }
                     } catch (error) {
                         console.error('Error deleting recipe:', error);
