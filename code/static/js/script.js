@@ -67,105 +67,72 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 300);
 
     const fetchAndDisplayRecipeDetails = async (recipeId) => {
-    try {
-        const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
-        const data = await response.json();
+        try {
+            const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
+            const data = await response.json();
+            let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
+            data.ingredients.forEach(ingredient => {
+                ingredientsHtml += `<li>${ingredient.Description}</li>`;
+            });
+            ingredientsHtml += '</ul>';
 
-        // Clear previous ingredients and instructions content
-        const ingredientsContainer = recipeDetailsContainer.querySelector('.ingredients-card ul');
-        const instructionsContainer = recipeDetailsContainer.querySelector('.instructions-card ul');
+            let instructionsHtml = '<h3>Instructions:</h3><ul>';
+            data.instructions.forEach(instruction => {
+                instructionsHtml += `<li>${instruction.Description}</li>`;
+            });
+            instructionsHtml += '</ul>';
 
-        ingredientsContainer.innerHTML = '';
-        instructionsContainer.innerHTML = '';
+            while (recipeTitle.nextSibling) {
+                recipeDetailsContainer.removeChild(recipeTitle.nextSibling);
+            }
 
-        // Create ingredients HTML
-        let ingredientsHtml = '';
-        data.ingredients.forEach(ingredient => {
-            ingredientsHtml += `<li>${ingredient.Description}</li>`;
-        });
-        ingredientsContainer.innerHTML = ingredientsHtml;
+            recipeTitle.insertAdjacentHTML('afterend', ingredientsHtml + instructionsHtml);
+            recipeDetailsContainer.style.display = 'block';
 
-        // Create instructions HTML
-        let instructionsHtml = '';
-        data.instructions.forEach(instruction => {
-            instructionsHtml += `<li>${instruction.Description}</li>`;
-        });
-        instructionsContainer.innerHTML = instructionsHtml;
+            // Append edit and delete buttons
+            const recipeButtons = document.createElement('div');
+            recipeButtons.id = 'recipe-buttons';
+            recipeButtons.innerHTML = `
+                <button id="edit-recipe-btn" class="edit-recipe-btn">Edit Recipe</button>
+                <button id="delete-recipe-btn" class="delete-recipe-btn">Delete Recipe</button>
+            `;
+            recipeDetailsContainer.appendChild(recipeButtons);
 
-        recipeTitle.textContent = data.title;
-        recipeDetailsContainer.style.display = 'block';
+            // Add event listeners to the buttons
+            document.getElementById('edit-recipe-btn').onclick = () => {
+                // Handle edit functionality
+                console.log('Edit button clicked for recipe ID:', recipeId);
+                // Add your edit functionality here
+            };
 
-        // Show the edit and delete buttons
-        editRecipeBtn.style.display = 'inline-block';
-        deleteRecipeBtn.style.display = 'inline-block';
-
-        // Add event listeners to the buttons
-        editRecipeBtn.onclick = () => {
-            const titleInput = document.getElementById('recipe-title-input');
-            const ingredientsInput = document.getElementById('recipe-ingredients-input');
-            const instructionsInput = document.getElementById('recipe-instructions-input');
-
-            titleInput.value = recipeTitle.textContent;
-            ingredientsInput.value = data.ingredients.map(ingredient => ingredient.Description).join('\n');
-            instructionsInput.value = data.instructions.map(instruction => instruction.Description).join('\n');
-
-            addRecipeFormContainer.style.display = 'block';
-            toggleBlurAndOverlay(true);
-
-            addRecipeForm.onsubmit = async (event) => {
-                event.preventDefault();
-                const formData = new FormData(addRecipeForm);
-                formData.append('recipe_id', recipeId);
-
-                try {
-                    const response = await fetch(`/update_recipe/${recipeId}`, {
-                        method: 'POST',
-                        body: JSON.stringify(Object.fromEntries(formData)),
-                        headers: {
-                            'Content-Type': 'application/json'
+            document.getElementById('delete-recipe-btn').onclick = async () => {
+                const password = prompt("Enter password to delete this recipe:");
+                if (password) {
+                    try {
+                        const response = await fetch(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
+                            method: 'POST',
+                            body: JSON.stringify({ password: password }),
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        const data = await response.json();
+                        alert(data.message);
+                        if (data.success) {
+                            recipeDetailsContainer.style.display = 'none';
+                            toggleBlurAndOverlay(false);
                         }
-                    });
-                    const data = await response.json();
-                    alert(data.message);
-                    if (data.success) {
-                        addRecipeForm.reset();
-                        addRecipeFormContainer.style.display = 'none';
-                        toggleBlurAndOverlay(false);
-                        recipeDetailsContainer.style.display = 'none';
+                    } catch (error) {
+                        console.error('Error deleting recipe:', error);
                     }
-                } catch (error) {
-                    console.error('Error updating recipe:', error);
                 }
             };
-        };
 
-        deleteRecipeBtn.onclick = async () => {
-            const password = prompt("Enter password to delete this recipe:");
-            if (password) {
-                try {
-                    const response = await fetch(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
-                        method: 'POST',
-                        body: JSON.stringify({ password: password }),
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    const data = await response.json();
-                    alert(data.message);
-                    if (data.success) {
-                        recipeDetailsContainer.style.display = 'none';
-                        toggleBlurAndOverlay(false);
-                    }
-                } catch (error) {
-                    console.error('Error deleting recipe:', error);
-                }
-            }
-        };
-    } catch (error) {
-        console.error('Error fetching recipe details:', error);
-    }
-};
-    
+        } catch (error) {
+            console.error('Error fetching recipe details:', error);
+        }
+    };
+
     searchBox.addEventListener('input', handleSearch);
 
     document.getElementById('add-recipe-btn').addEventListener('click', () => {
