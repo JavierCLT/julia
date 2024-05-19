@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const recipeDetailsContainer = document.getElementById('recipe-details-container');
     const recipeTitle = document.getElementById('recipe-title');
     const darkOverlay = document.getElementById('darkOverlay');
+    const deleteRecipeBtn = document.getElementById('delete-recipe-btn');
     const container = document.querySelector('.container');
     let isEdit = false;
     let editRecipeId = null;
