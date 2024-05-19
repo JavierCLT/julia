@@ -3,4 +3,4 @@ Disallow: /private/
 Disallow: /tmp/
 Allow: /
 
-Sitemap: https://www.eli5food.com/sitemap.xml
+Sitemap: https://www.jhrecipes.com/sitemap.xml
