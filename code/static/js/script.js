@@ -87,7 +87,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             tagsHtml += '</ul>';
 
-            let servingsHtml = `<h3>Servings:</h3><p>${data.servings}</p>`;
+            let servingsHtml = '<h3>Servings:</h3><ul>';
+            servingsHtml += `<li>${data.servings}</li>`;
+            servingsHtml += '</ul>';
 
             while (recipeTitle.nextSibling) {
                 recipeDetailsContainer.removeChild(recipeTitle.nextSibling);
