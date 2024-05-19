@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const recipeDetailsContainer = document.getElementById('recipe-details-container');
     const recipeTitle = document.getElementById('recipe-title');
     const deleteRecipeBtn = document.getElementById('delete-recipe-btn');
+    const editRecipeBtn = document.getElementById('edit-recipe-btn');
     const darkOverlay = document.getElementById('darkOverlay');
     const container = document.querySelector('.container');
 
@@ -64,56 +65,87 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 300);
 
-   const fetchAndDisplayRecipeDetails = async (recipeId) => {
-    try {
-        const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
-        const data = await response.json();
-        let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
-        data.ingredients.forEach(ingredient => {
-            ingredientsHtml += `<li>${ingredient.Description}</li>`;
-        });
-        ingredientsHtml += '</ul>';
+    const fetchAndDisplayRecipeDetails = async (recipeId) => {
+        try {
+            const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
+            const data = await response.json();
+            let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
+            data.ingredients.forEach(ingredient => {
+                ingredientsHtml += `<li>${ingredient.Description}</li>`;
+            });
+            ingredientsHtml += '</ul>';
 
-        let instructionsHtml = '<h3>Instructions:</h3><ul>';
-        data.instructions.forEach(instruction => {
-            instructionsHtml += `<li>Step ${instruction.StepNumber}: ${instruction.Description}</li>`;
-        });
-        instructionsHtml += '</ul>';
+            let instructionsHtml = '<h3>Instructions:</h3><ul>';
+            data.instructions.forEach(instruction => {
+                instructionsHtml += `<li>${instruction.Description}</li>`;
+            });
+            instructionsHtml += '</ul>';
 
-        while (recipeTitle.nextSibling) {
-            recipeDetailsContainer.removeChild(recipeTitle.nextSibling);
-        }
-
-        recipeTitle.insertAdjacentHTML('afterend', ingredientsHtml + instructionsHtml);
-        recipeDetailsContainer.style.display = 'block';
-
-        deleteRecipeBtn.onclick = async () => {
-            const password = prompt("Enter password to delete this recipe:");
-            if (password) {
-                try {
-                    const response = await fetch(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
-                        method: 'POST',
-                        body: JSON.stringify({ password: password }),
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    const data = await response.json();
-                    alert(data.message);
-                    if (data.success) {
-                        recipeDetailsContainer.style.display = 'none';
-                        toggleBlurAndOverlay(false);
-                    }
-                } catch (error) {
-                    console.error('Error deleting recipe:', error);
-                }
+            while (recipeTitle.nextSibling) {
+                recipeDetailsContainer.removeChild(recipeTitle.nextSibling);
             }
-        };
-    } catch (error) {
-        console.error('Error fetching recipe details:', error);
-    }
-};
 
+            recipeTitle.insertAdjacentHTML('afterend', ingredientsHtml + instructionsHtml);
+            recipeDetailsContainer.style.display = 'block';
+
+            deleteRecipeBtn.onclick = async () => {
+                const password = prompt("Enter password to delete this recipe:");
+                if (password) {
+                    try {
+                        const response = await fetch(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
+                            method: 'POST',
+                            body: JSON.stringify({ password: password }),
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        const data = await response.json();
+                        alert(data.message);
+                        if (data.success) {
+                            recipeDetailsContainer.style.display = 'none';
+                            toggleBlurAndOverlay(false);
+                        }
+                    } catch (error) {
+                        console.error('Error deleting recipe:', error);
+                    }
+                }
+            };
+
+            editRecipeBtn.onclick = async () => {
+                const newTitle = prompt("Enter new title:", recipeTitle.textContent);
+                const newIngredients = prompt("Enter new ingredients (one per line):", data.ingredients.map(ing => ing.Description).join('\n'));
+                const newInstructions = prompt("Enter new instructions (one per line):", data.instructions.map(ins => ins.Description).join('\n'));
+                const password = prompt("Enter password to update this recipe:");
+
+                if (newTitle && newIngredients && newInstructions && password) {
+                    try {
+                        const response = await fetch(`/update_recipe/${encodeURIComponent(recipeId)}`, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                title: newTitle,
+                                ingredients: newIngredients,
+                                instructions: newInstructions,
+                                password: password
+                            }),
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        const data = await response.json();
+                        alert(data.message);
+                        if (data.success) {
+                            recipeDetailsContainer.style.display = 'none';
+                            toggleBlurAndOverlay(false);
+                        }
+                    } catch (error) {
+                        console.error('Error updating recipe:', error);
+                    }
+                }
+            };
+        } catch (error) {
+            console.error('Error fetching recipe details:', error);
+        }
+    };
 
     searchBox.addEventListener('input', handleSearch);
 
