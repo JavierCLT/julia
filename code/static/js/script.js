@@ -70,26 +70,26 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
         const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
         const data = await response.json();
-        
-        // Create ingredients HTML
-        let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
-        data.ingredients.forEach(ingredient => {
-            ingredientsHtml += `<li>${ingredient.Description}</li>`;
-        });
-        ingredientsHtml += '</ul>';
 
-        // Create instructions HTML
-        let instructionsHtml = '<h3>Instructions:</h3><ul>';
-        data.instructions.forEach(instruction => {
-            instructionsHtml += `<li>${instruction.Description}</li>`;
-        });
-        instructionsHtml += '</ul>';
-
-        // Clear the recipe details container content except for the title and buttons
+        // Clear previous ingredients and instructions content
         const ingredientsContainer = recipeDetailsContainer.querySelector('.ingredients-card ul');
         const instructionsContainer = recipeDetailsContainer.querySelector('.instructions-card ul');
 
+        ingredientsContainer.innerHTML = '';
+        instructionsContainer.innerHTML = '';
+
+        // Create ingredients HTML
+        let ingredientsHtml = '';
+        data.ingredients.forEach(ingredient => {
+            ingredientsHtml += `<li>${ingredient.Description}</li>`;
+        });
         ingredientsContainer.innerHTML = ingredientsHtml;
+
+        // Create instructions HTML
+        let instructionsHtml = '';
+        data.instructions.forEach(instruction => {
+            instructionsHtml += `<li>${instruction.Description}</li>`;
+        });
         instructionsContainer.innerHTML = instructionsHtml;
 
         recipeTitle.textContent = data.title;
