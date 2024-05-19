@@ -81,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             instructionsHtml += '</ul>';
 
+            // Remove existing child elements of recipeDetailsContainer except recipeTitle
             while (recipeTitle.nextSibling) {
                 recipeDetailsContainer.removeChild(recipeTitle.nextSibling);
             }
