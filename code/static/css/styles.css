@@ -245,6 +245,7 @@ label {
 
 input[type="text"],
 input[type="password"],
+input[type="number"],
 textarea {
     padding: 10px;
     font-size: 1em;
