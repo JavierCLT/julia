@@ -179,6 +179,7 @@ def delete_recipe(recipe_id):
         connection.commit()
         cursor.close()
     except Error as e:
+        print(f"Error while deleting recipe with ID {recipe_id}: {e}")
         return jsonify({'success': False, 'message': 'An error occurred while deleting the recipe.'}), 500
     finally:
         if connection and connection.is_connected():
