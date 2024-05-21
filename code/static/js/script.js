@@ -245,4 +245,8 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleBlurAndOverlay(false);
         }
     });
+    // Add event listener to prevent clicks inside the form from closing it
+    addRecipeFormContainer.addEventListener('click', (event) => {
+        event.stopPropagation();
+    });
 });
