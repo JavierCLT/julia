@@ -199,6 +199,17 @@ li {
     color: var(--rich-black);
 }
 
+/* Style the tags list to display inline */
+.card.tags-card ul {
+    list-style-type: none; /* Remove default list styling */
+    padding: 0; /* Remove padding */
+}
+
+.card.tags-card ul li {
+    display: inline; /* Display list items inline */
+    margin-right: 10px; /* Add some space between tags */
+}
+
 .card {
     background-color: var(--cadet-gray);
     color: var(--desert-sand);
