@@ -147,6 +147,14 @@ h1, h3 {
     margin-top: 10px;
 }
 
+#add-recipe-form-container {
+    background-color: var(--misty-rose);
+    color: var(--rich-black);
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .edit-recipe-btn,
 .delete-recipe-btn {
     background-color: var(--desert-sand);
@@ -175,8 +183,7 @@ h2 {
     color: var(--cadet-gray);
     font-weight: bold;
     font-size: 1.2em;
-    margin-block-start: 0em;
-    margin-block-end: 0.3em;
+    
     
 }
 
