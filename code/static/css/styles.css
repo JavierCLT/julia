@@ -210,12 +210,21 @@ li {
     padding-inline-start: 40px;
 }
 
-.card.tags-card ul li {
-    display: inline-block; /* Display list items inline */
-    margin-right: 10px; /* Add some space between tags */
-    background-color: #f2f2f2; /* Add background color for better visibility */
-    padding: 5px; /* Add some padding */
-    border-radius: 3px; /* Add border radius */
+/* Ensure tags are displayed inline, separated by commas and spaces */
+.card.tags-card p span {
+    display: inline; /* Display each tag inline */
+    margin-right: 5px; /* Add some space between tags */
+    color: var(--rich-black);
+}
+
+/* Add styling for servings */
+.card.servings-card p {
+    margin: 0; /* Remove default margin */
+    padding: 0; /* Remove default padding */
+    margin-block-start: 0.8em;
+    margin-block-end: 0.8em;
+    color: var(--rich-black);
+    padding-inline-start: 40px;
 }
 
 .card {
@@ -317,7 +326,7 @@ button[type="button"] {
 
 button[type="submit"]:hover {
     background-color: var(--cadet-gray);
-    color: var(--desert-sand);
+    color: var (--desert-sand);
 }
 
 button[type="button"]:hover {
