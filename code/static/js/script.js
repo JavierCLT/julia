@@ -9,6 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const editRecipeBtn = document.getElementById('edit-recipe-btn');
     const darkOverlay = document.getElementById('darkOverlay');
     const container = document.querySelector('.container');
+    const errorMessage = document.createElement('p');
+    errorMessage.style.color = 'red';
+    errorMessage.style.display = 'none';
+    addRecipeForm.appendChild(errorMessage);
 
     const debounce = (func, delay) => {
         let timer;
@@ -188,6 +192,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('Error updating recipe:', error);
             }
         };
+
+    const checkDuplicateTags = (tags) => {
+        const tagSet = new Set(tags);
+        return tagSet.size !== tags.length;
     };
 
     searchBox.addEventListener('input', handleSearch);
@@ -203,27 +211,39 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     addRecipeForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const formData = new FormData(addRecipeForm);
-        try {
-            const response = await fetch('/add_recipe', {
-                method: 'POST',
-                body: JSON.stringify(Object.fromEntries(formData)),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            const data = await response.json();
-            alert(data.message);
-            if (data.success) {
-                addRecipeForm.reset();
-                addRecipeFormContainer.style.display = 'none';
-                toggleBlurAndOverlay(false);
+    event.preventDefault();
+    const formData = new FormData(addRecipeForm);
+    const tags = formData.get('tags').split(',').map(tag => tag.trim());
+
+    if (checkDuplicateTags(tags)) {
+        errorMessage.textContent = 'Duplicate tags are not allowed.';
+        errorMessage.style.display = 'block';
+        return;
+    } else {
+        errorMessage.style.display = 'none';
+    }
+
+    formData.set('tags', tags.join(',')); // Ensure tags are properly formatted
+
+    try {
+        const response = await fetch('/add_recipe', {
+            method: 'POST',
+            body: JSON.stringify(Object.fromEntries(formData)),
+            headers: {
+                'Content-Type': 'application/json'
             }
-        } catch (error) {
-            console.error('Error adding recipe:', error);
+        });
+        const data = await response.json();
+        alert(data.message);
+        if (data.success) {
+            addRecipeForm.reset();
+            addRecipeFormContainer.style.display = 'none';
+            toggleBlurAndOverlay(false);
         }
-    });
+    } catch (error) {
+        console.error('Error adding recipe:', error);
+    }
+});
 
 document.addEventListener('click', (event) => {
         const targetElement = event.target.closest('.recipe-box');
