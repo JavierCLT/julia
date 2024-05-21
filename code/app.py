@@ -169,7 +169,7 @@ def add_recipe():
                 cursor.execute("INSERT INTO tags (TagName) VALUES (%s)", (tag.strip(),))
                 tag_id = cursor.lastrowid
             else:
-                tag_id = tag_id['TagID']
+                tag_id = tag_id[0]
             cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
 
         connection.commit()
