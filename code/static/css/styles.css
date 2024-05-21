@@ -252,6 +252,14 @@ textarea {
     border: 1px solid #ccc;
     border-radius: 20px;
     margin-bottom: 10px;
+    width: 100%;
+    box-sizing: border-box; /* ensures that padding and border are included in the element's total width and height */
+}
+
+/* Ensure the textarea has the same height as other input fields */
+textarea {
+    height: auto;
+    resize: none; /* prevent users from resizing the textarea */
 }
 
 button[type="submit"],
