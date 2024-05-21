@@ -86,9 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let tagsHtml = '<h3>Tags:</h3>';
         tagsHtml += `<p>${data.tags.join(', ')}</p>`;  // Join tags with commas and spaces
 
-        let servingsHtml = '<h3>Servings:</h3><p>';
-        servingsHtml += `${data.servings}</p>`;
-        servingsHtml += '</ul>';
+        let servingsHtml = '<h3>Servings:</h3>';
+        servingsHtml += `<p>${data.servings}</p>`;
 
         while (recipeTitle.nextSibling) {
             recipeDetailsContainer.removeChild(recipeTitle.nextSibling);
@@ -147,6 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Error fetching recipe details:', error);
     }
 };
+
 
     const populateEditForm = (recipeId, recipeData) => {
         // Show the add recipe form container
