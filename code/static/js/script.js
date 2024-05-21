@@ -192,11 +192,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     searchBox.addEventListener('input', handleSearch);
 
-    document.getElementById('add-recipe-btn').addEventListener('click', () => {
+     document.getElementById('add-recipe-btn').addEventListener('click', () => {
         addRecipeFormContainer.style.display = 'block';
         toggleBlurAndOverlay(true);
     });
-
+    
     document.getElementById('cancel-btn').addEventListener('click', () => {
         addRecipeFormContainer.style.display = 'none';
         toggleBlurAndOverlay(false);
@@ -239,14 +239,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     window.addEventListener('click', (event) => {
+        if (!addRecipeFormContainer.contains(event.target) && addRecipeFormContainer.style.display === 'block') {
+            addRecipeFormContainer.style.display = 'none';
+            toggleBlurAndOverlay(false);
+        }
+    });
+
+    // Event listener to prevent clicks inside the form from closing it
+    addRecipeFormContainer.addEventListener('click', (event) => {
+        event.stopPropagation();
+    });
+
+    window.addEventListener('click', (event) => {
         if (!recipeDetailsContainer.contains(event.target) && recipeDetailsContainer.style.display === 'block') {
             recipeDetailsContainer.style.display = 'none';
             recipeTitle.textContent = '';
             toggleBlurAndOverlay(false);
         }
-    });
-    // Add event listener to prevent clicks inside the form from closing it
-    addRecipeFormContainer.addEventListener('click', (event) => {
-        event.stopPropagation();
     });
 });
