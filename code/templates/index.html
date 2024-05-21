@@ -62,6 +62,8 @@
             <textarea id="recipe-instructions-input" name="instructions" required></textarea>
             <label for="recipe-tags-input">Tags (comma separated, e.g., breakfast, quick):</label>
             <input type="text" id="recipe-tags-input" name="tags" required>
+            <!-- Error message positioned below the tags input field -->
+            <p id="error-message" style="color: red; display: none;">Duplicate tags are not allowed.</p>
             <label for="recipe-servings-input">Servings:</label>
             <input type="number" id="recipe-servings-input" name="servings" required>
             <label for="password-input">Password:</label>
