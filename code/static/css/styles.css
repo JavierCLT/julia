@@ -200,10 +200,10 @@ li {
 }
 
 /* Style the tags list to display inline */
-.card.tags-card ul {
-    list-style-type: none; /* Remove default list styling */
-    padding: 0; /* Remove padding */
-    margin: 0; /* Remove margin */
+.card.tags-card p {
+    margin: 0; /* Remove default margin */
+    padding: 0; /* Remove default padding */
+    display: inline; /* Ensure the tags are displayed inline */
 }
 
 .card.tags-card ul li {
