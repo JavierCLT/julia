@@ -192,6 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('Error updating recipe:', error);
             }
         };
+    };
 
     const checkDuplicateTags = (tags) => {
         const tagSet = new Set(tags);
@@ -200,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     searchBox.addEventListener('input', handleSearch);
 
-     document.getElementById('add-recipe-btn').addEventListener('click', () => {
+    document.getElementById('add-recipe-btn').addEventListener('click', () => {
         addRecipeFormContainer.style.display = 'block';
         toggleBlurAndOverlay(true);
     });
@@ -211,41 +212,41 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     addRecipeForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const formData = new FormData(addRecipeForm);
-    const tags = formData.get('tags').split(',').map(tag => tag.trim());
+        event.preventDefault();
+        const formData = new FormData(addRecipeForm);
+        const tags = formData.get('tags').split(',').map(tag => tag.trim());
 
-    if (checkDuplicateTags(tags)) {
-        errorMessage.textContent = 'Duplicate tags are not allowed.';
-        errorMessage.style.display = 'block';
-        return;
-    } else {
-        errorMessage.style.display = 'none';
-    }
-
-    formData.set('tags', tags.join(',')); // Ensure tags are properly formatted
-
-    try {
-        const response = await fetch('/add_recipe', {
-            method: 'POST',
-            body: JSON.stringify(Object.fromEntries(formData)),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        const data = await response.json();
-        alert(data.message);
-        if (data.success) {
-            addRecipeForm.reset();
-            addRecipeFormContainer.style.display = 'none';
-            toggleBlurAndOverlay(false);
+        if (checkDuplicateTags(tags)) {
+            errorMessage.textContent = 'Duplicate tags are not allowed.';
+            errorMessage.style.display = 'block';
+            return;
+        } else {
+            errorMessage.style.display = 'none';
         }
-    } catch (error) {
-        console.error('Error adding recipe:', error);
-    }
-});
 
-document.addEventListener('click', (event) => {
+        formData.set('tags', tags.join(',')); // Ensure tags are properly formatted
+
+        try {
+            const response = await fetch('/add_recipe', {
+                method: 'POST',
+                body: JSON.stringify(Object.fromEntries(formData)),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
+            alert(data.message);
+            if (data.success) {
+                addRecipeForm.reset();
+                addRecipeFormContainer.style.display = 'none';
+                toggleBlurAndOverlay(false);
+            }
+        } catch (error) {
+            console.error('Error adding recipe:', error);
+        }
+    });
+
+    document.addEventListener('click', (event) => {
         const targetElement = event.target.closest('.recipe-box');
         if (targetElement) {
             const recipeId = targetElement.getAttribute('data-recipe-id');
