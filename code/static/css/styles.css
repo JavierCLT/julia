@@ -265,7 +265,7 @@ input[type="password"],
 input[type="number"],
 textarea {
     padding: 10px;
-    resize: both; /* Allow resizing both horizontally and vertically */
+    resize: vertical; /* Allow resizing both horizontally and vertically */
     font-size: 1em;
     font-family: var(--font-family-body);
     border: 1px solid #ccc;
