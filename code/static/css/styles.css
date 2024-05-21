@@ -203,11 +203,15 @@ li {
 .card.tags-card ul {
     list-style-type: none; /* Remove default list styling */
     padding: 0; /* Remove padding */
+    margin: 0; /* Remove margin */
 }
 
 .card.tags-card ul li {
-    display: inline; /* Display list items inline */
+    display: inline-block; /* Display list items inline */
     margin-right: 10px; /* Add some space between tags */
+    background-color: #f2f2f2; /* Add background color for better visibility */
+    padding: 5px; /* Add some padding */
+    border-radius: 3px; /* Add border radius */
 }
 
 .card {
