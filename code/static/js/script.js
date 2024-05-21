@@ -9,10 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const editRecipeBtn = document.getElementById('edit-recipe-btn');
     const darkOverlay = document.getElementById('darkOverlay');
     const container = document.querySelector('.container');
-    const errorMessage = document.createElement('p');
-    errorMessage.style.color = 'red';
-    errorMessage.style.display = 'none';
-    addRecipeForm.appendChild(errorMessage);
+    const errorMessage = document.getElementById('error-message');
 
     const debounce = (func, delay) => {
         let timer;
@@ -205,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
         addRecipeFormContainer.style.display = 'block';
         toggleBlurAndOverlay(true);
     });
-    
+
     document.getElementById('cancel-btn').addEventListener('click', () => {
         addRecipeFormContainer.style.display = 'none';
         toggleBlurAndOverlay(false);
