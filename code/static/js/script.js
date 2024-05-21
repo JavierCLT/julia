@@ -225,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    document.addEventListener('click', (event) => {
+document.addEventListener('click', (event) => {
         const targetElement = event.target.closest('.recipe-box');
         if (targetElement) {
             const recipeId = targetElement.getAttribute('data-recipe-id');
@@ -238,6 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Event listener to close the form when clicking outside
     window.addEventListener('click', (event) => {
         if (!addRecipeFormContainer.contains(event.target) && addRecipeFormContainer.style.display === 'block') {
             addRecipeFormContainer.style.display = 'none';
