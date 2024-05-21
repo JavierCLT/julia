@@ -16,7 +16,7 @@ body {
     font-family: var(--font-family-body);
 }
 
-h1, h3 {
+h1 {
     color: var(--cadet-gray);
     font-family: var(--font-family-heading);
 }
@@ -114,7 +114,7 @@ h1, h3 {
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     z-index: 1000;
-    max-height: 80vh;
+    max-height: 90vh;
     overflow-y: auto;
     width: 80%;
     display: flex;
@@ -183,8 +183,7 @@ h2 {
     color: var(--cadet-gray);
     font-weight: bold;
     font-size: 1.2em;
-    
-    
+       
 }
 
 ul, ol {
@@ -247,7 +246,7 @@ li {
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     z-index: 1000;
-    max-height: 80vh;
+    max-height: 90vh;
     overflow-y: auto;
     width: 80%;
 }
