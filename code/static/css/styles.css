@@ -29,9 +29,9 @@ h1, h2, h3 {
 
 .header {
     display: flex;
-    justify-content: space-between; /* Distributes space between children */
-    align-items: center; /* Centers items vertically */
-    padding: 20px; /* Adds some padding on left and right */
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
     position: sticky;
     top: 0;
     z-index: 998;
@@ -39,7 +39,7 @@ h1, h2, h3 {
 }
 
 .header h1 {
-    position: absolute; /* Position the title absolutely */
+    position: absolute;
     left: 50%;
     transform: translateX(-50%);
     color: var(--rich-black);
@@ -55,7 +55,7 @@ h1, h2, h3 {
     border-radius: 5px;
     padding: 10px 20px;
     cursor: pointer;
-    margin-left: auto; /* Pushes the button to the right */
+    margin-left: auto;
 }
 
 #add-recipe-btn:hover {
@@ -123,7 +123,7 @@ h1, h2, h3 {
 }
 
 #recipe-title-container {
-    display: flex;
+    position: fixed;
     top: 10%;
     left: 50%;
     transform: translateX(-50%);
@@ -133,7 +133,6 @@ h1, h2, h3 {
 }
 
 #recipe-title {
-    display: flex;
     background-color: var(--misty-rose);
     color: var(--rich-black);
     padding: 10px;
@@ -143,7 +142,9 @@ h1, h2, h3 {
 
 #recipe-buttons {
     display: flex;
-    gap: 10px;
+    justify-content: space-around;
+    width: 100%;
+    margin-top: 10px;
 }
 
 .edit-recipe-btn,
@@ -184,7 +185,7 @@ li {
 
 .card {
     background-color: var(--cadet-gray);
-    color: var (--desert-sand);
+    color: var(--desert-sand);
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     padding: 20px;
@@ -201,7 +202,7 @@ li {
 
 .recipe-box:hover {
     transform: translateY(-5px);
-    background-color: var(--desert-sand);
+    background-color: var (--desert-sand);
 }
 
 .dark-overlay {
@@ -249,17 +250,17 @@ input[type="number"],
 textarea {
     padding: 10px;
     font-size: 1em;
+    font-family: var(--font-family-body);
     border: 1px solid #ccc;
     border-radius: 20px;
     margin-bottom: 10px;
     width: 100%;
-    box-sizing: border-box; /* ensures that padding and border are included in the element's total width and height */
+    box-sizing: border-box;
 }
 
-/* Ensure the textarea has the same height as other input fields */
 textarea {
     height: auto;
-    resize: none; /* prevent users from resizing the textarea */
+    resize: none;
 }
 
 button[type="submit"],
@@ -293,20 +294,20 @@ button[type="button"]:hover {
 
 @media (max-width: 768px) {
     .header {
-        flex-direction: column; /* Stack elements vertically on smaller screens */
-        align-items: center; /* Center items */
+        flex-direction: column;
+        align-items: center;
         padding: 0px;
     }
-    
+
     .header h1 {
-        font-size: 2em; /* Adjust font size for smaller screens */
-        position: static; /* Remove absolute positioning */
-        transform: none; /* Remove transform */
-        margin: 10px 0; /* Adjust margin */
+        font-size: 2em;
+        position: static;
+        transform: none;
+        margin: 10px 0;
     }
 
     #add-recipe-btn {
-        margin: 10px 0; /* Adjust margin for the button */
+        margin: 10px 0;
         font-size: 1.2em;
     }
 
@@ -330,7 +331,7 @@ button[type="button"]:hover {
 
 @media (max-width: 480px) {
     .header h1 {
-        font-size: 3em; /* Further adjust font size for very small screens */
+        font-size: 3em;
     }
 
     .grid {
