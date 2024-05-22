@@ -1,10 +1,10 @@
-
 from flask import Flask, request, jsonify, render_template
 from flask_caching import Cache
 import mysql.connector
 from mysql.connector import Error, pooling
 from flask_cors import CORS
 import os
+import re
 
 app = Flask(__name__)
 CORS(app, resources={r"/search*": {"origins": "*"}})
@@ -80,7 +80,7 @@ def search_recipes():
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
 @cache.cached(timeout=60)
 def recipe_details(recipe_id):
-    details = {'ingredients': [], 'instructions': [], 'tags': [], 'servings': None}
+    details = {'ingredients': [], 'instructions': [], 'tags': [], 'servings': None, 'origin': None}
     try:
         connection = connection_pool.get_connection()
         cursor = connection.cursor(dictionary=True)
@@ -112,13 +112,15 @@ def recipe_details(recipe_id):
         """, (recipe_id,))
         details['tags'] = [tag['TagName'] for tag in cursor.fetchall()]
 
-        # Fetch servings
+        # Fetch servings and origin
         cursor.execute("""
-            SELECT Servings
+            SELECT Servings, Origin
             FROM recipes
             WHERE RecipeID = %s
         """, (recipe_id,))
-        details['servings'] = cursor.fetchone()['Servings']
+        result = cursor.fetchone()
+        details['servings'] = result['Servings']
+        details['origin'] = result['Origin']
 
     except Error as e:
         print(f"Error while connecting to MySQL or executing query: {e}")
@@ -138,18 +140,22 @@ def add_recipe():
     instructions = data.get('instructions').split('\n')
     tags = data.get('tags').split(',')
     servings = data.get('servings')
-    origin=data.get('origin')  
+    origin = data.get('origin')
     password = data.get('password')
 
     if password != os.getenv('SECRET_PASSWORD'):
         return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
+
+    # Validate servings to allow numbers and ranges like "8-10"
+    if not re.match(r'^\d+(-\d+)?$', servings):
+        return jsonify({'success': False, 'message': 'Invalid format for servings. Use a number or a range like "8-10".'})
 
     connection = None
     try:
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
 
-        cursor.execute("INSERT INTO recipes (Title, Servings) VALUES (%s, %s)", (title, servings))
+        cursor.execute("INSERT INTO recipes (Title, Servings, Origin) VALUES (%s, %s, %s)", (title, servings, origin))
         recipe_id = cursor.lastrowid
 
         for ingredient in ingredients:
@@ -222,17 +228,22 @@ def update_recipe(recipe_id):
     instructions = data.get('instructions').split('\n')
     tags = data.get('tags').split(',')
     servings = data.get('servings')
+    origin = data.get('origin')
     password = data.get('password')
 
     if password != os.getenv('SECRET_PASSWORD'):
         return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
+
+    # Validate servings to allow numbers and ranges like "8-10"
+    if not re.match(r'^\d+(-\d+)?$', servings):
+        return jsonify({'success': False, 'message': 'Invalid format for servings. Use a number or a range like "8-10".'})
 
     connection = None
     try:
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
 
-        cursor.execute("UPDATE recipes SET Title = %s, Servings = %s WHERE RecipeID = %s", (title, servings, recipe_id))
+        cursor.execute("UPDATE recipes SET Title = %s, Servings = %s, Origin = %s WHERE RecipeID = %s", (title, servings, origin, recipe_id))
 
         cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
         for ingredient in ingredients:
