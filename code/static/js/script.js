@@ -66,11 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 300);
 
-    const fetchAndDisplayRecipeDetails = async (recipeId) => {
+const fetchAndDisplayRecipeDetails = async (recipeId) => {
     try {
         const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
         const data = await response.json();
-        
         let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
         data.ingredients.forEach(ingredient => {
             ingredientsHtml += `<li>${ingredient.Description}</li>`;
@@ -83,17 +82,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         instructionsHtml += '</ul>';
 
-        let tagsHtml = '<h3>Tags:</h3>';
-        tagsHtml += `<p>${data.tags.join(', ')}</p>`;  // Join tags with commas and spaces
+        let tagsHtml = '<h3>Tags:</h3><p>';
+        tagsHtml += data.tags.join(', ');
+        tagsHtml += '</p>';
 
-        let servingsHtml = '<h3>Servings:</h3>';
-        servingsHtml += `<p>${data.servings}</p>`;
+        let servingsHtml = '<h3>Servings:</h3><p>';
+        servingsHtml += data.servings;
+        servingsHtml += '</p>';
+
+        let originHtml = '<h3>Origin:</h3><p>';
+        originHtml += data.origin; // Assuming 'origin' is the field name in the data
+        originHtml += '</p>';
 
         while (recipeTitle.nextSibling) {
             recipeDetailsContainer.removeChild(recipeTitle.nextSibling);
         }
 
-        recipeTitle.insertAdjacentHTML('afterend', ingredientsHtml + instructionsHtml + tagsHtml + servingsHtml);
+        recipeTitle.insertAdjacentHTML('afterend', ingredientsHtml + instructionsHtml + tagsHtml + servingsHtml + originHtml);
         recipeDetailsContainer.style.display = 'block';
 
         // Append edit and delete buttons
@@ -114,7 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
                 instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
                 tags: data.tags.join(','),
-                servings: data.servings
+                servings: data.servings,
+                origin: data.origin
             };
             populateEditForm(recipeId, recipeData);
         };
@@ -146,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Error fetching recipe details:', error);
     }
 };
+
 
 
     const populateEditForm = (recipeId, recipeData) => {
