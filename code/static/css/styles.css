@@ -207,6 +207,21 @@ h3 {
     padding: 0;
 }
 
+#recipe-details-container .tags-card p {
+    margin-left: 20px;
+    color: var(--rich-black);
+}
+
+#recipe-details-container .servings-card p:nth-child(2) {
+    margin-left: 20px;
+    color: var(--rich-black);
+}
+
+#recipe-details-container .origin-card p:nth-child(2) {
+    margin-left: 20px;
+    color: var(--rich-black);
+}
+
 .instructions-card li + li {
     margin-top: 1rem; /* Adjust the value as needed */
 }
@@ -222,10 +237,7 @@ h3 {
     color: var(--rich-black);
 }
 
-.tags-card p#tags-list, .servings-card p#servings-count, .origin-card p#origin {
-    margin-left: 20px;
-    color: var(--rich-black);
-}
+
 
 ul, ol {
     margin: 0;
