@@ -185,8 +185,8 @@ h3 {
 .servings-card p#servings-count,
 .origin-card p#origin {
     margin-left: 20px;
-    padding-inline-start: 40px; /* Apply padding inline start */
-    color: var(--rich-black);
+    padding-inline-start: 40px /* Apply padding inline start */ !important; 
+    color: var(--rich-black) !important; 
 }
 
 /* Instructions styling */
