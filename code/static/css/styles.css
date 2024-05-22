@@ -180,51 +180,37 @@ h3 {
     text-align: left;
 }
 
+/* Indent tags, servings, and origin */
+.tags-card p#tags-list,
+.servings-card p#servings-count,
+.origin-card p#origin {
+    margin-left: 20px;
+    padding-inline-start: 40px; /* Apply padding inline start */
+    color: var(--rich-black);
+}
+
 /* Instructions styling */
-.instructions-list {
+.instructions-card ul.instructions-list {
     list-style-type: none; /* Remove bullet points */
     padding-left: 0; /* Remove default padding */
 }
 
-.instructions-list li {
+.instructions-card ul.instructions-list li {
     margin-bottom: 10px; /* Add space between instructions */
     color: var(--rich-black);
 }
 
 /* Ingredients styling */
-.ingredients-list {
+.ingredients-card ul.ingredients-list {
     list-style-type: disc; /* Keep bullet points */
     padding-left: 20px; /* Keep default padding */
 }
 
-.ingredients-list li {
+.ingredients-card ul.ingredients-list li {
     margin-bottom: 5px;
     color: var(--rich-black);
 }
 
-.instructions-card ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-#recipe-details-container .tags-card p {
-    margin-left: 20px;
-    color: var(--rich-black);
-}
-
-#recipe-details-container .servings-card p:nth-child(2) {
-    margin-left: 20px;
-    color: var(--rich-black);
-}
-
-#recipe-details-container .origin-card p:nth-child(2) {
-    margin-left: 20px;
-    color: var(--rich-black);
-}
-
-.instructions-card li + li {
-    margin-top: 1rem; /* Adjust the value as needed */
-}
 
 .card p, 
 .card ul {
