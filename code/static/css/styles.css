@@ -185,12 +185,12 @@ h3 {
     color: var(--rich-black);  /* Text color */
 }
 
-.origin {
+.servings-count {
     margin-left: 20px;  /* Indentation */
     color: var(--rich-black);  /* Text color */
 }
 
-.origin {
+.tags-list {
     margin-left: 20px;  /* Indentation */
     color: var(--rich-black);  /* Text color */
 }
