@@ -185,6 +185,19 @@ h2 {
     font-size: 1.2em;
 }
 
+ul, ol {
+    margin: 0;
+    color: var(--rich-black);
+    padding-left: 20px;
+}
+
+li {
+    margin-bottom: 5px;
+    font-weight: normal;
+    font-size: 1em;
+    color: var(--rich-black);
+}
+
 .card {
     background-color: var(--cadet-gray);
     color: var(--desert-sand);
@@ -201,7 +214,6 @@ h2 {
 
 .card.tags-card p {
     color: var(--rich-black);
-    padding-left: 20px;
     display: inline; 
 }
 
@@ -215,23 +227,9 @@ h2 {
 
 .card.servings-card p {
     color: var(--rich-black);
-    padding-left: 20px;
 }
 
 .card.origin-card p {
-    color: var(--rich-black);
-    padding-left: 20px;
-}
-
-ul, ol {
-    margin: 0;
-    color: var(--rich-black);
-}
-
-li {
-    margin-bottom: 5px;
-    font-weight: normal;
-    font-size: 1em;
     color: var(--rich-black);
 }
 
