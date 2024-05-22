@@ -180,6 +180,28 @@ h3 {
     text-align: left;
 }
 
+/* Instructions styling */
+.instructions-list {
+    list-style-type: none; /* Remove bullet points */
+    padding-left: 0; /* Remove default padding */
+}
+
+.instructions-list li {
+    margin-bottom: 10px; /* Add space between instructions */
+    color: var(--rich-black);
+}
+
+/* Ingredients styling */
+.ingredients-list {
+    list-style-type: disc; /* Keep bullet points */
+    padding-left: 20px; /* Keep default padding */
+}
+
+.ingredients-list li {
+    margin-bottom: 5px;
+    color: var(--rich-black);
+}
+
 .card p,
 .card ul {
     margin-left: 20px;
