@@ -183,7 +183,13 @@ h2 {
     color: var(--cadet-gray);
     font-weight: bold;
     font-size: 1.2em;
-       
+}
+
+.card.origin-card h3,
+.card.origin-card p {
+    color: var(--rich-black);
+    margin: 0;
+    padding: 0;
 }
 
 ul, ol {
