@@ -180,19 +180,9 @@ h3 {
     text-align: left;
 }
 
-.origin {
-    margin-left: 20px;  /* Indentation */
-    color: var(--rich-black);  /* Text color */
-}
-
-.servings-count {
-    margin-left: 20px;  /* Indentation */
-    color: var(--rich-black);  /* Text color */
-}
-
-.tags-list {
-    margin-left: 20px;  /* Indentation */
-    color: var(--rich-black);  /* Text color */
+.tags-list, .servings-count, .origin {
+    margin-left: 20px;
+    color: var(--rich-black);
 }
 
 /* Instructions styling */
