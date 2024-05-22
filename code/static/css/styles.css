@@ -181,13 +181,6 @@ h3 {
     font-size: 1.1em;
     color: var(--rich-black);
     text-align: left;
-}
-
-.card p,
-.card ul {
-    margin-left: 20px;
-    color: var(--rich-black);
-}
 
 ul, ol {
     margin: 0;
@@ -198,6 +191,30 @@ li {
     margin-bottom: 5px;
     font-weight: normal;
     font-size: 1em;
+    color: var(--rich-black);
+}
+
+    /* General card styles */
+.card {
+    background-color: var(--cadet-gray);
+    color: var(--rich-black);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.card p,
+.card ul {
+    margin-left: 20px;
+    color: var(--rich-black);
+}
+
+/* Indent tags, servings, and origin */
+.card.tags-card p,
+.card.servings-card p,
+.card.origin-card p {
+    margin-left: 20px;
     color: var(--rich-black);
 }
 
@@ -224,22 +241,28 @@ li {
     content: '';
 }
 
-/* Style for servings and origin */
-.card.servings-card p,
-.card.origin-card p {
-    margin-left: 20px;
+/* Instructions styling */
+.instructions-card ul {
+    list-style-type: none; /* Remove bullet points */
+    padding-left: 0; /* Remove default padding */
+}
+
+.instructions-card ul li {
+    margin-bottom: 10px; /* Add space between instructions */
     color: var(--rich-black);
 }
 
-/* General card styles */
-.card {
-    background-color: var(--cadet-gray);
-    color: var(--desert-sand);
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    margin-bottom: 20px;
+/* Ingredients styling */
+.ingredients-card ul {
+    list-style-type: disc; /* Keep bullet points */
+    padding-left: 20px; /* Keep default padding */
 }
+
+.ingredients-card ul li {
+    margin-bottom: 5px;
+    color: var(--rich-black);
+}
+
 
 /* Recipe box styles */
 .recipe-box {
