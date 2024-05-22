@@ -187,19 +187,6 @@ p {
 
 
 
-.card p, 
-.card ul {
-    margin-left: 20px;
-    color: var(--rich-black);
-}
-
-.card h3 {
-    margin-left: 20px;
-    color: var(--rich-black);
-}
-
-
-
 ul, ol {
     margin: 0;
     color: var(--rich-black);
