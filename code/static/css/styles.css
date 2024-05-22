@@ -202,8 +202,22 @@ h3 {
     color: var(--rich-black);
 }
 
-.card p,
+.instructions-card ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.instructions-card li + li {
+    margin-top: 1rem; /* Adjust the value as needed */
+}
+
+.card p, 
 .card ul {
+    margin-left: 20px;
+    color: var(--rich-black);
+}
+
+.card h3 {
     margin-left: 20px;
     color: var(--rich-black);
 }
