@@ -30,6 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const showLoadingIndicator = (show) => {
+    const loadingIndicator = document.getElementById('loading-indicator');
+    loadingIndicator.style.display = show ? 'block' : 'none';
+    };
+    
     const fetchRecipes = async (query) => {
         try {
             const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
