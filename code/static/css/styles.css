@@ -186,9 +186,8 @@ h2 {
 }
 
 ul, ol {
-    margin: 0;
+    margin: 0 0 0 20px; /* Indent list items */
     color: var(--rich-black);
-    padding-left: 20px;
 }
 
 li {
@@ -198,6 +197,26 @@ li {
     color: var(--rich-black);
 }
 
+/* Style the tags list to display inline */
+.card.tags-card p,
+.card.servings-card p,
+.card.origin-card p {
+    margin: 0 0 0 20px; /* Indent paragraphs */
+    color: var(--rich-black);
+}
+
+.card.tags-card p {
+    display: inline; /* Ensure the tags are displayed inline */
+}
+
+.card.tags-card ul li {
+    display: inline-block; /* Display list items inline */
+    margin-right: 10px; /* Add some space between tags */
+    background-color: #f2f2f2; /* Add background color for better visibility */
+    padding: 5px; /* Add some padding */
+    border-radius: 3px; /* Add border radius */
+}
+
 .card {
     background-color: var(--cadet-gray);
     color: var(--desert-sand);
@@ -205,32 +224,6 @@ li {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     padding: 20px;
     margin-bottom: 20px;
-}
-
-.card p {
-    color: var(--rich-black);
-    padding-left: 20px;
-}
-
-.card.tags-card p {
-    color: var(--rich-black);
-    display: inline; 
-}
-
-.card.tags-card ul li {
-    display: inline-block; 
-    margin-right: 10px; 
-    background-color: #f2f2f2; 
-    padding: 5px; 
-    border-radius: 3px; 
-}
-
-.card.servings-card p {
-    color: var(--rich-black);
-}
-
-.card.origin-card p {
-    color: var(--rich-black);
 }
 
 .recipe-box {
@@ -300,6 +293,7 @@ textarea {
     box-sizing: border-box;
 }
 
+
 button[type="submit"],
 button[type="button"] {
     padding: 10px 20px;
@@ -322,7 +316,7 @@ button[type="button"] {
 
 button[type="submit"]:hover {
     background-color: var(--cadet-gray);
-    color: var(--desert-sand);
+    color: var (--desert-sand);
 }
 
 button[type="button"]:hover {
