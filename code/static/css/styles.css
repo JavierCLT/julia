@@ -194,10 +194,37 @@ h2 {
     margin-bottom: 20px;
 }
 
+.card p {
+    color: var(--rich-black);
+    padding-left: 20px;
+}
+
+.card.tags-card p {
+    color: var(--rich-black);
+    padding-left: 20px;
+    display: inline; 
+}
+
+.card.tags-card ul li {
+    display: inline-block; 
+    margin-right: 10px; 
+    background-color: #f2f2f2; 
+    padding: 5px; 
+    border-radius: 3px; 
+}
+
+.card.servings-card p {
+    color: var(--rich-black);
+    padding-left: 20px;
+}
+
+.card.origin-card p {
+    color: var(--rich-black);
+    padding-left: 20px;
+}
+
 ul, ol {
-    list-style: none;
     margin: 0;
-    padding: 0;
     color: var(--rich-black);
 }
 
@@ -206,27 +233,6 @@ li {
     font-weight: normal;
     font-size: 1em;
     color: var(--rich-black);
-}
-
-/* Style the tags list to display inline */
-.card.tags-card p,
-.card.servings-card p,
-.card.origin-card p {
-    margin: 0; /* Remove default margin */
-    padding: 0; /* Remove default padding */
-    display: inline; /* Ensure the tags are displayed inline */
-    margin-block-start: 0.8em;
-    margin-block-end: 0.8em;
-    color: var(--rich-black);
-}
-
-.card.tags-card ul li,
-.card.servings-card ul li,
-.card.origin-card ul li {
-    display: inline-block; /* Display list items inline */
-    margin-right: 10px; /* Add some space between items */
-    padding: 5px; /* Add some padding */
-    border-radius: 3px; /* Add border radius */
 }
 
 .recipe-box {
@@ -239,7 +245,7 @@ li {
 
 .recipe-box:hover {
     transform: translateY(-5px);
-    background-color: var(--desert-sand);
+    background-color: var (--desert-sand);
 }
 
 .dark-overlay {
