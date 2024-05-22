@@ -137,6 +137,7 @@ def add_recipe():
     instructions = data.get('instructions').split('\n')
     tags = data.get('tags').split(',')
     servings = data.get('servings')
+    origin=data.get('origin')  
     password = data.get('password')
 
     if password != os.getenv('SECRET_PASSWORD'):
