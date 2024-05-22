@@ -180,11 +180,6 @@ h3 {
     text-align: left;
 }
 
-.tags-list, .servings-count, .origin {
-    margin-left: 20px;
-    color: var(--rich-black);
-}
-
 /* Instructions styling */
 .instructions-list {
     list-style-type: none; /* Remove bullet points */
@@ -209,6 +204,11 @@ h3 {
 
 .card p,
 .card ul {
+    margin-left: 20px;
+    color: var(--rich-black);
+}
+
+.tags-card p#tags-list, .servings-card p#servings-count, .origin-card p#origin {
     margin-left: 20px;
     color: var(--rich-black);
 }
