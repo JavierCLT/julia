@@ -180,6 +180,21 @@ h3 {
     text-align: left;
 }
 
+.origin {
+    margin-left: 20px;  /* Indentation */
+    color: var(--rich-black);  /* Text color */
+}
+
+.origin {
+    margin-left: 20px;  /* Indentation */
+    color: var(--rich-black);  /* Text color */
+}
+
+.origin {
+    margin-left: 20px;  /* Indentation */
+    color: var(--rich-black);  /* Text color */
+}
+
 /* Instructions styling */
 .instructions-list {
     list-style-type: none; /* Remove bullet points */
