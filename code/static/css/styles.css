@@ -1,4 +1,3 @@
-
 :root {
     --rich-black: #0D1F2D;
     --paynes-gray: #546A7B;
@@ -181,33 +180,11 @@ h3 {
 }
 
 p {
-    margin-left: 20px;
+    
     padding-inline-start: 40px; /* Apply padding inline start */ 
     color: var(--rich-black);
 }
 
-
-/* Instructions styling */
-.instructions-card ul.instructions-list {
-    list-style-type: none; /* Remove bullet points */
-    padding-left: 0; /* Remove default padding */
-}
-
-.instructions-card ul.instructions-list li {
-    margin-bottom: 10px; /* Add space between instructions */
-    color: var(--rich-black);
-}
-
-/* Ingredients styling */
-.ingredients-card ul.ingredients-list {
-    list-style-type: disc; /* Keep bullet points */
-    padding-left: 20px; /* Keep default padding */
-}
-
-.ingredients-card ul.ingredients-list li {
-    margin-bottom: 5px;
-    color: var(--rich-black);
-}
 
 
 .card p, 
@@ -235,20 +212,7 @@ li {
     color: var(--rich-black);
 }
 
-/* Style the tags list to display inline */
-.card.tags-card p {
-    margin: 0; /* Remove default margin */
-    padding: 0; /* Remove default padding */
-    display: inline; /* Ensure the tags are displayed inline */
-    margin-block-start: 0.8em;
-    margin-block-end: 0.8em;
-    color: var (--rich-black);
-}
 
-.card.tags-card ul li {
-    display: inline; /* Display list items inline */
-    margin-right: 10px; /* Add some space between tags */
-}
 
 .card {
     background-color: var(--cadet-gray);
