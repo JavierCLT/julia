@@ -191,10 +191,7 @@ p {
     color: var(--rich-black);
 }
 
-ul, ol {
-    margin: 0;
-    color: var(--rich-black);
-}
+
 
 li {
     margin-bottom: 5px;
