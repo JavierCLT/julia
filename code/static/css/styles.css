@@ -180,14 +180,12 @@ h3 {
     text-align: left;
 }
 
-/* Indent tags, servings, and origin */
-.tags-card p#tags-list,
-.servings-card p#servings-count,
-.origin-card p#origin {
+p {
     margin-left: 20px;
-    padding-inline-start: 40px /* Apply padding inline start */ !important; 
-    color: var(--rich-black) !important; 
+    padding-inline-start: 40px; /* Apply padding inline start */ 
+    color: var(--rich-black);
 }
+
 
 /* Instructions styling */
 .instructions-card ul.instructions-list {
