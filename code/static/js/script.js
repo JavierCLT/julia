@@ -87,18 +87,14 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
         tagsHtml += '</p>';
 
         let servingsHtml = '<h3>Servings:</h3><p>';
-        servingsHtml += data.servings;
+        servingsHtml += `${data.servings}`;
         servingsHtml += '</p>';
-
-        let originHtml = '<h3>Origin:</h3><p>';
-        originHtml += data.origin; // Assuming 'origin' is the field name in the data
-        originHtml += '</p>';
 
         while (recipeTitle.nextSibling) {
             recipeDetailsContainer.removeChild(recipeTitle.nextSibling);
         }
 
-        recipeTitle.insertAdjacentHTML('afterend', ingredientsHtml + instructionsHtml + tagsHtml + servingsHtml + originHtml);
+        recipeTitle.insertAdjacentHTML('afterend', ingredientsHtml + instructionsHtml + tagsHtml + servingsHtml);
         recipeDetailsContainer.style.display = 'block';
 
         // Append edit and delete buttons
@@ -119,8 +115,7 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
                 ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
                 instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
                 tags: data.tags.join(','),
-                servings: data.servings,
-                origin: data.origin
+                servings: data.servings
             };
             populateEditForm(recipeId, recipeData);
         };
