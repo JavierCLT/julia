@@ -4,6 +4,7 @@ import mysql.connector
 from mysql.connector import Error, pooling
 from flask_cors import CORS
 import os
+import re
 
 app = Flask(__name__)
 CORS(app, resources={r"/search*": {"origins": "*"}})
@@ -132,12 +133,12 @@ def recipe_details(recipe_id):
 @app.route('/add_recipe', methods=['POST'])
 def add_recipe():
     data = request.json
-    title = data.get('title')
-    ingredients = data.get('ingredients').split('\n')
-    instructions = data.get('instructions').split('\n')
-    tags = data.get('tags').split(',')
-    servings = data.get('servings')
-    origin=data.get('origin')  
+    title=data.get('title'),
+    ingredients=data.get('ingredients'),
+    instructions=data.get('instructions'),
+    tags=data.get('tags'),
+    servings=servings,
+    origin=data.get('origin')
     password = data.get('password')
 
     if password != os.getenv('SECRET_PASSWORD'):
