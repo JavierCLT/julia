@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Edit button clicked for recipe ID:', recipeId);
             currentRecipeId = recipeId; // Set the current recipe ID
             const recipeData = {
-                title: data.Title,
+                title: data.title, // Correct key name
                 ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
                 instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
                 tags: data.tags.join(','),
