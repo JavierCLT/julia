@@ -129,8 +129,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
                 console.log('Recipe data:', recipeData); // Log the data
                 populateEditForm(recipeId, recipeData);
-            };
-        });
+                let divFormEdit=document.getElementById('add-recipe-form-container');  //Añade esto
+                divFormEdit.style.display='block';  //Añade esto
+            };
+        });
         document.getElementById('delete-recipe-btn').addEventListener('click', async () => {
             const password = prompt("Enter password to delete this recipe:");
             if (password) {
