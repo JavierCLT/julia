@@ -21,15 +21,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const toggleBlurAndOverlay = (show) => {
-        if (show) {
-            darkOverlay.style.display = 'block';
-            container.classList.add('blur-background');
-        } else {
-            darkOverlay.style.display = 'none';
-            container.classList.remove('blur-background');
-        }
-        console.log('Toggle blur and overlay:', show); // Log to confirm the function call
-    };
+    if (show) {
+        darkOverlay.style.display = 'block';
+        document.body.classList.add('blur-background');
+    } else {
+        darkOverlay.style.display = 'none';
+        document.body.classList.remove('blur-background');
+    }
+};
 
     const fetchRecipes = async (query) => {
         try {
@@ -117,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add event listeners to the buttons
       document.getElementById('edit-recipe-btn').onclick = () => {
                 console.log('Edit button clicked for recipe ID:', recipeId);
-                addRecipeFormContainer.style.display = 'block';
                 toggleBlurAndOverlay(true);
                 const recipeData = {
                     title: data.Title,
