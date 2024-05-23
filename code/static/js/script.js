@@ -165,17 +165,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Populate the form with recipe data
     document.getElementById('recipe-title-input').value = recipeData.title || '';
-    console.log('Recipe title set to:', recipeData.title); // Log to confirm title value
     document.getElementById('recipe-ingredients-input').value = recipeData.ingredients || '';
-    console.log('Recipe ingredients set to:', recipeData.ingredients); // Log to confirm ingredients value
     document.getElementById('recipe-instructions-input').value = recipeData.instructions || '';
-    console.log('Recipe instructions set to:', recipeData.instructions); // Log to confirm instructions value
     document.getElementById('recipe-tags-input').value = recipeData.tags || '';
-    console.log('Recipe tags set to:', recipeData.tags); // Log to confirm tags value
     document.getElementById('recipe-servings-input').value = recipeData.servings || '';
-    console.log('Recipe servings set to:', recipeData.servings); // Log to confirm servings value
     document.getElementById('recipe-origin-input').value = recipeData.origin || '';
-    console.log('Recipe origin set to:', recipeData.origin); // Log to confirm origin value
 
     // Change the form submit handler to update the recipe
     addRecipeForm.onsubmit = async (event) => {
@@ -205,7 +199,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 };
-
     searchBox.addEventListener('input', handleSearch);
 
     document.getElementById('add-recipe-btn').addEventListener('click', () => {
