@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Populating edit form with data:', recipeData); // Log the data
 
         // Show the add recipe form container
-        addRecipeForm.style.display = 'block'; // Ensure display is set to block
+        addRecipeFormContainer.style.display = 'block'; // Ensure display is set to block
         console.log('Form container display set to block'); // Log to confirm form display change
         toggleBlurAndOverlay(true);
 
