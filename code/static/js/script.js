@@ -158,6 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
 };
 
    const populateEditForm = (recipeId, recipeData) => {
+    document.getElementById('add-recipe-form-container').style.display = 'block';
     console.log('Populating edit form with data:', recipeData); // Log the data
 
     // Show the add recipe form container
