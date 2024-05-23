@@ -213,16 +213,26 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleBlurAndOverlay(false);
     });
 
-    document.addEventListener('click', (event) => {
-        const targetElement = event.target.closest('.recipe-box');
-        if (targetElement) {
-            const recipeId = targetElement.getAttribute('data-recipe-id');
-            if (recipeId) {
-                const recipeTitleText = targetElement.querySelector('.recipe-title').textContent;
-                recipeTitle.textContent = recipeTitleText;
-                fetchAndDisplayRecipeDetails(recipeId);
-                toggleBlurAndOverlay(true);
+    addRecipeForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(addRecipeForm);
+        try {
+            const response = await fetch('/add_recipe', {
+                method: 'POST',
+                body: JSON.stringify(Object.fromEntries(formData)),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
+            alert(data.message);
+            if (data.success) {
+                addRecipeForm.reset();
+                addRecipeFormContainer.style.display = 'none';
+                toggleBlurAndOverlay(false);
             }
+        } catch (error) {
+            console.error('Error adding recipe:', error);
         }
     });
 
