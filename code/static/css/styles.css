@@ -254,7 +254,7 @@ li {
     z-index: 999;
 }
 
-.blur-background > *:not(#recipe-details-container):not(.dark-overlay) {
+.blur-background {
     filter: blur(5px);
 }
 
