@@ -164,12 +164,12 @@ document.addEventListener('DOMContentLoaded', () => {
     toggleBlurAndOverlay(true);
 
     // Populate the form with recipe data
-    document.getElementById('recipe-title-input').value = recipeData.title;
-    document.getElementById('recipe-ingredients-input').value = recipeData.ingredients;
-    document.getElementById('recipe-instructions-input').value = recipeData.instructions;
-    document.getElementById('recipe-tags-input').value = recipeData.tags;
-    document.getElementById('recipe-servings-input').value = recipeData.servings;
-    document.getElementById('recipe-origin-input').value = recipeData.origin;
+    document.getElementById('recipe-title-input').value = recipeData.title || '';
+    document.getElementById('recipe-ingredients-input').value = recipeData.ingredients || '';
+    document.getElementById('recipe-instructions-input').value = recipeData.instructions || '';
+    document.getElementById('recipe-tags-input').value = recipeData.tags || '';
+    document.getElementById('recipe-servings-input').value = recipeData.servings || '';
+    document.getElementById('recipe-origin-input').value = recipeData.origin || '';
 
     // Update the form title and button text for editing
     document.querySelector('#add-recipe-form-container h2').textContent = 'Edit Recipe';
