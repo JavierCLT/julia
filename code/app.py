@@ -1,3 +1,4 @@
+
 from flask import Flask, request, jsonify, render_template
 from flask_caching import Cache
 import mysql.connector
@@ -267,7 +268,7 @@ def update_recipe(recipe_id):
                 cursor.execute("INSERT INTO tags (TagName) VALUES (%s)", (tag.strip(),))
                 tag_id = cursor.lastrowid
             else:
-                tag_id = tag_id[0]
+                tag_id = tag_id['TagID']
             cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
 
         connection.commit()
