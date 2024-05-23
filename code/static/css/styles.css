@@ -228,7 +228,7 @@ li {
 }
 
 .dark-overlay {
-    display: none;
+    display: none;  /* Initially hidden */
     position: fixed;
     top: 0;
     left: 0;
