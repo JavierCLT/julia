@@ -116,7 +116,8 @@ document.addEventListener('DOMContentLoaded', () => {
         recipeDetailsContainer.appendChild(recipeButtons);
 
         // Add event listeners to the buttons
-      document.getElementById('edit-recipe-btn').onclick = () => {
+      document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('edit-recipe-btn').onclick = () => {
                 console.log('Edit button clicked for recipe ID:', recipeId);
                 const recipeData = {
                     title: data.Title,
@@ -129,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('Recipe data:', recipeData); // Log the data
                 populateEditForm(recipeId, recipeData);
             };
-
+        });
         document.getElementById('delete-recipe-btn').addEventListener('click', async () => {
             const password = prompt("Enter password to delete this recipe:");
             if (password) {
