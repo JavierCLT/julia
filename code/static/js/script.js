@@ -154,22 +154,24 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const populateEditForm = (recipeData) => {
-        // Show the add recipe form container
-        addRecipeFormContainer.style.display = 'block';
-        toggleBlurAndOverlay(true);
+    console.log('Populating edit form with data:', recipeData); // Debug log
 
-        // Populate the form with recipe data
-        document.getElementById('recipe-title-input').value = recipeData.title;
-        document.getElementById('recipe-ingredients-input').value = recipeData.ingredients;
-        document.getElementById('recipe-instructions-input').value = recipeData.instructions;
-        document.getElementById('recipe-tags-input').value = recipeData.tags;
-        document.getElementById('recipe-servings-input').value = recipeData.servings;
-        document.getElementById('recipe-origin-input').value = recipeData.origin;
+    // Show the add recipe form container
+    addRecipeFormContainer.style.display = 'block';
+    toggleBlurAndOverlay(true);
 
-        // Update the form title and button text for editing
-        document.querySelector('#add-recipe-form-container h2').textContent = 'Edit Recipe';
-        document.querySelector('#add-recipe-form button[type="submit"]').textContent = 'Save Changes';
-    };
+    // Populate the form with recipe data
+    document.getElementById('recipe-title-input').value = recipeData.title;
+    document.getElementById('recipe-ingredients-input').value = recipeData.ingredients;
+    document.getElementById('recipe-instructions-input').value = recipeData.instructions;
+    document.getElementById('recipe-tags-input').value = recipeData.tags;
+    document.getElementById('recipe-servings-input').value = recipeData.servings;
+    document.getElementById('recipe-origin-input').value = recipeData.origin;
+
+    // Update the form title and button text for editing
+    document.querySelector('#add-recipe-form-container h2').textContent = 'Edit Recipe';
+    document.querySelector('#add-recipe-form button[type="submit"]').textContent = 'Save Changes';
+};
 
     addRecipeForm.onsubmit = async (event) => {
         event.preventDefault();
