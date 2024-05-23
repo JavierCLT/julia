@@ -1,4 +1,5 @@
 
+
 document.addEventListener('DOMContentLoaded', () => {
     const searchBox = document.getElementById('search-box');
     const resultsContainer = document.getElementById('results');
@@ -21,14 +22,15 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const toggleBlurAndOverlay = (show) => {
-    if (show) {
-        darkOverlay.style.display = 'block';
-        document.body.classList.add('blur-background');
-    } else {
-        darkOverlay.style.display = 'none';
-        document.body.classList.remove('blur-background');
-    }
-};
+        if (show) {
+            darkOverlay.style.display = 'block';
+            container.classList.add('blur-background');
+        } else {
+            darkOverlay.style.display = 'none';
+            container.classList.remove('blur-background');
+        }
+        console.log('Toggle blur and overlay:', show); // Log to confirm the function call
+    };
 
     const fetchRecipes = async (query) => {
         try {
@@ -116,7 +118,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add event listeners to the buttons
       document.getElementById('edit-recipe-btn').onclick = () => {
                 console.log('Edit button clicked for recipe ID:', recipeId);
-                toggleBlurAndOverlay(true);
                 const recipeData = {
                     title: data.Title,
                     ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
@@ -126,7 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     origin: data.origin
                 };
                 console.log('Recipe data:', recipeData); // Log the data
-                document.getElementById('add-recipe-form-container').style.display = 'block';
                 populateEditForm(recipeId, recipeData);
             };
 
@@ -159,7 +159,6 @@ document.addEventListener('DOMContentLoaded', () => {
 };
 
    const populateEditForm = (recipeId, recipeData) => {
-    
     console.log('Populating edit form with data:', recipeData); // Log the data
 
     // Show the add recipe form container
