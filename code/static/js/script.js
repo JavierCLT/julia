@@ -192,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.success) {
                 addRecipeForm.reset();
                 addRecipeFormContainer.style.display = 'none';
-                toggleBlurAndOverlay(false);
+                toggleBlurAndOverlay(true);
                 // Refresh the recipe details
                 fetchAndDisplayRecipeDetails(recipeId);
             }
