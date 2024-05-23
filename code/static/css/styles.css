@@ -1,4 +1,5 @@
 
+
 :root {
     --rich-black: #0D1F2D;
     --paynes-gray: #546A7B;
@@ -254,7 +255,7 @@ li {
     z-index: 999;
 }
 
-.blur-background {
+.blur-background > *:not(#recipe-details-container):not(.dark-overlay) {
     filter: blur(5px);
 }
 
