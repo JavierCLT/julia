@@ -148,6 +148,7 @@ h1 {
 }
 
 #add-recipe-form-container {
+    display: none;  /* Initially hidden */
     background-color: var(--misty-rose);
     color: var(--rich-black);
     padding: 30px;
@@ -302,7 +303,7 @@ button[type="button"] {
 
 button[type="submit"]:hover {
     background-color: var(--cadet-gray);
-    color: var (--desert-sand);
+    color: var(--desert-sand);
 }
 
 button[type="button"]:hover {
