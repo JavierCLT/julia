@@ -117,6 +117,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add event listeners to the buttons
       document.getElementById('edit-recipe-btn').onclick = () => {
                 console.log('Edit button clicked for recipe ID:', recipeId);
+                addRecipeFormContainer.style.display = 'block';
+                toggleBlurAndOverlay(true);
                 const recipeData = {
                     title: data.Title,
                     ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
@@ -192,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.success) {
                 addRecipeForm.reset();
                 addRecipeFormContainer.style.display = 'none';
-                toggleBlurAndOverlay(true);
+                toggleBlurAndOverlay(false);
                 // Refresh the recipe details
                 fetchAndDisplayRecipeDetails(recipeId);
             }
