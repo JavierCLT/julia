@@ -126,6 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     origin: data.origin
                 };
                 console.log('Recipe data:', recipeData); // Log the data
+                document.getElementById('add-recipe-form-container').style.display = 'block';
                 populateEditForm(recipeId, recipeData);
             };
 
@@ -158,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
 };
 
    const populateEditForm = (recipeId, recipeData) => {
-    document.getElementById('add-recipe-form-container').style.display = 'block';
+    
     console.log('Populating edit form with data:', recipeData); // Log the data
 
     // Show the add recipe form container
