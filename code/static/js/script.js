@@ -211,6 +211,11 @@ document.addEventListener('DOMContentLoaded', () => {
         addRecipeFormContainer.style.display = 'block';
         toggleBlurAndOverlay(true);
     });
+
+    document.getElementById('edit-recipe-btn').addEventListener('click', () => {
+        addRecipeFormContainer.style.display = 'block';
+        toggleBlurAndOverlay(true);
+    });
     
     document.getElementById('cancel-btn').addEventListener('click', () => {
         addRecipeFormContainer.style.display = 'none';
