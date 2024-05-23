@@ -204,23 +204,13 @@ document.addEventListener('DOMContentLoaded', () => {
     searchBox.addEventListener('input', handleSearch);
 
     document.getElementById('add-recipe-btn').addEventListener('click', () => {
-        // Clear the form for adding a new recipe
-        addRecipeForm.reset();
-        currentRecipeId = null; // Reset the current recipe ID
-
-        // Show the add recipe form container
         addRecipeFormContainer.style.display = 'block';
         toggleBlurAndOverlay(true);
-
-        // Update the form title and button text for adding
-        document.querySelector('#add-recipe-form-container h2').textContent = 'Add New Recipe';
-        document.querySelector('#add-recipe-form button[type="submit"]').textContent = 'Add Recipe';
     });
-
+    
     document.getElementById('cancel-btn').addEventListener('click', () => {
         addRecipeFormContainer.style.display = 'none';
         toggleBlurAndOverlay(false);
-        currentRecipeId = null; // Reset the current recipe ID
     });
 
     document.addEventListener('click', (event) => {
