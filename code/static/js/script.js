@@ -1,5 +1,4 @@
 
-
 document.addEventListener('DOMContentLoaded', () => {
     const searchBox = document.getElementById('search-box');
     const resultsContainer = document.getElementById('results');
@@ -118,7 +117,8 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
         recipeDetailsContainer.appendChild(recipeButtons);
 
         // Add event listeners to the buttons
-        document.getElementById('edit-recipe-btn').addEventListener('click', () => {
+        document.getElementById('edit-recipe-btn').onclick = () => {
+            // Handle edit functionality
             console.log('Edit button clicked for recipe ID:', recipeId);
             const recipeData = {
                 title: data.Title,
@@ -128,9 +128,8 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
                 servings: data.servings,
                 origin: data.origin
             };
-            console.log('Populating edit form with data:', recipeData); // Debug log
             populateEditForm(recipeId, recipeData);
-        });
+        };
 
         document.getElementById('delete-recipe-btn').onclick = async () => {
             const password = prompt("Enter password to delete this recipe:");
@@ -173,7 +172,6 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
         document.getElementById('recipe-instructions-input').value = recipeData.instructions;
         document.getElementById('recipe-tags-input').value = recipeData.tags;
         document.getElementById('recipe-servings-input').value = recipeData.servings;
-        document.getElementById('recipe-origin-input').value = recipeData.origin;
 
         // Change the form submit handler to update the recipe
         addRecipeForm.onsubmit = async (event) => {
