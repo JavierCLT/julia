@@ -112,14 +112,13 @@ def recipe_details(recipe_id):
         """, (recipe_id,))
         details['tags'] = [tag['TagName'] for tag in cursor.fetchall()]
 
-        # Fetch servings, origin, and title
+        # Fetch servings and origin
         cursor.execute("""
-            SELECT Title, Servings, Origin
+            SELECT Servings, Origin
             FROM recipes
             WHERE RecipeID = %s
         """, (recipe_id,))
         result = cursor.fetchone()
-        details['title'] = result['Title']
         details['servings'] = result['Servings']
         details['origin'] = result['Origin']
 
