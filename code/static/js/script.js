@@ -68,10 +68,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 300);
 
     const fetchAndDisplayRecipeDetails = async (recipeId) => {
-    try {
-        const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
-        const data = await response.json();
-        console.log('API Response:', data); // Log the API response
+        try {
+            const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
+            const data = await response.json();
+            console.log('API Response:', data); // Log the API response
 
         let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
         data.ingredients.forEach(ingredient => {
