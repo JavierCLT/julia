@@ -160,11 +160,11 @@ document.addEventListener('DOMContentLoaded', () => {
    const populateEditForm = (recipeId, recipeData) => {
     console.log('Populating edit form with data:', recipeData); // Log the data
 
-    // Show the add recipe form container
-    addRecipeFormContainer.style.display = 'block'; // Ensure display is set to block
-    console.log('Form container display set to block'); // Log to confirm form display change
-    toggleBlurAndOverlay(true);
-
+        document.getElementById('edit-recipe-btn').addEventListener('click', () => {
+        addRecipeFormContainer.style.display = 'block';
+        toggleBlurAndOverlay(true);
+    });
+       
     // Populate the form with recipe data
     document.getElementById('recipe-title-input').value = recipeData.title || '';
     document.getElementById('recipe-ingredients-input').value = recipeData.ingredients || '';
@@ -212,11 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleBlurAndOverlay(true);
     });
 
-    document.getElementById('edit-recipe-btn').addEventListener('click', () => {
-        addRecipeFormContainer.style.display = 'block';
-        toggleBlurAndOverlay(true);
-    });
-    
+      
     document.getElementById('cancel-btn').addEventListener('click', () => {
         addRecipeFormContainer.style.display = 'none';
         toggleBlurAndOverlay(false);
