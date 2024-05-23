@@ -1,4 +1,3 @@
-
 from flask import Flask, request, jsonify, render_template
 from flask_caching import Cache
 import mysql.connector
