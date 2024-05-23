@@ -160,11 +160,11 @@ document.addEventListener('DOMContentLoaded', () => {
    const populateEditForm = (recipeId, recipeData) => {
     console.log('Populating edit form with data:', recipeData); // Log the data
 
-        document.getElementById('edit-recipe-btn').addEventListener('click', () => {
-        addRecipeFormContainer.style.display = 'block';
-        toggleBlurAndOverlay(true);
-    });
-       
+    // Show the add recipe form container
+    addRecipeFormContainer.style.display = 'block'; // Ensure display is set to block
+    console.log('Form container display set to block'); // Log to confirm form display change
+    toggleBlurAndOverlay(true);
+
     // Populate the form with recipe data
     document.getElementById('recipe-title-input').value = recipeData.title || '';
     document.getElementById('recipe-ingredients-input').value = recipeData.ingredients || '';
@@ -175,34 +175,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Change the form submit handler to update the recipe
     addRecipeForm.onsubmit = async (event) => {
-    event.preventDefault();
-    const formData = new FormData(addRecipeForm);
-    const updatedRecipeData = Object.fromEntries(formData);
+        event.preventDefault();
+        const formData = new FormData(addRecipeForm);
+        const updatedRecipeData = Object.fromEntries(formData);
 
-    console.log('Form data being sent:', updatedRecipeData); // Log form data
-
-    try {
-        const response = await fetch(`/update_recipe/${recipeId}`, {
-            method: 'POST',
-            body: JSON.stringify(updatedRecipeData),
-            headers: {
-                'Content-Type': 'application/json'
+        try {
+            const response = await fetch(`/update_recipe/${recipeId}`, {
+                method: 'POST',
+                body: JSON.stringify(updatedRecipeData),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
+            alert(data.message);
+            if (data.success) {
+                addRecipeForm.reset();
+                addRecipeFormContainer.style.display = 'none';
+                toggleBlurAndOverlay(false);
+                // Refresh the recipe details
+                fetchAndDisplayRecipeDetails(recipeId);
             }
-        });
-        const data = await response.json();
-        alert(data.message);
-        if (data.success) {
-            addRecipeForm.reset();
-            addRecipeFormContainer.style.display = 'none';
-            toggleBlurAndOverlay(false);
-            // Refresh the recipe details
-            fetchAndDisplayRecipeDetails(recipeId);
+        } catch (error) {
+            console.error('Error updating recipe:', error);
         }
-    } catch (error) {
-        console.error('Error updating recipe:', error);
-    }
-};
-       
+    };
 };
     
     searchBox.addEventListener('input', handleSearch);
