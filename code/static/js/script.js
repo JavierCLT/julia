@@ -20,15 +20,15 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const toggleBlurAndOverlay = (show) => {
-    if (show) {
-        darkOverlay.style.display = 'block';
-        container.classList.add('blur-background');
-    } else {
-        darkOverlay.style.display = 'none';
-        container.classList.remove('blur-background');
-    }
-    console.log('Toggle blur and overlay:', show); // Log to confirm the function call
-};
+        if (show) {
+            darkOverlay.style.display = 'block';
+            container.classList.add('blur-background');
+        } else {
+            darkOverlay.style.display = 'none';
+            container.classList.remove('blur-background');
+        }
+        console.log('Toggle blur and overlay:', show); // Log to confirm the function call
+    };
 
     const fetchRecipes = async (query) => {
         try {
@@ -115,18 +115,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Add event listeners to the buttons
       document.getElementById('edit-recipe-btn').onclick = () => {
-    console.log('Edit button clicked for recipe ID:', recipeId); // Log to verify click event
-    const recipeData = {
-        title: data.Title,
-        ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
-        instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
-        tags: data.tags.join(','),
-        servings: data.servings,
-        origin: data.origin // Make sure this field is correct in the response
-    };
-    console.log('Recipe data:', recipeData); // Log the data to ensure it's correct
-    populateEditForm(recipeId, recipeData);
-};
+                console.log('Edit button clicked for recipe ID:', recipeId);
+                const recipeData = {
+                    title: data.Title,
+                    ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
+                    instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
+                    tags: data.tags.join(','),
+                    servings: data.servings,
+                    origin: data.origin
+                };
+                console.log('Recipe data:', recipeData); // Log the data
+                populateEditForm(recipeId, recipeData);
+            };
 
         document.getElementById('delete-recipe-btn').addEventListener('click', async () => {
             const password = prompt("Enter password to delete this recipe:");
@@ -157,49 +157,49 @@ document.addEventListener('DOMContentLoaded', () => {
 };
 
    const populateEditForm = (recipeId, recipeData) => {
-    console.log('Populating edit form with data:', recipeData); // Log the data
+        console.log('Populating edit form with data:', recipeData); // Log the data
 
-    // Show the add recipe form container
-    addRecipeFormContainer.style.display = 'block'; // Ensure display is set to block
-    console.log('Form container display set to block'); // Log to confirm form display change
-    toggleBlurAndOverlay(true);
+        // Show the add recipe form container
+        addRecipeFormContainer.style.display = 'block'; // Ensure display is set to block
+        console.log('Form container display set to block'); // Log to confirm form display change
+        toggleBlurAndOverlay(true);
 
-    // Populate the form with recipe data
-    document.getElementById('recipe-title-input').value = recipeData.title || '';
-    document.getElementById('recipe-ingredients-input').value = recipeData.ingredients || '';
-    document.getElementById('recipe-instructions-input').value = recipeData.instructions || '';
-    document.getElementById('recipe-tags-input').value = recipeData.tags || '';
-    document.getElementById('recipe-servings-input').value = recipeData.servings || '';
-    document.getElementById('recipe-origin-input').value = recipeData.origin || '';
+        // Populate the form with recipe data
+        document.getElementById('recipe-title-input').value = recipeData.title || '';
+        document.getElementById('recipe-ingredients-input').value = recipeData.ingredients || '';
+        document.getElementById('recipe-instructions-input').value = recipeData.instructions || '';
+        document.getElementById('recipe-tags-input').value = recipeData.tags || '';
+        document.getElementById('recipe-servings-input').value = recipeData.servings || '';
+        document.getElementById('recipe-origin-input').value = recipeData.origin || '';
 
-    // Change the form submit handler to update the recipe
-    addRecipeForm.onsubmit = async (event) => {
-        event.preventDefault();
-        const formData = new FormData(addRecipeForm);
-        const updatedRecipeData = Object.fromEntries(formData);
+        // Change the form submit handler to update the recipe
+        addRecipeForm.onsubmit = async (event) => {
+            event.preventDefault();
+            const formData = new FormData(addRecipeForm);
+            const updatedRecipeData = Object.fromEntries(formData);
 
-        try {
-            const response = await fetch(`/update_recipe/${recipeId}`, {
-                method: 'POST',
-                body: JSON.stringify(updatedRecipeData),
-                headers: {
-                    'Content-Type': 'application/json'
+            try {
+                const response = await fetch(`/update_recipe/${recipeId}`, {
+                    method: 'POST',
+                    body: JSON.stringify(updatedRecipeData),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                alert(data.message);
+                if (data.success) {
+                    addRecipeForm.reset();
+                    addRecipeFormContainer.style.display = 'none';
+                    toggleBlurAndOverlay(false);
+                    // Refresh the recipe details
+                    fetchAndDisplayRecipeDetails(recipeId);
                 }
-            });
-            const data = await response.json();
-            alert(data.message);
-            if (data.success) {
-                addRecipeForm.reset();
-                addRecipeFormContainer.style.display = 'none';
-                toggleBlurAndOverlay(false);
-                // Refresh the recipe details
-                fetchAndDisplayRecipeDetails(recipeId);
+            } catch (error) {
+                console.error('Error updating recipe:', error);
             }
-        } catch (error) {
-            console.error('Error updating recipe:', error);
-        }
+        };
     };
-};
     
     searchBox.addEventListener('input', handleSearch);
 
