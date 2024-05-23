@@ -1,3 +1,4 @@
+
 :root {
     --rich-black: #0D1F2D;
     --paynes-gray: #546A7B;
@@ -156,15 +157,6 @@ h1 {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-#add-recipe-form {
-    display: block;  /* Initially hidden */
-    background-color: var(--misty-rose);
-    color: var(--rich-black);
-    padding: 30px;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 .edit-recipe-btn,
 .delete-recipe-btn {
     background-color: var(--desert-sand);
@@ -173,6 +165,7 @@ h1 {
     border-radius: 5px;
     padding: 10px 20px;
     cursor: pointer;
+    margin: 10px;
 }
 
 .edit-recipe-btn:hover,
@@ -190,6 +183,7 @@ h3 {
 }
 
 p {
+    
     padding-inline-start: 40px; /* Apply padding inline start */ 
     color: var(--rich-black);
 }
@@ -200,12 +194,16 @@ p {
     color: var(--rich-black);
 }
 
+
+
 li {
     margin-bottom: 5px;
     font-weight: normal;
     font-size: 1em;
     color: var(--rich-black);
 }
+
+
 
 .card {
     background-color: var(--cadet-gray);
@@ -226,7 +224,7 @@ li {
 
 .recipe-box:hover {
     transform: translateY(-5px);
-    background-color: var(--desert-sand);
+    background-color: var (--desert-sand);
 }
 
 .dark-overlay {
@@ -262,6 +260,13 @@ li {
 form {
     
     flex-direction: column;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.form-container.edit-mode {
+    border: 2px solid var(--paynes-gray);
+    background-color: var(--misty-rose);
 }
 
 label {
@@ -273,7 +278,7 @@ input[type="password"],
 input[type="number"],
 textarea {
     padding: 10px;
-    resize: vertical; /* Allow resizing both horizontally and vertically */
+    resize: vertical;
     font-size: 1em;
     font-family: var(--font-family-body);
     border: 1px solid #ccc;
