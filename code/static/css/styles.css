@@ -156,6 +156,15 @@ h1 {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+#add-recipe-form {
+    display: block;  /* Initially hidden */
+    background-color: var(--misty-rose);
+    color: var(--rich-black);
+    padding: 30px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .edit-recipe-btn,
 .delete-recipe-btn {
     background-color: var(--desert-sand);
