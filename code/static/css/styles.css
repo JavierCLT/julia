@@ -255,7 +255,7 @@ li {
     z-index: 999;
 }
 
-.blur-background > *:not(#recipe-details-container):not(.dark-overlay) {
+.blur-background > *:not(#recipe-details-container):not(#add-recipe-form-container):not(.dark-overlay) {
     filter: blur(5px);
 }
 
