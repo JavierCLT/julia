@@ -1,5 +1,4 @@
 
-
 document.addEventListener('DOMContentLoaded', () => {
     const searchBox = document.getElementById('search-box');
     const resultsContainer = document.getElementById('results');
