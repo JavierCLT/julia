@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -40,10 +41,10 @@
                 </ul>
             </div>
             <div class="card tags-card">
-                <h3><i class="fas fa-tags"></i> Tags:</h3>
-                <p id="tags-list" class="tags-list">
-                    <!-- Tag items will be inserted here by JavaScript -->
-                </p>
+            <h3><i class="fas fa-tags"></i> Tags:</h3>
+            <p id="tags-list" class="tags-list">
+                <!-- Tag items will be inserted here by JavaScript -->
+            </p>
             </div>
             <div class="card servings-card">
                 <h3><i class="fas fa-users"></i> Servings:</h3>
@@ -57,28 +58,28 @@
     </div>
     
     <div id="add-recipe-form-container" class="form-container" style="display:none;">
-    <h2>Add/Edit Recipe</h2>
-    <form id="add-recipe-form">
-        <label for="recipe-title-input">Title:</label>
-        <input type="text" id="recipe-title-input" name="title" required>
-        <label for="recipe-ingredients-input">Ingredients (one per line, e.g., 1 tsp of salt):</label>
-        <textarea id="recipe-ingredients-input" name="ingredients" required></textarea>
-        <label for="recipe-instructions-input">Instructions (one per line):</label>
-        <textarea id="recipe-instructions-input" name="instructions" required></textarea>
-        <label for="recipe-tags-input">Tags (comma separated, e.g., breakfast, quick):</label>
-        <input type="text" id="recipe-tags-input" name="tags" required>
-        <!-- Error message positioned below the tags input field -->
-        <p id="error-message" style="color: red; display: none;">Duplicate tags are not allowed.</p>
-        <label for="recipe-servings-input">Servings:</label>
-        <input type="text" id="recipe-servings-input" name="servings" required>
-        <label for="recipe-origin-input">Origin:</label>
-        <input type="text" id="recipe-origin-input" name="origin" required>
-        <label for="password-input">Password:</label>
-        <input type="password" id="password-input" name="password" required>
-        <button type="submit">Save Recipe</button>
-        <button type="button" id="cancel-btn">Cancel</button>
-    </form>
-</div>
+        <h2>Add New Recipe</h2>
+        <form id="add-recipe-form">
+            <label for="recipe-title-input">Title:</label>
+            <input type="text" id="recipe-title-input" name="title" required>
+            <label for="recipe-ingredients-input">Ingredients (one per line, e.g., 1 tsp of salt):</label>
+            <textarea id="recipe-ingredients-input" name="ingredients" required></textarea>
+            <label for="recipe-instructions-input">Instructions (one per line):</label>
+            <textarea id="recipe-instructions-input" name="instructions" required></textarea>
+            <label for="recipe-tags-input">Tags (comma separated, e.g., breakfast, quick):</label>
+            <input type="text" id="recipe-tags-input" name="tags" required>
+            <!-- Error message positioned below the tags input field -->
+            <p id="error-message" style="color: red; display: none;">Duplicate tags are not allowed.</p>
+            <label for="recipe-servings-input">Servings:</label>
+            <input type="text" id="recipe-servings-input" name="servings" required>
+            <label for="recipe-origin-input">Origin:</label>
+            <input type="text" id="recipe-origin-input" name="origin" required>
+            <label for="password-input">Password:</label>
+            <input type="password" id="password-input" name="password" required>
+            <button type="submit">Add Recipe</button>
+            <button type="button" id="cancel-btn">Cancel</button>
+        </form>
+    </div>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
