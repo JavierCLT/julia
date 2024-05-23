@@ -7,11 +7,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const addRecipeForm = document.getElementById('add-recipe-form');
     const recipeDetailsContainer = document.getElementById('recipe-details-container');
     const recipeTitle = document.getElementById('recipe-title');
+    const deleteRecipeBtn = document.getElementById('delete-recipe-btn');
+    const editRecipeBtn = document.getElementById('edit-recipe-btn');
     const darkOverlay = document.getElementById('darkOverlay');
     const container = document.querySelector('.container');
     const errorMessage = document.getElementById('error-message');
-
-    let currentRecipeId = null;  // Store the current recipe ID being edited
 
     const debounce = (func, delay) => {
         let timer;
@@ -29,9 +29,13 @@ document.addEventListener('DOMContentLoaded', () => {
             darkOverlay.style.display = 'none';
             container.classList.remove('blur-background');
         }
-        console.log('Toggle blur and overlay:', show); // Log to confirm the function call
     };
 
+    const showLoadingIndicator = (show) => {
+    const loadingIndicator = document.getElementById('loading-indicator');
+    loadingIndicator.style.display = show ? 'block' : 'none';
+    };
+    
     const fetchRecipes = async (query) => {
         try {
             const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
@@ -69,12 +73,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 300);
 
-    const fetchAndDisplayRecipeDetails = async (recipeId) => {
-        try {
-            const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
-            const data = await response.json();
-            console.log('API Response:', data); // Log the API response
-
+const fetchAndDisplayRecipeDetails = async (recipeId) => {
+    try {
+        const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
+        const data = await response.json();
         let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
         data.ingredients.forEach(ingredient => {
             ingredientsHtml += `<li>${ingredient.Description}</li>`;
@@ -116,22 +118,21 @@ document.addEventListener('DOMContentLoaded', () => {
         recipeDetailsContainer.appendChild(recipeButtons);
 
         // Add event listeners to the buttons
-      document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('edit-recipe-btn').onclick = () => {
-                console.log('Edit button clicked for recipe ID:', recipeId);
-                const recipeData = {
-                    title: data.Title,
-                    ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
-                    instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
-                    tags: data.tags.join(','),
-                    servings: data.servings,
-                    origin: data.origin
-                };
-                console.log('Recipe data:', recipeData); // Log the data
-                populateEditForm(recipeId, recipeData);
+        document.getElementById('edit-recipe-btn').addEventListener('click', () => {
+            console.log('Edit button clicked for recipe ID:', recipeId);
+            const recipeData = {
+                title: data.Title,
+                ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
+                instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
+                tags: data.tags.join(','),
+                servings: data.servings,
+                origin: data.origin
             };
+            console.log('Populating edit form with data:', recipeData); // Debug log
+            populateEditForm(recipeId, recipeData);
         });
-        document.getElementById('delete-recipe-btn').addEventListener('click', async () => {
+
+        document.getElementById('delete-recipe-btn').onclick = async () => {
             const password = prompt("Enter password to delete this recipe:");
             if (password) {
                 try {
@@ -152,39 +153,93 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.error('Error deleting recipe:', error);
                 }
             }
-        });
+        };
 
     } catch (error) {
         console.error('Error fetching recipe details:', error);
     }
 };
 
-   const populateEditForm = (recipeId, recipeData) => {
-    console.log('Populating edit form with data:', recipeData); // Log the data
 
-    // Show the add recipe form container
-    addRecipeFormContainer.style.display = 'block'; // Ensure display is set to block
-    console.log('Form container display set to block'); // Log to confirm form display change
-    toggleBlurAndOverlay(true);
 
-    // Populate the form with recipe data
-    document.getElementById('recipe-title-input').value = recipeData.title || '';
-    document.getElementById('recipe-ingredients-input').value = recipeData.ingredients || '';
-    document.getElementById('recipe-instructions-input').value = recipeData.instructions || '';
-    document.getElementById('recipe-tags-input').value = recipeData.tags || '';
-    document.getElementById('recipe-servings-input').value = recipeData.servings || '';
-    document.getElementById('recipe-origin-input').value = recipeData.origin || '';
+    const populateEditForm = (recipeId, recipeData) => {
+        // Show the add recipe form container
+        addRecipeFormContainer.style.display = 'block';
+        toggleBlurAndOverlay(true);
 
-    // Change the form submit handler to update the recipe
-    addRecipeForm.onsubmit = async (event) => {
+        // Populate the form with recipe data
+        document.getElementById('recipe-title-input').value = recipeData.title;
+        document.getElementById('recipe-ingredients-input').value = recipeData.ingredients;
+        document.getElementById('recipe-instructions-input').value = recipeData.instructions;
+        document.getElementById('recipe-tags-input').value = recipeData.tags;
+        document.getElementById('recipe-servings-input').value = recipeData.servings;
+        document.getElementById('recipe-origin-input').value = recipeData.origin;
+
+        // Change the form submit handler to update the recipe
+        addRecipeForm.onsubmit = async (event) => {
+            event.preventDefault();
+            const formData = new FormData(addRecipeForm);
+            const updatedRecipeData = Object.fromEntries(formData);
+
+            try {
+                const response = await fetch(`/update_recipe/${recipeId}`, {
+                    method: 'POST',
+                    body: JSON.stringify(updatedRecipeData),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                alert(data.message);
+                if (data.success) {
+                    addRecipeForm.reset();
+                    addRecipeFormContainer.style.display = 'none';
+                    toggleBlurAndOverlay(false);
+                    // Refresh the recipe details
+                    fetchAndDisplayRecipeDetails(recipeId);
+                }
+            } catch (error) {
+                console.error('Error updating recipe:', error);
+            }
+        };
+    };
+
+    const checkDuplicateTags = (tags) => {
+        const tagSet = new Set(tags);
+        return tagSet.size !== tags.length;
+    };
+
+    searchBox.addEventListener('input', handleSearch);
+
+    document.getElementById('add-recipe-btn').addEventListener('click', () => {
+        addRecipeFormContainer.style.display = 'block';
+        toggleBlurAndOverlay(true);
+    });
+
+    document.getElementById('cancel-btn').addEventListener('click', () => {
+        addRecipeFormContainer.style.display = 'none';
+        toggleBlurAndOverlay(false);
+    });
+
+    addRecipeForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const formData = new FormData(addRecipeForm);
-        const updatedRecipeData = Object.fromEntries(formData);
+        const tags = formData.get('tags').split(',').map(tag => tag.trim());
+
+        if (checkDuplicateTags(tags)) {
+            errorMessage.textContent = 'Duplicate tags are not allowed.';
+            errorMessage.style.display = 'block';
+            return;
+        } else {
+            errorMessage.style.display = 'none';
+        }
+
+        formData.set('tags', tags.join(',')); // Ensure tags are properly formatted
 
         try {
-            const response = await fetch(`/update_recipe/${recipeId}`, {
+            const response = await fetch('/add_recipe', {
                 method: 'POST',
-                body: JSON.stringify(updatedRecipeData),
+                body: JSON.stringify(Object.fromEntries(formData)),
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -195,26 +250,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 addRecipeForm.reset();
                 addRecipeFormContainer.style.display = 'none';
                 toggleBlurAndOverlay(false);
-                // Refresh the recipe details
-                fetchAndDisplayRecipeDetails(recipeId);
             }
         } catch (error) {
-            console.error('Error updating recipe:', error);
+            console.error('Error adding recipe:', error);
         }
-    };
-};
-    
-    searchBox.addEventListener('input', handleSearch);
-
-    document.getElementById('add-recipe-btn').addEventListener('click', () => {
-        addRecipeFormContainer.style.display = 'block';
-        toggleBlurAndOverlay(true);
-    });
-
-      
-    document.getElementById('cancel-btn').addEventListener('click', () => {
-        addRecipeFormContainer.style.display = 'none';
-        toggleBlurAndOverlay(false);
     });
 
     document.addEventListener('click', (event) => {
@@ -239,7 +278,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!addRecipeFormContainer.contains(event.target) && addRecipeFormContainer.style.display === 'block' && !event.target.closest('#add-recipe-btn')) {
             addRecipeFormContainer.style.display = 'none';
             toggleBlurAndOverlay(false);
-            currentRecipeId = null; // Reset the current recipe ID
         }
     });
 });
