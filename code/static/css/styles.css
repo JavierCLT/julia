@@ -164,6 +164,7 @@ h1 {
     border-radius: 5px;
     padding: 10px 20px;
     cursor: pointer;
+    margin: 10px;
 }
 
 .edit-recipe-btn:hover,
@@ -262,6 +263,11 @@ form {
     margin-right: 20px;
 }
 
+.form-container.edit-mode {
+    border: 2px solid var(--paynes-gray);
+    background-color: var(--misty-rose);
+}
+
 label {
     margin: 10px 0 5px;
 }
@@ -271,7 +277,7 @@ input[type="password"],
 input[type="number"],
 textarea {
     padding: 10px;
-    resize: vertical; /* Allow resizing both horizontally and vertically */
+    resize: vertical;
     font-size: 1em;
     font-family: var(--font-family-body);
     border: 1px solid #ccc;
