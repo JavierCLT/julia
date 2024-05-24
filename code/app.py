@@ -80,10 +80,21 @@ def search_recipes():
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
 @cache.cached(timeout=60)
 def recipe_details(recipe_id):
-    details = {'ingredients': [], 'instructions': [], 'tags': [], 'servings': None, 'origin': None}
+    details = {'ingredients': [], 'instructions': [], 'tags': [], 'servings': None, 'origin': None, 'title': None}
     try:
         connection = connection_pool.get_connection()
         cursor = connection.cursor(dictionary=True)
+
+        # Fetch title, servings, and origin
+        cursor.execute("""
+            SELECT Title, Servings, Origin
+            FROM recipes
+            WHERE RecipeID = %s
+        """, (recipe_id,))
+        result = cursor.fetchone()
+        details['title'] = result['Title']
+        details['servings'] = result['Servings']
+        details['origin'] = result['Origin']
 
         # Fetch ingredients
         cursor.execute("""
@@ -111,16 +122,6 @@ def recipe_details(recipe_id):
             WHERE recipetags.RecipeID = %s
         """, (recipe_id,))
         details['tags'] = [tag['TagName'] for tag in cursor.fetchall()]
-
-        # Fetch servings and origin
-        cursor.execute("""
-            SELECT Servings, Origin
-            FROM recipes
-            WHERE RecipeID = %s
-        """, (recipe_id,))
-        result = cursor.fetchone()
-        details['servings'] = result['Servings']
-        details['origin'] = result['Origin']
 
     except Error as e:
         print(f"Error while connecting to MySQL or executing query: {e}")
