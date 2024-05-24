@@ -165,7 +165,7 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
 };
 
 
-    const populateEditForm = (recipeId, recipeData) => {
+ const populateEditForm = (recipeId, recipeData) => {
     console.log('Populating edit form with data:', recipeData); // Log the data
 
     // Show the add recipe form container
@@ -185,13 +185,15 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
     addRecipeForm.onsubmit = async (event) => {
         event.preventDefault();
         const formData = new FormData(addRecipeForm);
-        const updatedRecipeData = Object.fromEntries(formData);
-        console.log('Updated recipe data being sent:', updatedRecipeData); // Log the data being sent
+
+        // Convert FormData to a plain object
+        const plainFormData = Object.fromEntries(formData.entries());
+        console.log('Updated recipe data being sent:', plainFormData); // Log the data being sent
 
         try {
             const response = await fetch(`/update_recipe/${recipeId}`, {
                 method: 'POST',
-                body: JSON.stringify(updatedRecipeData),
+                body: JSON.stringify(plainFormData),
                 headers: {
                     'Content-Type': 'application/json'
                 }
