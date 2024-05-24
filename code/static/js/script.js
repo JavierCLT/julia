@@ -186,6 +186,7 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
         event.preventDefault();
         const formData = new FormData(addRecipeForm);
         const updatedRecipeData = Object.fromEntries(formData);
+        console.log('Updated recipe data being sent:', updatedRecipeData); // Log the data being sent
 
         try {
             const response = await fetch(`/update_recipe/${recipeId}`, {
@@ -196,6 +197,7 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
                 }
             });
             const data = await response.json();
+            console.log('Response from server:', data); // Log the response from the server
             alert(data.message);
             if (data.success) {
                 addRecipeForm.reset();
@@ -206,6 +208,7 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
             }
         } catch (error) {
             console.error('Error updating recipe:', error);
+            alert('Error updating recipe: ' + error.message); // Alert the error message
         }
     };
 };
