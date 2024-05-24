@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const darkOverlay = document.getElementById('darkOverlay');
     const container = document.querySelector('.container');
     const errorMessage = document.getElementById('error-message');
-    const messageContainer = document.getElementById('message-container'); // Assuming there's a div for messages
     let formJustOpened = false;
 
     const debounce = (func, delay) => {
@@ -36,15 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
         loadingIndicator.style.display = show ? 'block' : 'none';
     };
     
-    const showMessage = (message) => {
-        messageContainer.textContent = ''; // Clear any existing message
-        messageContainer.textContent = message;
-        messageContainer.classList.add('show');
-        setTimeout(() => {
-            messageContainer.classList.remove('show');
-        }, 2000); // Message will disappear after 2 seconds
-    };
-
     const fetchRecipes = async (query) => {
         try {
             const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
@@ -157,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         });
                         const data = await response.json();
-                        showMessage(data.message);
+                        alert(data.message);
                         if (data.success) {
                             recipeDetailsContainer.style.display = 'none';
                             toggleBlurAndOverlay(false);
@@ -205,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
                 const data = await response.json();
-                showMessage(data.message);
+                alert(data.message);
                 if (data.success) {
                     addRecipeForm.reset();
                     addRecipeFormContainer.style.display = 'none';
@@ -260,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             const data = await response.json();
-            showMessage(data.message);
+            alert(data.message);
             if (data.success) {
                 addRecipeForm.reset();
                 addRecipeFormContainer.style.display = 'none';
