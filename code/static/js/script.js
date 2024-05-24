@@ -117,8 +117,10 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
         `;
         recipeDetailsContainer.appendChild(recipeButtons);
 
+        let formJustOpened = false;
         // Add event listeners to the buttons
         document.getElementById('edit-recipe-btn').onclick = () => {
+            formJustOpened = true;
             console.log('Edit button clicked for recipe ID:', recipeId);
             const recipeData = {
                 title: data.title,
@@ -130,7 +132,9 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
             };
             console.log('Recipe data:', recipeData); // Log the data
             populateEditForm(recipeId, recipeData);
-        };
+            setTimeout(() => { formJustOpened = false; }, 100); // Allow some time before enabling the close logic again
+};
+        
 
         document.getElementById('delete-recipe-btn').onclick = async () => {
             const password = prompt("Enter password to delete this recipe:");
