@@ -273,6 +273,7 @@ def update_recipe(recipe_id):
 
         connection.commit()
         cursor.close()
+        return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
     except Error as e:
         print(f"Error while updating recipe: {e}")
         return jsonify({'success': False, 'message': 'An error occurred while updating the recipe.'}), 500
