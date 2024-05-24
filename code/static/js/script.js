@@ -117,10 +117,9 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
         `;
         recipeDetailsContainer.appendChild(recipeButtons);
 
-        let formJustOpened = false;
+        
         // Add event listeners to the buttons
         document.getElementById('edit-recipe-btn').onclick = () => {
-            formJustOpened = true;
             console.log('Edit button clicked for recipe ID:', recipeId);
             const recipeData = {
                 title: data.title,
