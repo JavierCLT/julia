@@ -121,7 +121,7 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
         document.getElementById('edit-recipe-btn').onclick = () => {
             console.log('Edit button clicked for recipe ID:', recipeId);
             const recipeData = {
-                title: data.Title,
+                title: data.title,
                 ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
                 instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
                 tags: data.tags.join(','),
