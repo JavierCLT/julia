@@ -223,7 +223,7 @@ def delete_recipe(recipe_id):
 
 @app.route('/update_recipe/<int:recipe_id>', methods=['POST'])
 def update_recipe(recipe_id):
-    data = request.json
+    data = request.get_json()  # Using get_json() to properly parse JSON body
     title = data.get('title')
     ingredients = data.get('ingredients').split('\n')
     instructions = data.get('instructions').split('\n')
@@ -268,7 +268,7 @@ def update_recipe(recipe_id):
                 cursor.execute("INSERT INTO tags (TagName) VALUES (%s)", (tag.strip(),))
                 tag_id = cursor.lastrowid
             else:
-                tag_id = tag_id['TagID']
+                tag_id = tag_id[0]  # Fetch the first element which is the TagID
             cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
 
         connection.commit()
