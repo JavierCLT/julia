@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.querySelector('.container');
     const errorMessage = document.getElementById('error-message');
 
+    let formJustOpened = false;
+    
     const debounce = (func, delay) => {
         let timer;
         return (...args) => {
@@ -117,7 +119,7 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
         `;
         recipeDetailsContainer.appendChild(recipeButtons);
 
-        let formJustOpened = false;
+        
         // Add event listeners to the buttons
         document.getElementById('edit-recipe-btn').onclick = () => {
     formJustOpened = true;
