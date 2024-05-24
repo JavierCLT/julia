@@ -117,21 +117,22 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
         `;
         recipeDetailsContainer.appendChild(recipeButtons);
 
-        
+        let formJustOpened = false;
         // Add event listeners to the buttons
         document.getElementById('edit-recipe-btn').onclick = () => {
-            console.log('Edit button clicked for recipe ID:', recipeId);
-            const recipeData = {
-                title: data.title,
-                ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
-                instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
-                tags: data.tags.join(','),
-                servings: data.servings,
-                origin: data.origin
-            };
-            console.log('Recipe data:', recipeData); // Log the data
-            populateEditForm(recipeId, recipeData);
-            setTimeout(() => { formJustOpened = false; }, 100); // Allow some time before enabling the close logic again
+    formJustOpened = true;
+    console.log('Edit button clicked for recipe ID:', recipeId);
+    const recipeData = {
+        title: data.title,
+        ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
+        instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
+        tags: data.tags.join(','),
+        servings: data.servings,
+        origin: data.origin
+    };
+    console.log('Recipe data:', recipeData); // Log the data
+    populateEditForm(recipeId, recipeData);
+    setTimeout(() => { formJustOpened = false; }, 100); // Allow some time before enabling the close logic again
 };
         
 
@@ -275,14 +276,19 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
     });
 
     window.addEventListener('click', (event) => {
-        if (!recipeDetailsContainer.contains(event.target) && recipeDetailsContainer.style.display === 'block') {
-            recipeDetailsContainer.style.display = 'none';
-            recipeTitle.textContent = '';
-            toggleBlurAndOverlay(false);
-        }
-        if (!addRecipeFormContainer.contains(event.target) && addRecipeFormContainer.style.display === 'block' && !event.target.closest('#add-recipe-btn')) {
-            addRecipeFormContainer.style.display = 'none';
-            toggleBlurAndOverlay(false);
-        }
-    });
+    console.log('Window click event:', event.target);
+
+    if (!recipeDetailsContainer.contains(event.target) && recipeDetailsContainer.style.display === 'block') {
+        console.log('Hiding recipeDetailsContainer');
+        recipeDetailsContainer.style.display = 'none';
+        recipeTitle.textContent = '';
+        toggleBlurAndOverlay(false);
+    }
+
+    if (!addRecipeFormContainer.contains(event.target) && addRecipeFormContainer.style.display === 'block' && !formJustOpened) {
+        console.log('Hiding addRecipeFormContainer');
+        addRecipeFormContainer.style.display = 'none';
+        toggleBlurAndOverlay(false);
+    }
+});
 });
