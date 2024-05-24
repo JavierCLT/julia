@@ -75,6 +75,8 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
     try {
         const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
         const data = await response.json();
+        console.log('API Response:', data); // Log the API response
+
         let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
         data.ingredients.forEach(ingredient => {
             ingredientsHtml += `<li>${ingredient.Description}</li>`;
@@ -117,7 +119,6 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
 
         // Add event listeners to the buttons
         document.getElementById('edit-recipe-btn').onclick = () => {
-            // Handle edit functionality
             console.log('Edit button clicked for recipe ID:', recipeId);
             const recipeData = {
                 title: data.Title,
@@ -127,6 +128,7 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
                 servings: data.servings,
                 origin: data.origin
             };
+            console.log('Recipe data:', recipeData); // Log the data
             populateEditForm(recipeId, recipeData);
         };
 
@@ -159,48 +161,51 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
 };
 
 
-
     const populateEditForm = (recipeId, recipeData) => {
-        // Show the add recipe form container
-        addRecipeFormContainer.style.display = 'block';
-        toggleBlurAndOverlay(true);
+    console.log('Populating edit form with data:', recipeData); // Log the data
 
-        // Populate the form with recipe data
-        document.getElementById('recipe-title-input').value = recipeData.title;
-        document.getElementById('recipe-ingredients-input').value = recipeData.ingredients;
-        document.getElementById('recipe-instructions-input').value = recipeData.instructions;
-        document.getElementById('recipe-tags-input').value = recipeData.tags;
-        document.getElementById('recipe-servings-input').value = recipeData.servings;
+    // Show the add recipe form container
+    addRecipeFormContainer.style.display = 'block'; // Ensure display is set to block
+    console.log('Form container display set to block'); // Log to confirm form display change
+    toggleBlurAndOverlay(true);
 
-        // Change the form submit handler to update the recipe
-        addRecipeForm.onsubmit = async (event) => {
-            event.preventDefault();
-            const formData = new FormData(addRecipeForm);
-            const updatedRecipeData = Object.fromEntries(formData);
+    // Populate the form with recipe data
+    document.getElementById('recipe-title-input').value = recipeData.title || '';
+    document.getElementById('recipe-ingredients-input').value = recipeData.ingredients || '';
+    document.getElementById('recipe-instructions-input').value = recipeData.instructions || '';
+    document.getElementById('recipe-tags-input').value = recipeData.tags || '';
+    document.getElementById('recipe-servings-input').value = recipeData.servings || '';
+    document.getElementById('recipe-origin-input').value = recipeData.origin || '';
 
-            try {
-                const response = await fetch(`/update_recipe/${recipeId}`, {
-                    method: 'POST',
-                    body: JSON.stringify(updatedRecipeData),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                const data = await response.json();
-                alert(data.message);
-                if (data.success) {
-                    addRecipeForm.reset();
-                    addRecipeFormContainer.style.display = 'none';
-                    toggleBlurAndOverlay(false);
-                    // Refresh the recipe details
-                    fetchAndDisplayRecipeDetails(recipeId);
+    // Change the form submit handler to update the recipe
+    addRecipeForm.onsubmit = async (event) => {
+        event.preventDefault();
+        const formData = new FormData(addRecipeForm);
+        const updatedRecipeData = Object.fromEntries(formData);
+
+        try {
+            const response = await fetch(`/update_recipe/${recipeId}`, {
+                method: 'POST',
+                body: JSON.stringify(updatedRecipeData),
+                headers: {
+                    'Content-Type': 'application/json'
                 }
-            } catch (error) {
-                console.error('Error updating recipe:', error);
+            });
+            const data = await response.json();
+            alert(data.message);
+            if (data.success) {
+                addRecipeForm.reset();
+                addRecipeFormContainer.style.display = 'none';
+                toggleBlurAndOverlay(false);
+                // Refresh the recipe details
+                fetchAndDisplayRecipeDetails(recipeId);
             }
-        };
+        } catch (error) {
+            console.error('Error updating recipe:', error);
+        }
     };
-
+};
+    
     const checkDuplicateTags = (tags) => {
         const tagSet = new Set(tags);
         return tagSet.size !== tags.length;
