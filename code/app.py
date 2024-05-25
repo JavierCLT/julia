@@ -147,10 +147,6 @@ def add_recipe():
     if password != os.getenv('SECRET_PASSWORD'):
         return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
 
-    # Validate servings to allow numbers and ranges like "8-10"
-    if not re.match(r'^\d+(-\d+)?$', servings):
-        return jsonify({'success': False, 'message': 'Invalid format for servings. Use a number or a range like "8-10".'})
-
     connection = None
     try:
         connection = mysql.connector.connect(**db_config)
@@ -160,16 +156,10 @@ def add_recipe():
         recipe_id = cursor.lastrowid
 
         for ingredient in ingredients:
-            cursor.execute("""
-                INSERT INTO ingredients (RecipeID, Description)
-                VALUES (%s, %s)
-            """, (recipe_id, ingredient.strip()))
+            cursor.execute("INSERT INTO ingredients (RecipeID, Description) VALUES (%s, %s)", (recipe_id, ingredient.strip()))
 
         for step_number, instruction in enumerate(instructions, start=1):
-            cursor.execute("""
-                INSERT INTO instructions (RecipeID, StepNumber, Description)
-                VALUES (%s, %s, %s)
-            """, (recipe_id, step_number, instruction.strip()))
+            cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)", (recipe_id, step_number, instruction.strip()))
 
         for tag in tags:
             cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag.strip(),))
@@ -183,6 +173,7 @@ def add_recipe():
 
         connection.commit()
         cursor.close()
+        return jsonify({'success': True, 'message': 'Recipe added successfully!'})
     except Error as e:
         print(f"Error while adding recipe: {e}")
         return jsonify({'success': False, 'message': 'An error occurred while adding the recipe.'}), 500
