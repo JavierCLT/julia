@@ -10,7 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const darkOverlay = document.getElementById('darkOverlay');
     const container = document.querySelector('.container');
     const errorMessage = document.getElementById('error-message');
-    const messageContainer = document.getElementById('message-container'); // Assuming there's a div for messages
+    const messageContainer = document.getElementById('message-container');
+    let currentSearchQuery = ''; // Track the current search query
     let formJustOpened = false;
 
     const debounce = (func, delay) => {
@@ -31,11 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const showLoadingIndicator = (show) => {
-        const loadingIndicator = document.getElementById('loading-indicator');
-        loadingIndicator.style.display = show ? 'block' : 'none';
-    };
-    
     const showMessage = (message) => {
         messageContainer.textContent = ''; // Clear any existing message
         messageContainer.textContent = message;
@@ -73,9 +69,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const handleSearch = debounce(async (event) => {
-        const searchQuery = event.target.value.trim();
-        if (searchQuery.length > 2) {
-            const recipes = await fetchRecipes(searchQuery);
+        currentSearchQuery = event.target.value.trim(); // Update the current search query
+        if (currentSearchQuery.length > 2) {
+            const recipes = await fetchRecipes(currentSearchQuery);
             renderRecipes(recipes);
         } else {
             resultsContainer.innerHTML = '';
@@ -161,6 +157,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (data.success) {
                             recipeDetailsContainer.style.display = 'none';
                             toggleBlurAndOverlay(false);
+                            // Refetch and render recipes after deletion
+                            if (currentSearchQuery.length > 2) {
+                                const recipes = await fetchRecipes(currentSearchQuery);
+                                renderRecipes(recipes);
+                            }
                         }
                     } catch (error) {
                         console.error('Error deleting recipe:', error);
@@ -212,6 +213,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     toggleBlurAndOverlay(false);
                     // Refresh the recipe details
                     fetchAndDisplayRecipeDetails(recipeId);
+                    // Refetch and render recipes after updating
+                    if (currentSearchQuery.length > 2) {
+                        const recipes = await fetchRecipes(currentSearchQuery);
+                        renderRecipes(recipes);
+                    }
                 }
             } catch (error) {
                 console.error('Error updating recipe:', error);
@@ -265,6 +271,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 addRecipeForm.reset();
                 addRecipeFormContainer.style.display = 'none';
                 toggleBlurAndOverlay(false);
+                // Refetch and render recipes after adding
+                if (currentSearchQuery.length > 2) {
+                    const recipes = await fetchRecipes(currentSearchQuery);
+                    renderRecipes(recipes);
+                }
             }
         } catch (error) {
             console.error('Error adding recipe:', error);
