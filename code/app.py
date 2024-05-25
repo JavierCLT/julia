@@ -46,8 +46,8 @@ def search_recipes():
         return jsonify(result)
 
     query_words = query_param.split()
-    like_clauses = ' AND '.join([f"(tags.TagName LIKE %s OR recipes.Title LIKE %s OR ingredients.Description LIKE %s)" for _ in query_words])
-    query_values = [f"%{word}%" for word in query_words for _ in range(3)]
+    like_clauses = ' OR '.join([f"(tags.TagName = %s OR recipes.Title LIKE %s OR ingredients.Description LIKE %s)" for _ in query_words])
+    query_values = [word for word in query_words for _ in range(3)]
 
     try:
         connection = connection_pool.get_connection()
