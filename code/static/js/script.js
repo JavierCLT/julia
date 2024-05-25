@@ -158,10 +158,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             recipeDetailsContainer.style.display = 'none';
                             toggleBlurAndOverlay(false);
                             // Refetch and render recipes after deletion
-                            if (currentSearchQuery.length > 2) {
-                                const recipes = await fetchRecipes(currentSearchQuery);
-                                renderRecipes(recipes);
-                            }
+                            const recipes = await fetchRecipes(currentSearchQuery);
+                            renderRecipes(recipes);
                         }
                     } catch (error) {
                         console.error('Error deleting recipe:', error);
@@ -214,10 +212,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Refresh the recipe details
                     fetchAndDisplayRecipeDetails(recipeId);
                     // Refetch and render recipes after updating
-                    if (currentSearchQuery.length > 2) {
-                        const recipes = await fetchRecipes(currentSearchQuery);
-                        renderRecipes(recipes);
-                    }
+                    const recipes = await fetchRecipes(currentSearchQuery);
+                    renderRecipes(recipes);
                 }
             } catch (error) {
                 console.error('Error updating recipe:', error);
