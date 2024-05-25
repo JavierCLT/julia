@@ -225,6 +225,23 @@ li {
     background-color: var (--desert-sand);
 }
 
+.message-container {
+    display: none;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #4caf50; /* Green */
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.message-container.show {
+    display: block;
+}
+
 .dark-overlay {
     display: none;
     position: fixed;
