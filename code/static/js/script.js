@@ -10,9 +10,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const darkOverlay = document.getElementById('darkOverlay');
     const container = document.querySelector('.container');
     const errorMessage = document.getElementById('error-message');
-    const messageContainer = document.getElementById('message-container');
+    const messageContainer = document.createElement('div'); // Create a new div for messages
+    document.body.appendChild(messageContainer); // Append it to the body
     let currentSearchQuery = ''; // Track the current search query
     let formJustOpened = false;
+
+    messageContainer.style.position = 'fixed';
+    messageContainer.style.top = '20px';
+    messageContainer.style.left = '50%';
+    messageContainer.style.transform = 'translateX(-50%)';
+    messageContainer.style.padding = '10px';
+    messageContainer.style.backgroundColor = '#4CAF50';
+    messageContainer.style.color = 'white';
+    messageContainer.style.borderRadius = '5px';
+    messageContainer.style.display = 'none'; // Initially hidden
 
     const debounce = (func, delay) => {
         let timer;
@@ -35,9 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const showMessage = (message) => {
         messageContainer.textContent = ''; // Clear any existing message
         messageContainer.textContent = message;
-        messageContainer.classList.add('show');
+        messageContainer.style.display = 'block';
         setTimeout(() => {
-            messageContainer.classList.remove('show');
+            messageContainer.style.display = 'none';
         }, 2000); // Message will disappear after 2 seconds
     };
 
