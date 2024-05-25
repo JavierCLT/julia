@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', () => {
     const searchBox = document.getElementById('search-box');
     const resultsContainer = document.getElementById('results');
@@ -8,23 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteRecipeBtn = document.getElementById('delete-recipe-btn');
     const editRecipeBtn = document.getElementById('edit-recipe-btn');
     const darkOverlay = document.getElementById('darkOverlay');
-    const loadingIndicator = document.getElementById('loading-indicator');
     const container = document.querySelector('.container');
     const errorMessage = document.getElementById('error-message');
-    const messageContainer = document.createElement('div'); // Create a new div for messages
-    document.body.appendChild(messageContainer); // Append it to the body
-    let currentSearchQuery = ''; // Track the current search query
+    const messageContainer = document.getElementById('message-container'); // Assuming there's a div for messages
     let formJustOpened = false;
-
-    messageContainer.style.position = 'fixed';
-    messageContainer.style.top = '20px';
-    messageContainer.style.left = '50%';
-    messageContainer.style.transform = 'translateX(-50%)';
-    messageContainer.style.padding = '10px';
-    messageContainer.style.backgroundColor = '#4CAF50';
-    messageContainer.style.color = 'white';
-    messageContainer.style.borderRadius = '5px';
-    messageContainer.style.display = 'none'; // Initially hidden
 
     const debounce = (func, delay) => {
         let timer;
@@ -45,33 +33,25 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const showLoadingIndicator = (show) => {
-        if (show) {
-            loadingIndicator.style.display = 'block';
-            container.classList.add('blur-background');
-        } else {
-            loadingIndicator.style.display = 'none';
-            container.classList.remove('blur-background');
-        }
+        const loadingIndicator = document.getElementById('loading-indicator');
+        loadingIndicator.style.display = show ? 'block' : 'none';
     };
-
+    
     const showMessage = (message) => {
         messageContainer.textContent = ''; // Clear any existing message
         messageContainer.textContent = message;
-        messageContainer.style.display = 'block';
+        messageContainer.classList.add('show');
         setTimeout(() => {
-            messageContainer.style.display = 'none';
+            messageContainer.classList.remove('show');
         }, 2000); // Message will disappear after 2 seconds
     };
 
     const fetchRecipes = async (query) => {
         try {
-            showLoadingIndicator(true);
             const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
             const data = await response.json();
-            showLoadingIndicator(false);
             return Array.isArray(data) ? data : [];
         } catch (error) {
-            showLoadingIndicator(false);
             console.error('Error fetching recipes:', error);
             return [];
         }
@@ -94,9 +74,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const handleSearch = debounce(async (event) => {
-        currentSearchQuery = event.target.value.trim(); // Update the current search query
-        if (currentSearchQuery.length > 2) {
-            const recipes = await fetchRecipes(currentSearchQuery);
+        const searchQuery = event.target.value.trim();
+        if (searchQuery.length > 2) {
+            const recipes = await fetchRecipes(searchQuery);
             renderRecipes(recipes);
         } else {
             resultsContainer.innerHTML = '';
@@ -105,10 +85,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const fetchAndDisplayRecipeDetails = async (recipeId) => {
         try {
-            showLoadingIndicator(true);
             const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
             const data = await response.json();
-            showLoadingIndicator(false);
             console.log('API Response:', data); // Log the API response
 
             let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
@@ -172,7 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const password = prompt("Enter password to delete this recipe:");
                 if (password) {
                     try {
-                        showLoadingIndicator(true);
                         const response = await fetch(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
                             method: 'POST',
                             body: JSON.stringify({ password: password }),
@@ -181,24 +158,18 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         });
                         const data = await response.json();
-                        showLoadingIndicator(false);
                         showMessage(data.message);
                         if (data.success) {
                             recipeDetailsContainer.style.display = 'none';
                             toggleBlurAndOverlay(false);
-                            // Refetch and render recipes after deletion
-                            const recipes = await fetchRecipes(currentSearchQuery);
-                            renderRecipes(recipes);
                         }
                     } catch (error) {
-                        showLoadingIndicator(false);
                         console.error('Error deleting recipe:', error);
                     }
                 }
             };
 
         } catch (error) {
-            showLoadingIndicator(false);
             console.error('Error fetching recipe details:', error);
         }
     };
@@ -227,7 +198,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 console.log('Sending update request with data:', updatedRecipeData); // Log the request data
-                showLoadingIndicator(true);
                 const response = await fetch(`/update_recipe/${recipeId}`, {
                     method: 'POST',
                     body: JSON.stringify(updatedRecipeData),
@@ -236,18 +206,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
                 const data = await response.json();
-                showLoadingIndicator(false);
                 showMessage(data.message);
                 if (data.success) {
                     addRecipeForm.reset();
                     addRecipeFormContainer.style.display = 'none';
                     toggleBlurAndOverlay(false);
-                    // Refetch and render recipes after updating
-                    const recipes = await fetchRecipes(currentSearchQuery);
-                    renderRecipes(recipes);
+                    // Refresh the recipe details
+                    fetchAndDisplayRecipeDetails(recipeId);
                 }
             } catch (error) {
-                showLoadingIndicator(false);
                 console.error('Error updating recipe:', error);
             }
         };
@@ -286,7 +253,6 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.set('tags', tags.join(',')); // Ensure tags are properly formatted
 
         try {
-            showLoadingIndicator(true);
             const response = await fetch('/add_recipe', {
                 method: 'POST',
                 body: JSON.stringify(Object.fromEntries(formData.entries())),
@@ -295,20 +261,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             const data = await response.json();
-            showLoadingIndicator(false);
             showMessage(data.message);
             if (data.success) {
                 addRecipeForm.reset();
                 addRecipeFormContainer.style.display = 'none';
                 toggleBlurAndOverlay(false);
-                // Refetch and render recipes after adding
-                if (currentSearchQuery.length > 2) {
-                    const recipes = await fetchRecipes(currentSearchQuery);
-                    renderRecipes(recipes);
-                }
             }
         } catch (error) {
-            showLoadingIndicator(false);
             console.error('Error adding recipe:', error);
         }
     });
