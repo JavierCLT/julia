@@ -60,12 +60,12 @@ def search_recipes():
         WHERE 
             recipes.Title LIKE %s 
             OR ingredients.Description LIKE %s 
-            OR tags.TagName LIKE %s
+            OR tags.TagName = %s
         GROUP BY 
             recipes.Title
         """
         like_pattern = f"%{query_param}%"
-        cursor.execute(query, (like_pattern, like_pattern, like_pattern))
+        cursor.execute(query, (like_pattern, like_pattern, query_param))
         result = cursor.fetchall()
         cursor.close()
     except Error as e:
