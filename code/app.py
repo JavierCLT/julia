@@ -42,10 +42,17 @@ def search_recipes():
     query_param = request.args.get('query')
     result = []
 
+    if not query_param:
+        return jsonify(result)
+
+    query_words = query_param.split()
+    like_clauses = ' AND '.join([f"(tags.TagName LIKE %s OR recipes.Title LIKE %s OR ingredients.Description LIKE %s)" for _ in query_words])
+    query_values = [f"%{word}%" for word in query_words for _ in range(3)]
+
     try:
         connection = connection_pool.get_connection()
         cursor = connection.cursor(dictionary=True)
-        query = """
+        query = f"""
         SELECT 
             MIN(recipes.RecipeID) as RecipeID, 
             recipes.Title
@@ -58,14 +65,11 @@ def search_recipes():
         LEFT JOIN 
             ingredients ON recipes.RecipeID = ingredients.RecipeID
         WHERE 
-            recipes.Title LIKE %s 
-            OR ingredients.Description LIKE %s 
-            OR tags.TagName = %s
+            {like_clauses}
         GROUP BY 
             recipes.Title
         """
-        like_pattern = f"%{query_param}%"
-        cursor.execute(query, (like_pattern, like_pattern, query_param))
+        cursor.execute(query, query_values)
         result = cursor.fetchall()
         cursor.close()
     except Error as e:
