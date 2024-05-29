@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', () => {
     const searchBox = document.getElementById('search-box');
     const resultsContainer = document.getElementById('results');
@@ -32,11 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const showLoadingIndicator = (show) => {
-        const loadingIndicator = document.getElementById('loading-indicator');
-        loadingIndicator.style.display = show ? 'block' : 'none';
-    };
-    
     const showMessage = (message) => {
         messageContainer.textContent = ''; // Clear any existing message
         messageContainer.textContent = message;
@@ -162,6 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (data.success) {
                             recipeDetailsContainer.style.display = 'none';
                             toggleBlurAndOverlay(false);
+                            handleSearch({ target: { value: searchBox.value } }); // Re-query to update the results
                         }
                     } catch (error) {
                         console.error('Error deleting recipe:', error);
@@ -213,6 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     toggleBlurAndOverlay(false);
                     // Refresh the recipe details
                     fetchAndDisplayRecipeDetails(recipeId);
+                    handleSearch({ target: { value: searchBox.value } }); // Re-query to update the results
                 }
             } catch (error) {
                 console.error('Error updating recipe:', error);
@@ -266,6 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 addRecipeForm.reset();
                 addRecipeFormContainer.style.display = 'none';
                 toggleBlurAndOverlay(false);
+                handleSearch({ target: { value: searchBox.value } }); // Re-query to update the results
             }
         } catch (error) {
             console.error('Error adding recipe:', error);
