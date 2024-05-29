@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.querySelector('.container');
     const errorMessage = document.getElementById('error-message');
     const messageContainer = document.getElementById('message-container'); // Assuming there's a div for messages
+    const addRecipeButton = addRecipeForm.querySelector('button[type="submit"]'); // Reference to the submit button
     let formJustOpened = false;
 
     const debounce = (func, delay) => {
@@ -31,6 +32,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const showLoadingIndicator = (show) => {
+        const loadingIndicator = document.getElementById('loading-indicator');
+        loadingIndicator.style.display = show ? 'block' : 'none';
+    };
+    
     const showMessage = (message) => {
         messageContainer.textContent = ''; // Clear any existing message
         messageContainer.textContent = message;
@@ -156,7 +162,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (data.success) {
                             recipeDetailsContainer.style.display = 'none';
                             toggleBlurAndOverlay(false);
-                            handleSearch({ target: { value: searchBox.value } }); // Re-query to update the results
                         }
                     } catch (error) {
                         console.error('Error deleting recipe:', error);
@@ -174,6 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Show the add recipe form container
         addRecipeFormContainer.style.display = 'block'; // Ensure display is set to block
+        addRecipeButton.textContent = 'Save'; // Change the button text to "Save"
         console.log('Form container display set to block'); // Log to confirm form display change
         toggleBlurAndOverlay(true);
 
@@ -224,6 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('add-recipe-btn').addEventListener('click', () => {
         addRecipeFormContainer.style.display = 'block';
+        addRecipeButton.textContent = 'Add Recipe'; // Change the button text to "Add Recipe"
         toggleBlurAndOverlay(true);
     });
 
@@ -261,7 +268,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 addRecipeForm.reset();
                 addRecipeFormContainer.style.display = 'none';
                 toggleBlurAndOverlay(false);
-                handleSearch({ target: { value: searchBox.value } }); // Re-query to update the results
             }
         } catch (error) {
             console.error('Error adding recipe:', error);
