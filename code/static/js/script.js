@@ -208,7 +208,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     toggleBlurAndOverlay(false);
                     // Refresh the recipe details
                     fetchAndDisplayRecipeDetails(recipeId);
-                    handleSearch({ target: { value: searchBox.value } }); // Re-query to update the results
                 }
             } catch (error) {
                 console.error('Error updating recipe:', error);
