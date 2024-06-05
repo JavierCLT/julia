@@ -228,13 +228,11 @@ def update_favorite(recipe_id):
         cursor.close()
         return jsonify({'success': True, 'message': 'Favorite status updated successfully!'})
     except Error as e:
-        print(f"Error while updating favorite status for recipe with ID {recipe_id}: {e}")
+        print(f"Error while updating favorite status: {e}")
         return jsonify({'success': False, 'message': 'An error occurred while updating the favorite status.'}), 500
     finally:
         if connection and connection.is_connected():
             connection.close()
-
-    return jsonify({'success': True, 'message': 'Favorite status updated successfully!'})
 
 @app.route('/update_recipe/<int:recipe_id>', methods=['POST'])
 def update_recipe(recipe_id):
