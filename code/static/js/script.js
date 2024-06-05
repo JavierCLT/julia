@@ -243,6 +243,8 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         const formData = new FormData(addRecipeForm);
         const tags = formData.get('tags').split(',').map(tag => tag.trim());
+        const formDataObject = Object.fromEntries(formData.entries());
+        formDataObject.is_favorite = formDataObject.is_favorite ? true : false;
 
         if (checkDuplicateTags(tags)) {
             errorMessage.textContent = 'Duplicate tags are not allowed.';
@@ -297,6 +299,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!formJustOpened && !addRecipeFormContainer.contains(event.target) && addRecipeFormContainer.style.display === 'block' && !event.target.closest('#add-recipe-btn')) {
             addRecipeFormContainer.style.display = 'none';
             toggleBlurAndOverlay(false);
+        }
+    });
+    
+    document.getElementById('view-favorites-btn').addEventListener('click', async () => {
+        try {
+            const response = await fetch('/favorites');
+            const favorites = await response.json();
+            // Render favorite recipes
+            renderRecipes(favorites);
+        } catch (error) {
+            console.error('Error fetching favorite recipes:', error);
         }
     });
 });
