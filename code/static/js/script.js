@@ -10,8 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const darkOverlay = document.getElementById('darkOverlay');
     const container = document.querySelector('.container');
     const errorMessage = document.getElementById('error-message');
-    const messageContainer = document.getElementById('message-container'); // Assuming there's a div for messages
-    const addRecipeButton = addRecipeForm.querySelector('button[type="submit"]'); // Reference to the submit button
+    const messageContainer = document.getElementById('message-container');
+    const addRecipeButton = addRecipeForm.querySelector('button[type="submit"]');
     let formJustOpened = false;
 
     const debounce = (func, delay) => {
@@ -32,11 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const showLoadingIndicator = (show) => {
-        const loadingIndicator = document.getElementById('loading-indicator');
-        loadingIndicator.style.display = show ? 'block' : 'none';
-    };
-    
     const showMessage = (message) => {
         messageContainer.textContent = ''; // Clear any existing message
         messageContainer.textContent = message;
@@ -139,7 +134,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
                     tags: data.tags.join(','),
                     servings: data.servings,
-                    origin: data.origin
+                    origin: data.origin,
+                    is_favorite: data.is_favorite // Assuming the response includes this field
                 };
                 console.log('Recipe data:', recipeData); // Log the data
                 populateEditForm(recipeId, recipeData);
@@ -169,29 +165,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
 
-            // Favorite checkbox logic
-            const favoriteCheckbox = document.getElementById('recipe-favorite-input');
-            favoriteCheckbox.checked = data.is_favorite;
-            favoriteCheckbox.onchange = async () => {
-                try {
-                    const response = await fetch(`/update_favorite/${recipeId}`, {
-                        method: 'POST',
-                        body: JSON.stringify({ is_favorite: favoriteCheckbox.checked }),
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        showMessage('Favorite status updated!');
-                    } else {
-                        showMessage('Failed to update favorite status.');
-                    }
-                } catch (error) {
-                    console.error('Error updating favorite status:', error);
-                }
-            };
-
         } catch (error) {
             console.error('Error fetching recipe details:', error);
         }
@@ -213,6 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('recipe-tags-input').value = recipeData.tags || '';
         document.getElementById('recipe-servings-input').value = recipeData.servings || '';
         document.getElementById('recipe-origin-input').value = recipeData.origin || '';
+        document.getElementById('recipe-favorite-input').checked = recipeData.is_favorite || false;
 
         // Change the form submit handler to update the recipe
         addRecipeForm.onsubmit = async (event) => {
@@ -240,6 +214,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (error) {
                 console.error('Error updating recipe:', error);
+            }
+        };
+
+        // Add event listener for the favorite checkbox
+        document.getElementById('recipe-favorite-input').onchange = async (event) => {
+            const isFavorite = event.target.checked;
+            try {
+                const response = await fetch(`/update_favorite/${recipeId}`, {
+                    method: 'POST',
+                    body: JSON.stringify({ is_favorite: isFavorite }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                showMessage(data.message);
+                if (data.success) {
+                    addRecipeFormContainer.style.display = 'none';
+                    toggleBlurAndOverlay(false);
+                    // Refresh the recipe details
+                    fetchAndDisplayRecipeDetails(recipeId);
+                }
+            } catch (error) {
+                console.error('Error updating favorite status:', error);
             }
         };
     };
@@ -324,8 +322,9 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleBlurAndOverlay(false);
         }
     });
-    
-    document.getElementById('view-favorites-btn').addEventListener('click', async () => {
+
+    document.getElementById('view-favorites-link').addEventListener('click', async (event) => {
+        event.preventDefault();
         try {
             const response = await fetch('/favorites');
             const favorites = await response.json();
