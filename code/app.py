@@ -214,6 +214,30 @@ def delete_recipe(recipe_id):
 
     return jsonify({'success': True, 'message': 'Recipe deleted successfully!'})
 
+@app.route('/update_favorite/<int:recipe_id>', methods=['POST'])
+def update_favorite(recipe_id):
+    data = request.get_json()
+    is_favorite = data.get('is_favorite', False)
+
+    connection = None
+    try:
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+
+        cursor.execute("UPDATE recipes SET is_favorite = %s WHERE RecipeID = %s", (is_favorite, recipe_id))
+
+        connection.commit()
+        cursor.close()
+        return jsonify({'success': True, 'message': 'Favorite status updated successfully!'})
+    except Error as e:
+        print(f"Error while updating favorite status: {e}")
+        return jsonify({'success': False, 'message': 'An error occurred while updating the favorite status.'}), 500
+    finally:
+        if connection and connection.is_connected():
+            connection.close()
+
+    return jsonify({'success': True, 'message': 'Favorite status updated successfully!'})
+
 @app.route('/update_recipe/<int:recipe_id>', methods=['POST'])
 def update_recipe(recipe_id):
     data = request.get_json()  # Using get_json() to properly parse JSON body
