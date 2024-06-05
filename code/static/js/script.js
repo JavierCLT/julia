@@ -7,11 +7,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const recipeTitle = document.getElementById('recipe-title');
     const deleteRecipeBtn = document.getElementById('delete-recipe-btn');
     const editRecipeBtn = document.getElementById('edit-recipe-btn');
+    const favoriteCheckbox = document.getElementById('favorite-checkbox');
     const darkOverlay = document.getElementById('darkOverlay');
     const container = document.querySelector('.container');
     const errorMessage = document.getElementById('error-message');
     const messageContainer = document.getElementById('message-container');
     const addRecipeButton = addRecipeForm.querySelector('button[type="submit"]');
+    const viewFavoritesLink = document.getElementById('view-favorites-link');
+    const viewTagsLink = document.getElementById('view-tags-link');
+    const viewAllRecipesLink = document.getElementById('view-all-recipes-link');
     let formJustOpened = false;
 
     const debounce = (func, delay) => {
@@ -57,6 +61,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const fetchTags = async () => {
+        try {
+            const response = await fetch('/tags');
+            const data = await response.json();
+            return Array.isArray(data) ? data : [];
+        } catch (error) {
+            console.error('Error fetching tags:', error);
+            return [];
+        }
+    };
+
     const renderRecipes = (recipes) => {
         resultsContainer.innerHTML = '';
         const grid = document.createElement('div');
@@ -87,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
             const data = await response.json();
-            console.log('API Response:', data);
+            console.log('API Response:', data); 
 
             let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
             data.ingredients.forEach(ingredient => {
@@ -118,38 +133,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             recipeTitle.insertAdjacentHTML('afterend', ingredientsHtml + instructionsHtml + tagsHtml + servingsHtml + originHtml);
+            favoriteCheckbox.checked = data.is_favorite;
             recipeDetailsContainer.style.display = 'block';
 
+            // Append edit and delete buttons
             const recipeButtons = document.createElement('div');
             recipeButtons.id = 'recipe-buttons';
             recipeButtons.innerHTML = `
-                <label for="favorite-checkbox">Favorite:</label>
-                <input type="checkbox" id="favorite-checkbox" ${data.is_favorite ? 'checked' : ''}>
                 <button id="edit-recipe-btn" class="edit-recipe-btn">Edit Recipe</button>
                 <button id="delete-recipe-btn" class="delete-recipe-btn">Delete Recipe</button>
             `;
             recipeDetailsContainer.appendChild(recipeButtons);
-
-            const favoriteCheckbox = document.getElementById('favorite-checkbox');
-            favoriteCheckbox.onchange = async () => {
-                try {
-                    const response = await fetch(`/update_favorite/${recipeId}`, {
-                        method: 'POST',
-                        body: JSON.stringify({ is_favorite: favoriteCheckbox.checked }),
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    const data = await response.json();
-                    showMessage(data.message);
-                    if (data.success) {
-                        recipeDetailsContainer.style.display = 'none';
-                        toggleBlurAndOverlay(false);
-                    }
-                } catch (error) {
-                    console.error('Error updating favorite status:', error);
-                }
-            };
 
             document.getElementById('edit-recipe-btn').onclick = () => {
                 formJustOpened = true;
@@ -160,8 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
                     tags: data.tags.join(','),
                     servings: data.servings,
-                    origin: data.origin,
-                    is_favorite: data.is_favorite
+                    origin: data.origin
                 };
                 console.log('Recipe data:', recipeData);
                 populateEditForm(recipeId, recipeData);
@@ -197,11 +190,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const populateEditForm = (recipeId, recipeData) => {
-        console.log('Populating edit form with data:', recipeData);
+        console.log('Populating edit form with data:', recipeData); 
 
-        addRecipeFormContainer.style.display = 'block';
-        addRecipeButton.textContent = 'Save';
-        document.getElementById('form-title').textContent = 'Edit Recipe';
+        addRecipeFormContainer.style.display = 'block'; 
+        addRecipeButton.textContent = 'Save'; 
         console.log('Form container display set to block');
         toggleBlurAndOverlay(true);
 
@@ -211,13 +203,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('recipe-tags-input').value = recipeData.tags || '';
         document.getElementById('recipe-servings-input').value = recipeData.servings || '';
         document.getElementById('recipe-origin-input').value = recipeData.origin || '';
-        document.getElementById('recipe-favorite-input').checked = recipeData.is_favorite || false;
 
         addRecipeForm.onsubmit = async (event) => {
             event.preventDefault();
             const formData = new FormData(addRecipeForm);
             const updatedRecipeData = Object.fromEntries(formData.entries());
-            updatedRecipeData.is_favorite = formData.has('is_favorite');
 
             try {
                 console.log('Sending update request with data:', updatedRecipeData);
@@ -251,8 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('add-recipe-btn').addEventListener('click', () => {
         addRecipeFormContainer.style.display = 'block';
-        addRecipeButton.textContent = 'Add Recipe';
-        document.getElementById('form-title').textContent = 'Add New Recipe';
+        addRecipeButton.textContent = 'Add Recipe'; 
         toggleBlurAndOverlay(true);
     });
 
@@ -323,47 +312,69 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleBlurAndOverlay(false);
         }
     });
+    
+    favoriteCheckbox.onchange = async () => {
+        const recipeId = favoriteCheckbox.getAttribute('data-recipe-id');
+        const isFavorite = favoriteCheckbox.checked;
+        try {
+            const response = await fetch(`/update_favorite/${recipeId}`, {
+                method: 'POST',
+                body: JSON.stringify({ is_favorite: isFavorite }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
+            showMessage(data.message);
+            if (data.success) {
+                recipeDetailsContainer.style.display = 'none'; // Close the details container
+                toggleBlurAndOverlay(false);
+            }
+        } catch (error) {
+            console.error('Error updating favorite status:', error);
+        }
+    };
 
-    document.getElementById('view-favorites-link').addEventListener('click', async () => {
+    viewFavoritesLink.addEventListener('click', async () => {
         try {
             const response = await fetch('/favorites');
             const favorites = await response.json();
-            searchBox.value = '';  // Clear the search box
             renderRecipes(favorites);
+            searchBox.value = 'Favorites'; // Set the search box text to "Favorites"
         } catch (error) {
             console.error('Error fetching favorite recipes:', error);
         }
     });
 
-    document.getElementById('view-tags-link').addEventListener('click', async () => {
+    viewTagsLink.addEventListener('click', async () => {
         try {
-            const response = await fetch('/tags');
-            const tags = await response.json();
-            searchBox.value = '';  // Clear the search box
-            renderTags(tags);
+            const tags = await fetchTags();
+            resultsContainer.innerHTML = ''; // Clear the results container
+            const tagList = document.createElement('ul');
+            tags.forEach(tag => {
+                const tagItem = document.createElement('li');
+                tagItem.textContent = tag;
+                tagItem.className = 'tag-item'; // Add a class for styling
+                tagItem.addEventListener('click', () => {
+                    searchBox.value = tag;
+                    handleSearch({ target: { value: tag } }); // Trigger search
+                });
+                tagList.appendChild(tagItem);
+            });
+            resultsContainer.appendChild(tagList);
+            searchBox.value = 'Tags'; // Set the search box text to "Tags"
         } catch (error) {
             console.error('Error fetching tags:', error);
         }
     });
 
-    document.getElementById('view-all-recipes-link').addEventListener('click', async () => {
-        searchBox.value = '';  // Clear the search box
-        handleSearch({ target: { value: '' } });
+    viewAllRecipesLink.addEventListener('click', async () => {
+        try {
+            const recipes = await fetchRecipes(''); // Fetch all recipes with an empty query
+            renderRecipes(recipes);
+            searchBox.value = 'All Recipes'; // Set the search box text to "All Recipes"
+        } catch (error) {
+            console.error('Error fetching all recipes:', error);
+        }
     });
-
-    const renderTags = (tags) => {
-        resultsContainer.innerHTML = '';
-        const tagsList = document.createElement('ul');
-        tags.forEach(tag => {
-            const tagItem = document.createElement('li');
-            tagItem.textContent = tag.TagName;
-            tagItem.classList.add('tag-item');
-            tagItem.onclick = () => {
-                searchBox.value = tag.TagName;
-                handleSearch({ target: { value: tag.TagName } });
-            };
-            tagsList.appendChild(tagItem);
-        });
-        resultsContainer.appendChild(tagsList);
-    };
 });
