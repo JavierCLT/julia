@@ -39,7 +39,7 @@ def index():
 @app.route('/search', methods=['GET'])
 @cache.cached(timeout=60, query_string=True)
 def search_recipes():
-    query_param = request.args.get('query')
+    query_param = request.args.get('query', '')
     result = []
 
     try:
@@ -214,26 +214,6 @@ def delete_recipe(recipe_id):
 
     return jsonify({'success': True, 'message': 'Recipe deleted successfully!'})
 
-@app.route('/update_favorite/<int:recipe_id>', methods=['POST'])
-def update_favorite(recipe_id):
-    data = request.json
-    is_favorite = data.get('is_favorite', False)
-
-    connection = None
-    try:
-        connection = mysql.connector.connect(**db_config)
-        cursor = connection.cursor()
-        cursor.execute("UPDATE recipes SET is_favorite = %s WHERE RecipeID = %s", (is_favorite, recipe_id))
-        connection.commit()
-        cursor.close()
-        return jsonify({'success': True, 'message': 'Favorite status updated successfully!'})
-    except Error as e:
-        print(f"Error while updating favorite status: {e}")
-        return jsonify({'success': False, 'message': 'An error occurred while updating the favorite status.'}), 500
-    finally:
-        if connection and connection.is_connected():
-            connection.close()
-
 @app.route('/update_recipe/<int:recipe_id>', methods=['POST'])
 def update_recipe(recipe_id):
     data = request.get_json()  # Using get_json() to properly parse JSON body
@@ -305,6 +285,24 @@ def get_favorites():
         cursor = connection.cursor(dictionary=True)
         cursor.execute("SELECT * FROM recipes WHERE is_favorite = TRUE")
         result = cursor.fetchall()
+        cursor.close()
+    except Error as e:
+        print(f"Error while connecting to MySQL or executing query: {e}")
+        result = []
+    finally:
+        if connection.is_connected():
+            connection.close()
+
+    return jsonify(result)
+
+@app.route('/tags', methods=['GET'])
+def get_tags():
+    result = []
+    try:
+        connection = connection_pool.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT TagName FROM tags")
+        result = [tag['TagName'] for tag in cursor.fetchall()]
         cursor.close()
     except Error as e:
         print(f"Error while connecting to MySQL or executing query: {e}")
