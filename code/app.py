@@ -80,14 +80,14 @@ def search_recipes():
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
 @cache.cached(timeout=60)
 def recipe_details(recipe_id):
-    details = {'ingredients': [], 'instructions': [], 'tags': [], 'servings': None, 'origin': None, 'title': None}
+    details = {'ingredients': [], 'instructions': [], 'tags': [], 'servings': None, 'origin': None, 'title': None, 'is_favorite': False}
     try:
         connection = connection_pool.get_connection()
         cursor = connection.cursor(dictionary=True)
 
-        # Fetch title, servings, and origin
+        # Fetch title, servings, origin, and is_favorite
         cursor.execute("""
-            SELECT Title, Servings, Origin
+            SELECT Title, Servings, Origin, is_favorite
             FROM recipes
             WHERE RecipeID = %s
         """, (recipe_id,))
@@ -95,6 +95,7 @@ def recipe_details(recipe_id):
         details['title'] = result['Title']
         details['servings'] = result['Servings']
         details['origin'] = result['Origin']
+        details['is_favorite'] = result['is_favorite']
 
         # Fetch ingredients
         cursor.execute("""
