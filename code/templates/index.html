@@ -33,16 +33,18 @@
                 <button id="edit-recipe-btn" class="edit-recipe-btn">Edit Recipe</button>
                 <button id="delete-recipe-btn" class="delete-recipe-btn">Delete Recipe</button>
             </div>
+            <label for="favorite-checkbox">Favorite:</label> <!-- Add this line -->
+            <input type="checkbox" id="favorite-checkbox">
             <div class="card ingredients-card">
                 <h3><i class="fas fa-utensils"></i> Ingredients:</h3>
                 <ul style="ingredients-list">
-                  <!-- Ingredient items will be inserted here by JavaScript -->
+                    <!-- Ingredient items will be inserted here by JavaScript -->
                 </ul>
             </div>
             <div class="card instructions-card">
                 <h3><i class="fas fa-utensils"></i> Instructions:</h3>
                 <ul class="instructions-list">
-                  <!-- Instruction items will be inserted here by JavaScript -->
+                    <!-- Instruction items will be inserted here by JavaScript -->
                 </ul>
             </div>
             <div class="card tags-card">
@@ -58,10 +60,6 @@
             <div class="card origin-card">
                 <h3><i class="fas fa-globe"></i> Origin:</h3>
                 <p id="origin" style="origin"></p>
-            </div>
-            <div class="card favorite-card">
-                <h3><i class="fas fa-heart"></i> Favorite:</h3>
-                <input type="checkbox" id="recipe-favorite-checkbox" name="is_favorite">
             </div>
         </div>
     </div>
