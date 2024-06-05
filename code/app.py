@@ -142,6 +142,7 @@ def add_recipe():
     tags = data.get('tags').split(',')
     servings = data.get('servings')
     origin = data.get('origin')
+    is_favorite = data.get('is_favorite', False)
     password = data.get('password')
 
     if password != os.getenv('SECRET_PASSWORD'):
@@ -152,7 +153,7 @@ def add_recipe():
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
 
-        cursor.execute("INSERT INTO recipes (Title, Servings, Origin) VALUES (%s, %s, %s)", (title, servings, origin))
+        cursor.execute("INSERT INTO recipes (Title, Servings, Origin, is_favorite) VALUES (%s, %s, %s, %s)", (title, servings, origin, is_favorite))
         recipe_id = cursor.lastrowid
 
         for ingredient in ingredients:
@@ -221,6 +222,7 @@ def update_recipe(recipe_id):
     tags = data.get('tags').split(',')
     servings = data.get('servings')
     origin = data.get('origin')
+    is_favorite = data.get('is_favorite', False)
     password = data.get('password')
 
     if password != os.getenv('SECRET_PASSWORD'):
@@ -235,7 +237,7 @@ def update_recipe(recipe_id):
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
 
-        cursor.execute("UPDATE recipes SET Title = %s, Servings = %s, Origin = %s WHERE RecipeID = %s", (title, servings, origin, recipe_id))
+        cursor.execute("UPDATE recipes SET Title = %s, Servings = %s, Origin = %s, is_favorite = %s WHERE RecipeID = %s", (title, servings, origin, is_favorite, recipe_id))
 
         cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
         for ingredient in ingredients:
@@ -273,6 +275,24 @@ def update_recipe(recipe_id):
             connection.close()
 
     return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
+
+@app.route('/favorites', methods=['GET'])
+def get_favorites():
+    result = []
+    try:
+        connection = connection_pool.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM recipes WHERE is_favorite = TRUE")
+        result = cursor.fetchall()
+        cursor.close()
+    except Error as e:
+        print(f"Error while connecting to MySQL or executing query: {e}")
+        result = []
+    finally:
+        if connection.is_connected():
+            connection.close()
+
+    return jsonify(result)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
