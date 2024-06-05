@@ -367,32 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error fetching tags:', error);
         }
     });
-document.getElementById('view-tags-link').addEventListener('click', async () => {
-    try {
-        const response = await fetch('/tags');
-        const tags = await response.json();
 
-        const tagsContainer = document.createElement('div');
-        tagsContainer.id = 'tags-container';
-        
-        tags.forEach(tag => {
-            const tagElement = document.createElement('span');
-            tagElement.className = 'tag-item';
-            tagElement.textContent = tag.TagName;
-            tagElement.addEventListener('click', () => {
-                searchBox.value = tag.TagName;
-                handleSearch({ target: searchBox });
-            });
-            tagsContainer.appendChild(tagElement);
-        });
-
-        resultsContainer.innerHTML = ''; // Clear existing content
-        resultsContainer.appendChild(tagsContainer); // Add the tags container
-
-    } catch (error) {
-        console.error('Error fetching tags:', error);
-    }
-});
     viewAllRecipesLink.addEventListener('click', async () => {
         try {
             const recipes = await fetchRecipes(''); // Fetch all recipes with an empty query
