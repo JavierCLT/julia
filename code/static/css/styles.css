@@ -63,15 +63,17 @@ h1 {
 }
 
 .nav-links {
-    text-align: center;
-    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
 }
 
 .nav-links a {
-    text-decoration: none;
-    color: var(--rich-black);
-    font-weight: bold;
     margin: 0 10px;
+    color: var(--rich-black);
+    text-decoration: none;
+    font-size: 1.2em;
+    cursor: pointer;
 }
 
 .nav-links a:hover {
@@ -196,7 +198,6 @@ h3 {
 }
 
 p {
-    
     padding-inline-start: 40px; /* Apply padding inline start */ 
     color: var(--rich-black);
 }
@@ -207,16 +208,12 @@ p {
     color: var(--rich-black);
 }
 
-
-
 li {
     margin-bottom: 5px;
     font-weight: normal;
     font-size: 1em;
     color: var (--rich-black);
 }
-
-
 
 .card {
     background-color: var(--cadet-gray);
@@ -288,7 +285,6 @@ li {
 }
 
 form {
-    
     flex-direction: column;
     margin-left: 20px;
     margin-right: 20px;
@@ -341,6 +337,28 @@ button[type="submit"]:hover {
 
 button[type="button"]:hover {
     background-color: var(--cadet-gray);
+}
+
+#tags-container {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.tag-item {
+    background-color: var(--desert-sand);
+    color: var(--rich-black);
+    border-radius: 5px;
+    padding: 10px 20px;
+    margin: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.tag-item:hover {
+    background-color: var(--paynes-gray);
+    color: var(--desert-sand);
 }
 
 @media (max-width: 768px) {
