@@ -133,6 +133,8 @@ document.addEventListener('DOMContentLoaded', () => {
             recipeDetailsContainer.appendChild(favoriteLabel);
             recipeDetailsContainer.appendChild(favoriteCheckbox);
 
+            console.log('Favorite Checkbox State:', favoriteCheckbox.checked);
+
             favoriteCheckbox.onchange = async () => {
                 try {
                     const response = await fetch(`/update_favorite/${recipeId}`, {
