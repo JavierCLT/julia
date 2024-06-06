@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 300);
 
-    const fetchAndDisplayRecipeDetails = async (recipeId) => {
+const fetchAndDisplayRecipeDetails = async (recipeId) => {
     try {
         const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
         const data = await response.json();
@@ -196,8 +196,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } catch (error) {
         console.error('Error fetching recipe details:', error);
+        showMessage('An error occurred while fetching recipe details.');
     }
 };
+
+// Add this line to ensure the favoriteCheckbox is defined
+const favoriteCheckbox = document.getElementById('favorite-checkbox');
 
     const populateEditForm = (recipeId, recipeData) => {
         console.log('Populating edit form with data:', recipeData); 
