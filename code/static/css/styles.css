@@ -159,12 +159,7 @@ h1 {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-#recipe-buttons {
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
-    margin-top: 10px;
-}
+
 
 #add-recipe-form-container {
     background-color: var(--misty-rose);
