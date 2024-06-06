@@ -1,5 +1,6 @@
-from flask import Flask, request, jsonify, render_template, escape
+from flask import Flask, request, jsonify, render_template
 from flask_caching import Cache
+from markupsafe import escape  # Import escape from markupsafe
 import mysql.connector
 from mysql.connector import Error, pooling
 from flask_cors import CORS
@@ -39,7 +40,7 @@ def index():
 @app.route('/search', methods=['GET'])
 @cache.cached(timeout=60, query_string=True)
 def search_recipes():
-    query_param = escape(request.args.get('query', ''))
+    query_param = request.args.get('query', '')
     result = []
 
     try:
@@ -138,9 +139,9 @@ def recipe_details(recipe_id):
 def add_recipe():
     data = request.json
     title = escape(data.get('title'))
-    ingredients = escape(data.get('ingredients')).split('\n')
-    instructions = escape(data.get('instructions')).split('\n')
-    tags = escape(data.get('tags')).split(',')
+    ingredients = [escape(ingredient) for ingredient in data.get('ingredients').split('\n')]
+    instructions = [escape(instruction) for instruction in data.get('instructions').split('\n')]
+    tags = [escape(tag) for tag in data.get('tags').split(',')]
     servings = escape(data.get('servings'))
     origin = escape(data.get('origin'))
     is_favorite = data.get('is_favorite', False)
@@ -218,9 +219,9 @@ def delete_recipe(recipe_id):
 def update_recipe(recipe_id):
     data = request.get_json()
     title = escape(data.get('title'))
-    ingredients = escape(data.get('ingredients')).split('\n')
-    instructions = escape(data.get('instructions')).split('\n')
-    tags = escape(data.get('tags')).split(',')
+    ingredients = [escape(ingredient) for ingredient in data.get('ingredients').split('\n')]
+    instructions = [escape(instruction) for instruction in data.get('instructions').split('\n')]
+    tags = [escape(tag) for tag in data.get('tags').split(',')]
     servings = escape(data.get('servings'))
     origin = escape(data.get('origin'))
     is_favorite = data.get('is_favorite', False)
@@ -301,7 +302,7 @@ def get_tags():
         connection = connection_pool.get_connection()
         cursor = connection.cursor(dictionary=True)
         cursor.execute("SELECT TagName FROM tags")
-        result = [tag['TagName'] for tag in cursor.fetchall()]
+        result = [escape(tag['TagName']) for tag in cursor.fetchall()]
         cursor.close()
     except Error as e:
         print(f"Error while connecting to MySQL or executing query: {e}")
@@ -314,3 +315,4 @@ def get_tags():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+
