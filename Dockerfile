@@ -14,11 +14,14 @@ RUN pip install --upgrade pip && \
 # Copy the rest of the application code into the container
 COPY . .
 
+# Copy the Gunicorn configuration file
+COPY gunicorn_config.py .
+
 # Set environment variables
 ENV FLASK_APP=code.app
 
 # Expose the port the app runs on
 EXPOSE 8080
 
-# Run the Flask app
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "code.app:app"]
+# Run the Flask app with the Gunicorn configuration
+CMD ["gunicorn", "--config", "gunicorn_config.py", "code.app:app"]
