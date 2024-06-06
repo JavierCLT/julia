@@ -189,27 +189,20 @@ h1 {
     color: var(--desert-sand);
 }
 
-/* Change text color to rich black */
-.ingredients-list, .instructions-list ul {
-    color: var(--rich-black); /* Rich black color */
+.ingredients-list {
+    color: var(--rich-black);
 }
 
 /* Remove bullet points for instructions */
 .instructions-list {
     list-style-type: none; /* Removes bullet points */
     padding: 0;
-}
-
-.instructions-list ul {
-    margin-bottom: 1em; /* Adds space between steps */
-    list-style-type: none;
     color: var(--rich-black);
+    margin-bottom: 1em;
 }
 
-/* Add double space between each step */
 .instructions-list li {
-    margin-bottom: 1em; /* Adds space between steps */
-    list-style-type: none;
+    margin-bottom: 5em; /* Adds space between steps */
 }
 
 h3 {
