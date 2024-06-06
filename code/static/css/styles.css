@@ -305,6 +305,13 @@ p {
     justify-content: space-between;
     align-items: center;
     margin-top: 20px;
+    width: 100%;
+    gap: 10px;
+}
+
+.button-container .favorite-container {
+    display: flex;
+    align-items: center;
 }
 
 .button-container label {
@@ -327,7 +334,7 @@ p {
 }
 
 .button-container input[type="checkbox"] {
-    margin-right: 20px;
+    margin-right: 10px;
 }
 
 .form-container {
