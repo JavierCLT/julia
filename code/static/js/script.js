@@ -99,96 +99,96 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 300);
 
-    const fetchAndDisplayRecipeDetails = async (recipeId) => {
-        try {
-            const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
-            const data = await response.json();
-            console.log('API Response:', data); 
+const fetchAndDisplayRecipeDetails = async (recipeId) => {
+    try {
+        const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
+        const data = await response.json();
+        console.log('API Response:', data);
 
-            let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
-            data.ingredients.forEach(ingredient => {
-                ingredientsHtml += `<li>${ingredient.Description}</li>`;
-            });
-            ingredientsHtml += '</ul>';
+        // Ingredients
+        const ingredientsList = document.querySelector('.ingredients-list');
+        ingredientsList.innerHTML = '';
+        data.ingredients.forEach(ingredient => {
+            const li = document.createElement('li');
+            li.textContent = ingredient.Description;
+            ingredientsList.appendChild(li);
+        });
 
-            let instructionsHtml = '<h3>Instructions:</h3><ul>';
-            data.instructions.forEach(instruction => {
-                instructionsHtml += `<li>${instruction.Description}</li>`;
-            });
-            instructionsHtml += '</ul>';
+        // Instructions
+        const instructionsList = document.querySelector('.instructions-list');
+        instructionsList.innerHTML = '';
+        data.instructions.forEach(instruction => {
+            const li = document.createElement('li');
+            li.textContent = instruction.Description;
+            instructionsList.appendChild(li);
+        });
 
-            let tagsHtml = '<h3>Tags:</h3><p>';
-            tagsHtml += data.tags.join(', ');
-            tagsHtml += '</p>';
+        // Tags, Servings, Origin
+        document.querySelector('.tags-list').textContent = data.tags.join(', ');
+        document.querySelector('.servings-count').textContent = data.servings;
+        document.querySelector('.origin').textContent = data.origin;
 
-            let servingsHtml = '<h3>Servings:</h3><p>';
-            servingsHtml += data.servings;
-            servingsHtml += '</p>';
+        favoriteCheckbox.checked = data.is_favorite;
+        recipeDetailsContainer.style.display = 'block';
 
-            let originHtml = '<h3>Origin:</h3><p>';
-            originHtml += data.origin;
-            originHtml += '</p>';
-
-            while (recipeTitle.nextSibling) {
-                recipeDetailsContainer.removeChild(recipeTitle.nextSibling);
-            }
-
-            recipeTitle.insertAdjacentHTML('afterend', ingredientsHtml + instructionsHtml + tagsHtml + servingsHtml + originHtml);
-            favoriteCheckbox.checked = data.is_favorite;
-            recipeDetailsContainer.style.display = 'block';
-
-            // Append edit and delete buttons
-            const recipeButtons = document.createElement('div');
-            recipeButtons.id = 'recipe-buttons';
-            recipeButtons.innerHTML = `
-                <button id="edit-recipe-btn" class="edit-recipe-btn">Edit Recipe</button>
-                <button id="delete-recipe-btn" class="delete-recipe-btn">Delete Recipe</button>
-            `;
-            recipeDetailsContainer.appendChild(recipeButtons);
-
-            document.getElementById('edit-recipe-btn').onclick = () => {
-                formJustOpened = true;
-                console.log('Edit button clicked for recipe ID:', recipeId);
-                const recipeData = {
-                    title: data.title,
-                    ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
-                    instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
-                    tags: data.tags.join(','),
-                    servings: data.servings,
-                    origin: data.origin
-                };
-                console.log('Recipe data:', recipeData);
-                populateEditForm(recipeId, recipeData);
-                setTimeout(() => { formJustOpened = false; }, 100);
-            };
-
-            document.getElementById('delete-recipe-btn').onclick = async () => {
-                const password = prompt("Enter password to delete this recipe:");
-                if (password) {
-                    try {
-                        const response = await fetch(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
-                            method: 'POST',
-                            body: JSON.stringify({ password: password }),
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        });
-                        const data = await response.json();
-                        showMessage(data.message);
-                        if (data.success) {
-                            recipeDetailsContainer.style.display = 'none';
-                            toggleBlurAndOverlay(false);
-                        }
-                    } catch (error) {
-                        console.error('Error deleting recipe:', error);
-                    }
-                }
-            };
-
-        } catch (error) {
-            console.error('Error fetching recipe details:', error);
+        // Remove existing buttons if they exist
+        const existingButtons = document.getElementById('recipe-buttons');
+        if (existingButtons) {
+            existingButtons.remove();
         }
-    };
+
+        // Append edit and delete buttons
+        const recipeButtons = document.createElement('div');
+        recipeButtons.id = 'recipe-buttons';
+        recipeButtons.innerHTML = `
+            <button id="edit-recipe-btn" class="edit-recipe-btn">Edit Recipe</button>
+            <button id="delete-recipe-btn" class="delete-recipe-btn">Delete Recipe</button>
+        `;
+        recipeDetailsContainer.appendChild(recipeButtons);
+
+        document.getElementById('edit-recipe-btn').onclick = () => {
+            formJustOpened = true;
+            console.log('Edit button clicked for recipe ID:', recipeId);
+            const recipeData = {
+                title: data.title,
+                ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
+                instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
+                tags: data.tags.join(','),
+                servings: data.servings,
+                origin: data.origin
+            };
+            console.log('Recipe data:', recipeData);
+            populateEditForm(recipeId, recipeData);
+            setTimeout(() => { formJustOpened = false; }, 100);
+        };
+
+        document.getElementById('delete-recipe-btn').onclick = async () => {
+            const password = prompt("Enter password to delete this recipe:");
+            if (password) {
+                try {
+                    const response = await fetch(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
+                        method: 'POST',
+                        body: JSON.stringify({ password: password }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const data = await response.json();
+                    showMessage(data.message);
+                    if (data.success) {
+                        recipeDetailsContainer.style.display = 'none';
+                        toggleBlurAndOverlay(false);
+                    }
+                } catch (error) {
+                    console.error('Error deleting recipe:', error);
+                }
+            }
+        };
+
+    } catch (error) {
+        console.error('Error fetching recipe details:', error);
+    }
+};
 
     const populateEditForm = (recipeId, recipeData) => {
         console.log('Populating edit form with data:', recipeData); 
