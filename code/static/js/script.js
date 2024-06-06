@@ -129,6 +129,7 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
         document.querySelector('.origin').textContent = data.origin;
 
         favoriteCheckbox.checked = data.is_favorite;
+        favoriteCheckbox.setAttribute('data-recipe-id', recipeId); // Set recipe ID on the checkbox
         recipeDetailsContainer.style.display = 'block';
 
         // Remove existing buttons if they exist
@@ -137,7 +138,14 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
             existingButtons.remove();
         }
 
-        
+        // Append edit and delete buttons
+        const recipeButtons = document.createElement('div');
+        recipeButtons.id = 'recipe-buttons';
+        recipeButtons.innerHTML = `
+            <button id="edit-recipe-btn" class="edit-recipe-btn">Edit Recipe</button>
+            <button id="delete-recipe-btn" class="delete-recipe-btn">Delete Recipe</button>
+        `;
+        recipeDetailsContainer.appendChild(recipeButtons);
 
         document.getElementById('edit-recipe-btn').onclick = () => {
             formJustOpened = true;
@@ -323,26 +331,26 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
     });
     
     favoriteCheckbox.onchange = async () => {
-        const recipeId = favoriteCheckbox.getAttribute('data-recipe-id');
-        const isFavorite = favoriteCheckbox.checked;
-        try {
-            const response = await fetch(`/update_favorite/${recipeId}`, {
-                method: 'POST',
-                body: JSON.stringify({ is_favorite: isFavorite }),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            const data = await response.json();
-            showMessage(data.message);
-            if (data.success) {
-                recipeDetailsContainer.style.display = 'none'; // Close the details container
-                toggleBlurAndOverlay(false);
+    const recipeId = favoriteCheckbox.getAttribute('data-recipe-id');
+    const isFavorite = favoriteCheckbox.checked;
+    try {
+        const response = await fetch(`/update_favorite/${recipeId}`, {
+            method: 'POST',
+            body: JSON.stringify({ is_favorite: isFavorite }),
+            headers: {
+                'Content-Type': 'application/json'
             }
-        } catch (error) {
-            console.error('Error updating favorite status:', error);
+        });
+        const data = await response.json();
+        showMessage(data.message);
+        if (data.success) {
+            recipeDetailsContainer.style.display = 'none'; // Close the details container
+            toggleBlurAndOverlay(false);
         }
-    };
+    } catch (error) {
+        console.error('Error updating favorite status:', error);
+    }
+};
 
     viewFavoritesLink.addEventListener('click', async () => {
         try {
