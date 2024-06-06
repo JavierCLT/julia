@@ -1,5 +1,3 @@
-
-
 :root {
     --rich-black: #0D1F2D;
     --paynes-gray: #546A7B;
@@ -296,6 +294,23 @@ p {
     font-weight: bold;
 }
 
+.favorite-container {
+    display: flex;
+    align-items: center;
+    margin-right: 10px; /* Adjust this value to reduce space */
+}
+
+.favorite-container label {
+    margin-right: 5px; /* Adjust this value to reduce space */
+    font-weight: bold;
+}
+
+.favorite-container input[type="checkbox"] {
+    margin: 0; /* Removes default margin */
+    width: 15px; /* Optional: Adjust the size */
+    height: 15px; /* Optional: Adjust the size */
+}
+
 .button-container button {
     background-color: var(--desert-sand);
     color: var(--rich-black);
@@ -310,8 +325,9 @@ p {
     color: var(--desert-sand);
 }
 
-.button-container input[type="checkbox"] {
-    margin-right: 10px;
+input[type="checkbox"] {
+    width: 20px; /* Set the desired width */
+    height: 20px; /* Set the desired height */
 }
 
 .form-container {
