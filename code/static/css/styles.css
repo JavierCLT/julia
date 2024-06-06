@@ -226,7 +226,7 @@ p {
 }
 
 #favorite-checkbox {
-    transform: translateY(2px); /* Adjust this value to lower the checkbox */
+    transform: translateY(6px); /* Adjust this value to lower the checkbox */
 }
 
 .recipe-box:hover {
@@ -234,6 +234,9 @@ p {
     background-color: var (--desert-sand);
 }
 
+.delete-recipe-btn {
+    margin-left: 25em;
+}
 .message-container {
     display: none;
     position: fixed;
