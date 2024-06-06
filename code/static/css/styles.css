@@ -196,18 +196,21 @@ li {
     color: var (--rich-black);
 }
 
+/* Change text color to rich black for ingredients */
 .ingredients-list {
-    font-weight: normal;
-    font-size: 1em;    
-    color: var (--rich-black);
+    color: var(--rich-black);
 }
 
+/* Remove bullet points and style instructions */
 .instructions-list {
-    margin-bottom: 5px;
-    font-weight: normal;
-    font-size: 1em;
-    list-style-type: none;
-    color: var (--rich-black);
+    list-style-type: none; /* Removes bullet points */
+    padding: 0;
+    color: var(--rich-black);
+}
+
+/* Add double space between each step */
+.instructions-list li {
+    margin-bottom: 1em; /* Adds space between steps */
 }
 
 h3 {
