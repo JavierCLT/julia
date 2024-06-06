@@ -185,6 +185,21 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
             }
         };
 
+        // Share Recipe Button
+        const shareButton = document.getElementById('share-recipe-btn');
+        shareButton.onclick = () => {
+            const shareData = {
+                title: `Check out this recipe: ${data.title}`,
+                text: `Ingredients:\n${data.ingredients.map(i => i.Description).join('\n')}\n\nInstructions:\n${data.instructions.map(i => i.Description).join('\n')}\n\nTags: ${data.tags.join(', ')}\n\nServings: ${data.servings}\n\nOrigin: ${data.origin}`,
+                url: window.location.href
+            };
+            navigator.share(shareData).then(() => {
+                console.log('Recipe shared successfully');
+            }).catch((error) => {
+                console.error('Error sharing recipe:', error);
+            });
+        };
+
     } catch (error) {
         console.error('Error fetching recipe details:', error);
     }
