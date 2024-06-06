@@ -189,12 +189,12 @@ h1 {
     color: var(--desert-sand);
 }
 
-.ingredients-list {
+.ingredients-list ul {
     color: var(--rich-black);
 }
 
 /* Remove bullet points for instructions */
-.instructions-list {
+.instructions-list ul {
     list-style-type: none; /* Removes bullet points */
     padding: 0;
     color: var(--rich-black);
@@ -202,7 +202,7 @@ h1 {
 }
 
 .instructions-list li {
-    margin-bottom: 5em; /* Adds space between steps */
+    margin-bottom: 10em; /* Adds space between steps */
 }
 
 h3 {
