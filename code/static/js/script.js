@@ -190,7 +190,7 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
         shareButton.onclick = () => {
             const shareData = {
                 title: `Check out this recipe: ${data.title}`,
-                text: `Ingredients:\n${data.ingredients.map(i => i.Description).join('\n')}\n\nInstructions:\n${data.instructions.map(i => i.Description).join('\n')}\n\nTags: ${data.tags.join(', ')}\n\nServings: ${data.servings}\n\nOrigin: ${data.origin}`,
+                text: `Ingredients:\n${data.ingredients.map(i => i.Description).join('\n')}\n\nInstructions:\n${data.instructions.map(i => i.Description).join('\n')}\n\nTags: ${data.tags.join(', ')}\n\nServings: ${data.servings}`,
                 url: window.location.href
             };
             navigator.share(shareData).then(() => {
