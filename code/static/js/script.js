@@ -311,6 +311,7 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
             recipeDetailsContainer.style.display = 'none';
             recipeTitle.textContent = '';
             toggleBlurAndOverlay(false);
+            
         }
         if (!formJustOpened && !addRecipeFormContainer.contains(event.target) && addRecipeFormContainer.style.display === 'block' && !event.target.closest('#add-recipe-btn')) {
             addRecipeFormContainer.style.display = 'none';
@@ -319,30 +320,23 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
     });
     
     favoriteCheckbox.onchange = async () => {
-    const recipeId = favoriteCheckbox.getAttribute('data-recipe-id');
-    const isFavorite = favoriteCheckbox.checked;
+        const recipeId = favoriteCheckbox.getAttribute('data-recipe-id');
+        const isFavorite = favoriteCheckbox.checked;
 
-    // Close the details container immediately
-    recipeDetailsContainer.style.display = 'none'; // Close the details container
-    toggleBlurAndOverlay(false);
-
-    try {
-        const response = await fetch(`/update_favorite/${recipeId}`, {
-            method: 'POST',
-            body: JSON.stringify({ is_favorite: isFavorite }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        const data = await response.json();
-        showMessage(data.message);
-        if (!data.success) {
-            console.error('Error updating favorite status:', data.message);
+        try {
+            await fetch(`/update_favorite/${recipeId}`, {
+                method: 'POST',
+                body: JSON.stringify({ is_favorite: isFavorite }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+        } catch (error) {
+            console.error('Error updating favorite status:', error);
+            // Optionally revert the checkbox state if an error occurs
+            favoriteCheckbox.checked = !isFavorite;
         }
-    } catch (error) {
-        console.error('Error updating favorite status:', error);
-    }
-};
+    };
 
     viewFavoritesLink.addEventListener('click', async () => {
         try {
