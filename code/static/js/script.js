@@ -130,6 +130,9 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
 
         favoriteCheckbox.checked = data.is_favorite;
         favoriteCheckbox.setAttribute('data-recipe-id', recipeId); // Set recipe ID on the checkbox
+
+        // Scroll to the top of the container
+        recipeDetailsContainer.scrollTop = 0;
         recipeDetailsContainer.style.display = 'block';
 
         document.getElementById('edit-recipe-btn').onclick = () => {
