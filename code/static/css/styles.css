@@ -196,7 +196,13 @@ li {
     color: var (--rich-black);
 }
 
-.instructions-list ul {
+.ingredients-list {
+    font-weight: normal;
+    font-size: 1em;    
+    color: var (--rich-black);
+}
+
+.instructions-list {
     margin-bottom: 5px;
     font-weight: normal;
     font-size: 1em;
@@ -217,14 +223,6 @@ p {
     padding-inline-start: 40px; /* Apply padding inline start */ 
     color: var(--rich-black);
 }
-
-.instructions-list {
-    list-style-type: none; /* Remove bullet points */
-    margin-bottom: 10px;
-    color: var(--rich-black);
-}
-
-
 
 .card {
     background-color: var(--cadet-gray);
