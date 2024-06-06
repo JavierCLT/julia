@@ -318,6 +318,11 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
     favoriteCheckbox.onchange = async () => {
     const recipeId = favoriteCheckbox.getAttribute('data-recipe-id');
     const isFavorite = favoriteCheckbox.checked;
+
+    // Close the details container immediately
+    recipeDetailsContainer.style.display = 'none'; // Close the details container
+    toggleBlurAndOverlay(false);
+
     try {
         const response = await fetch(`/update_favorite/${recipeId}`, {
             method: 'POST',
@@ -328,9 +333,8 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
         });
         const data = await response.json();
         showMessage(data.message);
-        if (data.success) {
-            recipeDetailsContainer.style.display = 'none'; // Close the details container
-            toggleBlurAndOverlay(false);
+        if (!data.success) {
+            console.error('Error updating favorite status:', data.message);
         }
     } catch (error) {
         console.error('Error updating favorite status:', error);
