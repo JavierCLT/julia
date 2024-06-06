@@ -18,18 +18,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewAllRecipesLink = document.getElementById('view-all-recipes-link');
     let formJustOpened = false;
 
+    const sanitizeInput = (input) => {
+        const div = document.createElement('div');
+        div.appendChild(document.createTextNode(input));
+        return div.innerHTML;
+    };
+
     const debounce = (func, delay) => {
         let timer;
         return (...args) => {
             clearTimeout(timer);
             timer = setTimeout(() => func.apply(this, args), delay);
         };
-    };
-
-    const sanitizeInput = (input) => {
-        const tempDiv = document.createElement('div');
-        tempDiv.textContent = input;
-        return tempDiv.innerHTML;
     };
 
     const toggleBlurAndOverlay = (show) => {
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const loadingIndicator = document.getElementById('loading-indicator');
         loadingIndicator.style.display = show ? 'block' : 'none';
     };
-
+    
     const showMessage = (message) => {
         messageContainer.textContent = '';
         messageContainer.textContent = message;
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const handleSearch = debounce(async (event) => {
-        const searchQuery = sanitizeInput(event.target.value.trim());
+        const searchQuery = event.target.value.trim();
         if (searchQuery.length > 2) {
             const recipes = await fetchRecipes(searchQuery);
             renderRecipes(recipes);
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
             const data = await response.json();
-            console.log('API Response:', data);
+            console.log('API Response:', data); 
 
             let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
             data.ingredients.forEach(ingredient => {
@@ -142,6 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
             favoriteCheckbox.checked = data.is_favorite;
             recipeDetailsContainer.style.display = 'block';
 
+            // Append edit and delete buttons
             const recipeButtons = document.createElement('div');
             recipeButtons.id = 'recipe-buttons';
             recipeButtons.innerHTML = `
@@ -195,19 +196,19 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const populateEditForm = (recipeId, recipeData) => {
-        console.log('Populating edit form with data:', recipeData);
+        console.log('Populating edit form with data:', recipeData); 
 
-        addRecipeFormContainer.style.display = 'block';
-        addRecipeButton.textContent = 'Save';
+        addRecipeFormContainer.style.display = 'block'; 
+        addRecipeButton.textContent = 'Save'; 
         console.log('Form container display set to block');
         toggleBlurAndOverlay(true);
 
-        document.getElementById('recipe-title-input').value = sanitizeInput(recipeData.title) || '';
-        document.getElementById('recipe-ingredients-input').value = sanitizeInput(recipeData.ingredients) || '';
-        document.getElementById('recipe-instructions-input').value = sanitizeInput(recipeData.instructions) || '';
-        document.getElementById('recipe-tags-input').value = sanitizeInput(recipeData.tags) || '';
-        document.getElementById('recipe-servings-input').value = sanitizeInput(recipeData.servings) || '';
-        document.getElementById('recipe-origin-input').value = sanitizeInput(recipeData.origin) || '';
+        document.getElementById('recipe-title-input').value = recipeData.title || '';
+        document.getElementById('recipe-ingredients-input').value = recipeData.ingredients || '';
+        document.getElementById('recipe-instructions-input').value = recipeData.instructions || '';
+        document.getElementById('recipe-tags-input').value = recipeData.tags || '';
+        document.getElementById('recipe-servings-input').value = recipeData.servings || '';
+        document.getElementById('recipe-origin-input').value = recipeData.origin || '';
 
         addRecipeForm.onsubmit = async (event) => {
             event.preventDefault();
@@ -246,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('add-recipe-btn').addEventListener('click', () => {
         addRecipeFormContainer.style.display = 'block';
-        addRecipeButton.textContent = 'Add Recipe';
+        addRecipeButton.textContent = 'Add Recipe'; 
         toggleBlurAndOverlay(true);
     });
 
@@ -258,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
     addRecipeForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const formData = new FormData(addRecipeForm);
-        const tags = sanitizeInput(formData.get('tags')).split(',').map(tag => tag.trim());
+        const tags = formData.get('tags').split(',').map(tag => tag.trim());
         const formDataObject = Object.fromEntries(formData.entries());
         formDataObject.is_favorite = formDataObject.is_favorite ? true : false;
 
@@ -298,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const recipeId = targetElement.getAttribute('data-recipe-id');
             if (recipeId) {
                 const recipeTitleText = targetElement.querySelector('.recipe-title').textContent;
-                recipeTitle.textContent = sanitizeInput(recipeTitleText);
+                recipeTitle.textContent = recipeTitleText;
                 fetchAndDisplayRecipeDetails(recipeId);
                 toggleBlurAndOverlay(true);
             }
@@ -317,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleBlurAndOverlay(false);
         }
     });
-
+    
     favoriteCheckbox.onchange = async () => {
         const recipeId = favoriteCheckbox.getAttribute('data-recipe-id');
         const isFavorite = favoriteCheckbox.checked;
@@ -332,7 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             showMessage(data.message);
             if (data.success) {
-                recipeDetailsContainer.style.display = 'none';
+                recipeDetailsContainer.style.display = 'none'; 
                 toggleBlurAndOverlay(false);
             }
         } catch (error) {
@@ -345,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/favorites');
             const favorites = await response.json();
             renderRecipes(favorites);
-            searchBox.value = 'Favorites';
+            searchBox.value = 'Favorites'; 
         } catch (error) {
             console.error('Error fetching favorite recipes:', error);
         }
@@ -354,11 +355,12 @@ document.addEventListener('DOMContentLoaded', () => {
     viewTagsLink.addEventListener('click', async () => {
         try {
             const tags = await fetchTags();
-            resultsContainer.innerHTML = '';
+            resultsContainer.innerHTML = ''; 
             const tagList = document.createElement('ul');
+            tagList.className = 'tag-list';
             tags.forEach(tag => {
                 const tagItem = document.createElement('li');
-                tagItem.textContent = sanitizeInput(tag);
+                tagItem.textContent = tag;
                 tagItem.className = 'tag-item';
                 tagItem.addEventListener('click', () => {
                     searchBox.value = tag;
@@ -367,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 tagList.appendChild(tagItem);
             });
             resultsContainer.appendChild(tagList);
-            searchBox.value = 'Tags';
+            searchBox.value = 'Tags'; 
         } catch (error) {
             console.error('Error fetching tags:', error);
         }
@@ -375,9 +377,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     viewAllRecipesLink.addEventListener('click', async () => {
         try {
-            const recipes = await fetchRecipes('');
+            const recipes = await fetchRecipes(''); 
             renderRecipes(recipes);
-            searchBox.value = 'All Recipes';
+            searchBox.value = 'All Recipes'; 
         } catch (error) {
             console.error('Error fetching all recipes:', error);
         }
