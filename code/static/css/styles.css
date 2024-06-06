@@ -199,6 +199,7 @@ li {
 /* Change text color to rich black for ingredients */
 .ingredients-list {
     color: var(--rich-black);
+    padding-left: 2em;
 }
 
 /* Remove bullet points and style instructions */
@@ -206,6 +207,7 @@ li {
     list-style-type: none; /* Removes bullet points */
     padding: 0;
     color: var(--rich-black);
+    padding-left: 1em;
 }
 
 /* Add double space between each step */
@@ -225,6 +227,7 @@ p {
     
     padding-inline-start: 40px; /* Apply padding inline start */ 
     color: var(--rich-black);
+    padding-left: 1em;
 }
 
 .card {
