@@ -137,14 +137,7 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
             existingButtons.remove();
         }
 
-        // Append edit and delete buttons
-        const recipeButtons = document.createElement('div');
-        recipeButtons.id = 'recipe-buttons';
-        recipeButtons.innerHTML = `
-            <button id="edit-recipe-btn" class="edit-recipe-btn">Edit Recipe</button>
-            <button id="delete-recipe-btn" class="delete-recipe-btn">Delete Recipe</button>
-        `;
-        recipeDetailsContainer.appendChild(recipeButtons);
+        
 
         document.getElementById('edit-recipe-btn').onclick = () => {
             formJustOpened = true;
