@@ -189,23 +189,19 @@ h1 {
     color: var(--desert-sand);
 }
 
-ul .ingredients-list {
-    color: var(--rich-black);
+li {
+    margin-bottom: 5px;
+    font-weight: normal;
+    font-size: 1em;
+    color: var (--rich-black);
 }
 
-/* Remove bullet points for instructions */
-li .instructions-list {
-    list-style-type: none; /* Removes bullet points */
-    padding: 0;
-    color: var(--rich-black);
-    margin-bottom: 10em;
-}
-
-li .ingredients-list {
-    
-    padding: 0;
-    color: var(--rich-black);
-    
+.instructions-list ul {
+    margin-bottom: 5px;
+    font-weight: normal;
+    font-size: 1em;
+    list-style-type: none;
+    color: var (--rich-black);
 }
 
 h3 {
