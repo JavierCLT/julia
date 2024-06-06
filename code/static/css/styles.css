@@ -190,7 +190,7 @@ h1 {
 }
 
 /* Change text color to rich black */
-.ingredients-list, .instructions-list {
+.ingredients-list, .instructions-list ul {
     color: var(--rich-black); /* Rich black color */
 }
 
@@ -200,9 +200,16 @@ h1 {
     padding: 0;
 }
 
+.instructions-list ul {
+    margin-bottom: 1em; /* Adds space between steps */
+    list-style-type: none;
+    color: var(--rich-black);
+}
+
 /* Add double space between each step */
 .instructions-list li {
     margin-bottom: 1em; /* Adds space between steps */
+    list-style-type: none;
 }
 
 h3 {
