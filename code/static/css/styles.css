@@ -1,4 +1,5 @@
 
+
 :root {
     --rich-black: #0D1F2D;
     --paynes-gray: #546A7B;
@@ -202,21 +203,13 @@ p {
     color: var(--rich-black);
 }
 
-.recipe-details h3,
-    .recipe-details li {
-        color: #000000; /* Rich black color */
-    }
+.instructions-list {
+    list-style-type: none; /* Remove bullet points */
+    margin-bottom: 10px;
+    color: var(--rich-black);
+}
 
-.recipe-details .instructions-list {
-        list-style-type: none; /* Remove bullet points */
-        padding-left: 0;
-        margin-bottom: 10px;
-        color: var(--rich-black);
-    }
 
-.recipe-details .instructions-list li {
-        margin-bottom: 1em; /* Add double space between steps */
-    }
 
 li {
     margin-bottom: 5px;
