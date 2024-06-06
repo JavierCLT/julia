@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, escape
 from flask_caching import Cache
 import mysql.connector
 from mysql.connector import Error, pooling
@@ -39,7 +39,7 @@ def index():
 @app.route('/search', methods=['GET'])
 @cache.cached(timeout=60, query_string=True)
 def search_recipes():
-    query_param = request.args.get('query', '')
+    query_param = escape(request.args.get('query', ''))
     result = []
 
     try:
@@ -137,12 +137,12 @@ def recipe_details(recipe_id):
 @app.route('/add_recipe', methods=['POST'])
 def add_recipe():
     data = request.json
-    title = data.get('title')
-    ingredients = data.get('ingredients').split('\n')
-    instructions = data.get('instructions').split('\n')
-    tags = data.get('tags').split(',')
-    servings = data.get('servings')
-    origin = data.get('origin')
+    title = escape(data.get('title'))
+    ingredients = escape(data.get('ingredients')).split('\n')
+    instructions = escape(data.get('instructions')).split('\n')
+    tags = escape(data.get('tags')).split(',')
+    servings = escape(data.get('servings'))
+    origin = escape(data.get('origin'))
     is_favorite = data.get('is_favorite', False)
     password = data.get('password')
 
@@ -216,20 +216,19 @@ def delete_recipe(recipe_id):
 
 @app.route('/update_recipe/<int:recipe_id>', methods=['POST'])
 def update_recipe(recipe_id):
-    data = request.get_json()  # Using get_json() to properly parse JSON body
-    title = data.get('title')
-    ingredients = data.get('ingredients').split('\n')
-    instructions = data.get('instructions').split('\n')
-    tags = data.get('tags').split(',')
-    servings = data.get('servings')
-    origin = data.get('origin')
+    data = request.get_json()
+    title = escape(data.get('title'))
+    ingredients = escape(data.get('ingredients')).split('\n')
+    instructions = escape(data.get('instructions')).split('\n')
+    tags = escape(data.get('tags')).split(',')
+    servings = escape(data.get('servings'))
+    origin = escape(data.get('origin'))
     is_favorite = data.get('is_favorite', False)
     password = data.get('password')
 
     if password != os.getenv('SECRET_PASSWORD'):
         return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
 
-    # Validate servings to allow numbers and ranges like "8-10"
     if not re.match(r'^\d+(-\d+)?$', servings):
         return jsonify({'success': False, 'message': 'Invalid format for servings. Use a number or a range like "8-10".'})
 
@@ -262,7 +261,7 @@ def update_recipe(recipe_id):
                 cursor.execute("INSERT INTO tags (TagName) VALUES (%s)", (tag.strip(),))
                 tag_id = cursor.lastrowid
             else:
-                tag_id = tag_id[0]  # Fetch the first element which is the TagID
+                tag_id = tag_id[0]
             cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
 
         connection.commit()
