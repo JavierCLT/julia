@@ -189,6 +189,22 @@ h1 {
     color: var(--desert-sand);
 }
 
+/* Change text color to rich black */
+.ingredients-list, .instructions-list {
+    color: var(--rich-black); /* Rich black color */
+}
+
+/* Remove bullet points for instructions */
+.instructions-list {
+    list-style-type: none; /* Removes bullet points */
+    padding: 0;
+}
+
+/* Add double space between each step */
+.instructions-list li {
+    margin-bottom: 1em; /* Adds space between steps */
+}
+
 h3 {
     margin: 10px 0;
     font-weight: bold;
