@@ -135,6 +135,9 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
         recipeDetailsContainer.scrollTop = 0;
         recipeDetailsContainer.style.display = 'block';
 
+        // Scroll to the top of the window (ensure the container is at the top)
+        window.scrollTo(0, 0);
+
         document.getElementById('edit-recipe-btn').onclick = () => {
             formJustOpened = true;
             console.log('Edit button clicked for recipe ID:', recipeId);
@@ -189,6 +192,11 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
             });
         };
 
+    } catch (error) {
+        console.error('Error fetching recipe details:', error);
+    }
+};
+    
     } catch (error) {
         console.error('Error fetching recipe details:', error);
     }
