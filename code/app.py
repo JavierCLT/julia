@@ -1,3 +1,4 @@
+
 from flask import Flask, request, jsonify, render_template
 from flask_caching import Cache
 import mysql.connector
@@ -5,7 +6,6 @@ from mysql.connector import Error, pooling
 from flask_cors import CORS
 import os
 import re
-import bleach
 
 app = Flask(__name__)
 CORS(app, resources={r"/search*": {"origins": "*"}})
@@ -138,12 +138,12 @@ def recipe_details(recipe_id):
 @app.route('/add_recipe', methods=['POST'])
 def add_recipe():
     data = request.json
-    title = bleach.clean(data.get('title'))
-    ingredients = [bleach.clean(ingredient) for ingredient in data.get('ingredients').split('\n')]
-    instructions = [bleach.clean(instruction) for instruction in data.get('instructions').split('\n')]
-    tags = [bleach.clean(tag) for tag in data.get('tags').split(',')]
-    servings = bleach.clean(data.get('servings'))
-    origin = bleach.clean(data.get('origin'))
+    title = data.get('title')
+    ingredients = data.get('ingredients').split('\n')
+    instructions = data.get('instructions').split('\n')
+    tags = data.get('tags').split(',')
+    servings = data.get('servings')
+    origin = data.get('origin')
     is_favorite = data.get('is_favorite', False)
     password = data.get('password')
 
@@ -218,12 +218,12 @@ def delete_recipe(recipe_id):
 @app.route('/update_recipe/<int:recipe_id>', methods=['POST'])
 def update_recipe(recipe_id):
     data = request.get_json()  # Using get_json() to properly parse JSON body
-    title = bleach.clean(data.get('title'))
-    ingredients = [bleach.clean(ingredient) for ingredient in data.get('ingredients').split('\n')]
-    instructions = [bleach.clean(instruction) for instruction in data.get('instructions').split('\n')]
-    tags = [bleach.clean(tag) for tag in data.get('tags').split(',')]
-    servings = bleach.clean(data.get('servings'))
-    origin = bleach.clean(data.get('origin'))
+    title = data.get('title')
+    ingredients = data.get('ingredients').split('\n')
+    instructions = data.get('instructions').split('\n')
+    tags = data.get('tags').split(',')
+    servings = data.get('servings')
+    origin = data.get('origin')
     is_favorite = data.get('is_favorite', False)
     password = data.get('password')
 
