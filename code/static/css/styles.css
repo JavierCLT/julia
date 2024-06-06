@@ -234,7 +234,7 @@ p {
     background-color: var (--desert-sand);
 }
 
-.delete-recipe-btn {
+#delete-recipe-btn {
     margin-left: 25em;
 }
 .message-container {
