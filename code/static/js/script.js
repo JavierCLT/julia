@@ -26,6 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     };
 
+    const sanitizeInput = (input) => {
+        const tempDiv = document.createElement('div');
+        tempDiv.textContent = input;
+        return tempDiv.innerHTML;
+    };
+
     const toggleBlurAndOverlay = (show) => {
         if (show) {
             darkOverlay.style.display = 'block';
@@ -40,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const loadingIndicator = document.getElementById('loading-indicator');
         loadingIndicator.style.display = show ? 'block' : 'none';
     };
-    
+
     const showMessage = (message) => {
         messageContainer.textContent = '';
         messageContainer.textContent = message;
@@ -81,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
             recipeElement.className = 'recipe-box';
             recipeElement.setAttribute('data-recipe-id', recipe.RecipeID);
             recipeElement.innerHTML = `<div class="recipe-content">
-                                          <h3 class="recipe-title">${recipe.Title}</h3>
+                                          <h3 class="recipe-title">${sanitizeInput(recipe.Title)}</h3>
                                        </div>`;
             grid.appendChild(recipeElement);
         });
@@ -89,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const handleSearch = debounce(async (event) => {
-        const searchQuery = event.target.value.trim();
+        const searchQuery = sanitizeInput(event.target.value.trim());
         if (searchQuery.length > 2) {
             const recipes = await fetchRecipes(searchQuery);
             renderRecipes(recipes);
@@ -102,30 +108,30 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
             const data = await response.json();
-            console.log('API Response:', data); 
+            console.log('API Response:', data);
 
             let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
             data.ingredients.forEach(ingredient => {
-                ingredientsHtml += `<li>${ingredient.Description}</li>`;
+                ingredientsHtml += `<li>${sanitizeInput(ingredient.Description)}</li>`;
             });
             ingredientsHtml += '</ul>';
 
             let instructionsHtml = '<h3>Instructions:</h3><ul>';
             data.instructions.forEach(instruction => {
-                instructionsHtml += `<li>${instruction.Description}</li>`;
+                instructionsHtml += `<li>${sanitizeInput(instruction.Description)}</li>`;
             });
             instructionsHtml += '</ul>';
 
             let tagsHtml = '<h3>Tags:</h3><p>';
-            tagsHtml += data.tags.join(', ');
+            tagsHtml += sanitizeInput(data.tags.join(', '));
             tagsHtml += '</p>';
 
             let servingsHtml = '<h3>Servings:</h3><p>';
-            servingsHtml += data.servings;
+            servingsHtml += sanitizeInput(data.servings);
             servingsHtml += '</p>';
 
             let originHtml = '<h3>Origin:</h3><p>';
-            originHtml += data.origin;
+            originHtml += sanitizeInput(data.origin);
             originHtml += '</p>';
 
             while (recipeTitle.nextSibling) {
@@ -136,7 +142,6 @@ document.addEventListener('DOMContentLoaded', () => {
             favoriteCheckbox.checked = data.is_favorite;
             recipeDetailsContainer.style.display = 'block';
 
-            // Append edit and delete buttons
             const recipeButtons = document.createElement('div');
             recipeButtons.id = 'recipe-buttons';
             recipeButtons.innerHTML = `
@@ -190,19 +195,19 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const populateEditForm = (recipeId, recipeData) => {
-        console.log('Populating edit form with data:', recipeData); 
+        console.log('Populating edit form with data:', recipeData);
 
-        addRecipeFormContainer.style.display = 'block'; 
-        addRecipeButton.textContent = 'Save'; 
+        addRecipeFormContainer.style.display = 'block';
+        addRecipeButton.textContent = 'Save';
         console.log('Form container display set to block');
         toggleBlurAndOverlay(true);
 
-        document.getElementById('recipe-title-input').value = recipeData.title || '';
-        document.getElementById('recipe-ingredients-input').value = recipeData.ingredients || '';
-        document.getElementById('recipe-instructions-input').value = recipeData.instructions || '';
-        document.getElementById('recipe-tags-input').value = recipeData.tags || '';
-        document.getElementById('recipe-servings-input').value = recipeData.servings || '';
-        document.getElementById('recipe-origin-input').value = recipeData.origin || '';
+        document.getElementById('recipe-title-input').value = sanitizeInput(recipeData.title) || '';
+        document.getElementById('recipe-ingredients-input').value = sanitizeInput(recipeData.ingredients) || '';
+        document.getElementById('recipe-instructions-input').value = sanitizeInput(recipeData.instructions) || '';
+        document.getElementById('recipe-tags-input').value = sanitizeInput(recipeData.tags) || '';
+        document.getElementById('recipe-servings-input').value = sanitizeInput(recipeData.servings) || '';
+        document.getElementById('recipe-origin-input').value = sanitizeInput(recipeData.origin) || '';
 
         addRecipeForm.onsubmit = async (event) => {
             event.preventDefault();
@@ -241,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('add-recipe-btn').addEventListener('click', () => {
         addRecipeFormContainer.style.display = 'block';
-        addRecipeButton.textContent = 'Add Recipe'; 
+        addRecipeButton.textContent = 'Add Recipe';
         toggleBlurAndOverlay(true);
     });
 
@@ -253,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
     addRecipeForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const formData = new FormData(addRecipeForm);
-        const tags = formData.get('tags').split(',').map(tag => tag.trim());
+        const tags = sanitizeInput(formData.get('tags')).split(',').map(tag => tag.trim());
         const formDataObject = Object.fromEntries(formData.entries());
         formDataObject.is_favorite = formDataObject.is_favorite ? true : false;
 
@@ -293,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const recipeId = targetElement.getAttribute('data-recipe-id');
             if (recipeId) {
                 const recipeTitleText = targetElement.querySelector('.recipe-title').textContent;
-                recipeTitle.textContent = recipeTitleText;
+                recipeTitle.textContent = sanitizeInput(recipeTitleText);
                 fetchAndDisplayRecipeDetails(recipeId);
                 toggleBlurAndOverlay(true);
             }
@@ -312,7 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleBlurAndOverlay(false);
         }
     });
-    
+
     favoriteCheckbox.onchange = async () => {
         const recipeId = favoriteCheckbox.getAttribute('data-recipe-id');
         const isFavorite = favoriteCheckbox.checked;
@@ -327,7 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             showMessage(data.message);
             if (data.success) {
-                recipeDetailsContainer.style.display = 'none'; // Close the details container
+                recipeDetailsContainer.style.display = 'none';
                 toggleBlurAndOverlay(false);
             }
         } catch (error) {
@@ -340,7 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/favorites');
             const favorites = await response.json();
             renderRecipes(favorites);
-            searchBox.value = 'Favorites'; // Set the search box text to "Favorites"
+            searchBox.value = 'Favorites';
         } catch (error) {
             console.error('Error fetching favorite recipes:', error);
         }
@@ -349,20 +354,20 @@ document.addEventListener('DOMContentLoaded', () => {
     viewTagsLink.addEventListener('click', async () => {
         try {
             const tags = await fetchTags();
-            resultsContainer.innerHTML = ''; // Clear the results container
+            resultsContainer.innerHTML = '';
             const tagList = document.createElement('ul');
             tags.forEach(tag => {
                 const tagItem = document.createElement('li');
-                tagItem.textContent = tag;
-                tagItem.className = 'tag-item'; // Add a class for styling
+                tagItem.textContent = sanitizeInput(tag);
+                tagItem.className = 'tag-item';
                 tagItem.addEventListener('click', () => {
                     searchBox.value = tag;
-                    handleSearch({ target: { value: tag } }); // Trigger search
+                    handleSearch({ target: { value: tag } });
                 });
                 tagList.appendChild(tagItem);
             });
             resultsContainer.appendChild(tagList);
-            searchBox.value = 'Tags'; // Set the search box text to "Tags"
+            searchBox.value = 'Tags';
         } catch (error) {
             console.error('Error fetching tags:', error);
         }
@@ -370,9 +375,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     viewAllRecipesLink.addEventListener('click', async () => {
         try {
-            const recipes = await fetchRecipes(''); // Fetch all recipes with an empty query
+            const recipes = await fetchRecipes('');
             renderRecipes(recipes);
-            searchBox.value = 'All Recipes'; // Set the search box text to "All Recipes"
+            searchBox.value = 'All Recipes';
         } catch (error) {
             console.error('Error fetching all recipes:', error);
         }
