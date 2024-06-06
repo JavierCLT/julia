@@ -1,11 +1,11 @@
 from flask import Flask, request, jsonify, render_template
 from flask_caching import Cache
-from markupsafe import escape  # Import escape from markupsafe
 import mysql.connector
 from mysql.connector import Error, pooling
 from flask_cors import CORS
 import os
 import re
+import bleach
 
 app = Flask(__name__)
 CORS(app, resources={r"/search*": {"origins": "*"}})
@@ -138,12 +138,12 @@ def recipe_details(recipe_id):
 @app.route('/add_recipe', methods=['POST'])
 def add_recipe():
     data = request.json
-    title = escape(data.get('title'))
-    ingredients = [escape(ingredient) for ingredient in data.get('ingredients').split('\n')]
-    instructions = [escape(instruction) for instruction in data.get('instructions').split('\n')]
-    tags = [escape(tag) for tag in data.get('tags').split(',')]
-    servings = escape(data.get('servings'))
-    origin = escape(data.get('origin'))
+    title = bleach.clean(data.get('title'))
+    ingredients = [bleach.clean(ingredient) for ingredient in data.get('ingredients').split('\n')]
+    instructions = [bleach.clean(instruction) for instruction in data.get('instructions').split('\n')]
+    tags = [bleach.clean(tag) for tag in data.get('tags').split(',')]
+    servings = bleach.clean(data.get('servings'))
+    origin = bleach.clean(data.get('origin'))
     is_favorite = data.get('is_favorite', False)
     password = data.get('password')
 
@@ -217,19 +217,20 @@ def delete_recipe(recipe_id):
 
 @app.route('/update_recipe/<int:recipe_id>', methods=['POST'])
 def update_recipe(recipe_id):
-    data = request.get_json()
-    title = escape(data.get('title'))
-    ingredients = [escape(ingredient) for ingredient in data.get('ingredients').split('\n')]
-    instructions = [escape(instruction) for instruction in data.get('instructions').split('\n')]
-    tags = [escape(tag) for tag in data.get('tags').split(',')]
-    servings = escape(data.get('servings'))
-    origin = escape(data.get('origin'))
+    data = request.get_json()  # Using get_json() to properly parse JSON body
+    title = bleach.clean(data.get('title'))
+    ingredients = [bleach.clean(ingredient) for ingredient in data.get('ingredients').split('\n')]
+    instructions = [bleach.clean(instruction) for instruction in data.get('instructions').split('\n')]
+    tags = [bleach.clean(tag) for tag in data.get('tags').split(',')]
+    servings = bleach.clean(data.get('servings'))
+    origin = bleach.clean(data.get('origin'))
     is_favorite = data.get('is_favorite', False)
     password = data.get('password')
 
     if password != os.getenv('SECRET_PASSWORD'):
         return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
 
+    # Validate servings to allow numbers and ranges like "8-10"
     if not re.match(r'^\d+(-\d+)?$', servings):
         return jsonify({'success': False, 'message': 'Invalid format for servings. Use a number or a range like "8-10".'})
 
@@ -262,7 +263,7 @@ def update_recipe(recipe_id):
                 cursor.execute("INSERT INTO tags (TagName) VALUES (%s)", (tag.strip(),))
                 tag_id = cursor.lastrowid
             else:
-                tag_id = tag_id[0]
+                tag_id = tag_id[0]  # Fetch the first element which is the TagID
             cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
 
         connection.commit()
@@ -302,7 +303,7 @@ def get_tags():
         connection = connection_pool.get_connection()
         cursor = connection.cursor(dictionary=True)
         cursor.execute("SELECT TagName FROM tags")
-        result = [escape(tag['TagName']) for tag in cursor.fetchall()]
+        result = [tag['TagName'] for tag in cursor.fetchall()]
         cursor.close()
     except Error as e:
         print(f"Error while connecting to MySQL or executing query: {e}")
@@ -315,4 +316,3 @@ def get_tags():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
-
