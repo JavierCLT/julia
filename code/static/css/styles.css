@@ -213,8 +213,8 @@ p {
     color: var(--desert-sand);
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    margin-bottom: 20px;
+    padding: 10px;
+    
 }
 
 .recipe-box {
@@ -223,6 +223,10 @@ p {
     border-radius: 8px;
     border: none;
     transition: transform 0.3s ease;
+}
+
+#favorite-checkbox {
+    transform: translateY(2px); /* Adjust this value to lower the checkbox */
 }
 
 .recipe-box:hover {
@@ -277,7 +281,7 @@ p {
 }
 
 .button-container {
-    display: flex;
+    
     align-items: center;
     margin-top: 20px;
     width: 100%;
@@ -290,7 +294,6 @@ p {
 }
 
 .button-container label {
-    margin-right: 10px;
     font-weight: bold;
 }
 
@@ -318,6 +321,7 @@ p {
     border-radius: 5px;
     padding: 10px 20px;
     cursor: pointer;
+    margin-left: 20px;
 }
 
 .button-container button:hover {
