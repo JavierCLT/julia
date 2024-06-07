@@ -141,11 +141,13 @@ def add_recipe():
     title = data.get('title')
     ingredients = data.get('ingredients').split('\n')
     instructions = data.get('instructions').split('\n')
-    tags = data.get('tags').split(',')
+    tags = [tag.strip() for tag in data.get('tags').split(',')]
     servings = data.get('servings')
     origin = data.get('origin')
     is_favorite = data.get('is_favorite', False)
     password = data.get('password')
+
+    print("Received tags:", tags)  # Debugging line
 
     if password != os.getenv('SECRET_PASSWORD'):
         return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
@@ -165,10 +167,10 @@ def add_recipe():
             cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)", (recipe_id, step_number, instruction.strip()))
 
         for tag in tags:
-            cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag.strip(),))
+            cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag,))
             tag_id = cursor.fetchone()
             if not tag_id:
-                cursor.execute("INSERT INTO tags (TagName) VALUES (%s)", (tag.strip(),))
+                cursor.execute("INSERT INTO tags (TagName) VALUES (%s)", (tag,))
                 tag_id = cursor.lastrowid
             else:
                 tag_id = tag_id[0]
@@ -217,15 +219,17 @@ def delete_recipe(recipe_id):
 
 @app.route('/update_recipe/<int:recipe_id>', methods=['POST'])
 def update_recipe(recipe_id):
-    data = request.get_json()  # Using get_json() to properly parse JSON body
+    data = request.get_json()
     title = data.get('title')
     ingredients = data.get('ingredients').split('\n')
     instructions = data.get('instructions').split('\n')
-    tags = data.get('tags').split(',')
+    tags = [tag.strip() for tag in data.get('tags').split(',')]
     servings = data.get('servings')
     origin = data.get('origin')
     is_favorite = data.get('is_favorite', False)
     password = data.get('password')
+
+    print("Received tags for update:", tags)  # Debugging line
 
     if password != os.getenv('SECRET_PASSWORD'):
         return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
@@ -243,27 +247,21 @@ def update_recipe(recipe_id):
 
         cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
         for ingredient in ingredients:
-            cursor.execute("""
-                INSERT INTO ingredients (RecipeID, Description)
-                VALUES (%s, %s)
-            """, (recipe_id, ingredient.strip()))
+            cursor.execute("INSERT INTO ingredients (RecipeID, Description) VALUES (%s, %s)", (recipe_id, ingredient.strip()))
 
         cursor.execute("DELETE FROM instructions WHERE RecipeID = %s", (recipe_id,))
         for step_number, instruction in enumerate(instructions, start=1):
-            cursor.execute("""
-                INSERT INTO instructions (RecipeID, StepNumber, Description)
-                VALUES (%s, %s, %s)
-            """, (recipe_id, step_number, instruction.strip()))
+            cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)", (recipe_id, step_number, instruction.strip()))
 
         cursor.execute("DELETE FROM recipetags WHERE RecipeID = %s", (recipe_id,))
         for tag in tags:
-            cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag.strip(),))
+            cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag,))
             tag_id = cursor.fetchone()
             if not tag_id:
-                cursor.execute("INSERT INTO tags (TagName) VALUES (%s)", (tag.strip(),))
+                cursor.execute("INSERT INTO tags (TagName) VALUES (%s)", (tag,))
                 tag_id = cursor.lastrowid
             else:
-                tag_id = tag_id[0]  # Fetch the first element which is the TagID
+                tag_id = tag_id[0]
             cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
 
         connection.commit()
