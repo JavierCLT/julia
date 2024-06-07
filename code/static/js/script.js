@@ -103,21 +103,8 @@ document.addEventListener('DOMContentLoaded', () => {
 const fetchAndDisplayRecipeDetails = async (recipeId) => {
     try {
         const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
-        if (!response.ok) {
-            if (response.status === 404) {
-                showMessage('Recipe not found');
-            } else {
-                showMessage('An error occurred while fetching the recipe details');
-            }
-            return;
-        }
         const data = await response.json();
-        console.log('API Response:', data); 
-
-        if (data.error) {
-            showMessage(data.error);
-            return;
-        }
+        console.log('API Response:', data);
 
         let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
         data.ingredients.forEach(ingredient => {
@@ -203,7 +190,6 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
 
     } catch (error) {
         console.error('Error fetching recipe details:', error);
-        showMessage('An error occurred while fetching the recipe details');
     }
 };
 
