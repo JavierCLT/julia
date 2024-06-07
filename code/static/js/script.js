@@ -103,38 +103,61 @@ document.addEventListener('DOMContentLoaded', () => {
 const fetchAndDisplayRecipeDetails = async (recipeId) => {
     try {
         const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
+        if (!response.ok) {
+            if (response.status === 404) {
+                showMessage('Recipe not found');
+            } else {
+                showMessage('An error occurred while fetching the recipe details');
+            }
+            return;
+        }
         const data = await response.json();
-        console.log('API Response:', data);
+        console.log('API Response:', data); 
 
-        // Ingredients
-        const ingredientsList = document.querySelector('.ingredients-list');
-        ingredientsList.innerHTML = '';
+        if (data.error) {
+            showMessage(data.error);
+            return;
+        }
+
+        let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
         data.ingredients.forEach(ingredient => {
-            const li = document.createElement('li');
-            li.textContent = ingredient.Description;
-            ingredientsList.appendChild(li);
+            ingredientsHtml += `<li>${ingredient.Description}</li>`;
         });
+        ingredientsHtml += '</ul>';
 
-        // Instructions
-        const instructionsList = document.querySelector('.instructions-list');
-        instructionsList.innerHTML = '';
+        let instructionsHtml = '<h3>Instructions:</h3><ul>';
         data.instructions.forEach(instruction => {
-            const li = document.createElement('li');
-            li.textContent = instruction.Description;
-            instructionsList.appendChild(li);
+            instructionsHtml += `<li>${instruction.Description}</li>`;
         });
+        instructionsHtml += '</ul>';
 
-        // Tags, Servings, Origin
-        document.querySelector('.tags-list').textContent = data.tags.join(', ');
-        document.querySelector('.servings-count').textContent = data.servings;
-        document.querySelector('.origin').textContent = data.origin;
+        let tagsHtml = '<h3>Tags:</h3><p>';
+        tagsHtml += data.tags.join(', ');
+        tagsHtml += '</p>';
 
+        let servingsHtml = '<h3>Servings:</h3><p>';
+        servingsHtml += data.servings;
+        servingsHtml += '</p>';
+
+        let originHtml = '<h3>Origin:</h3><p>';
+        originHtml += data.origin;
+        originHtml += '</p>';
+
+        while (recipeTitle.nextSibling) {
+            recipeDetailsContainer.removeChild(recipeTitle.nextSibling);
+        }
+
+        recipeTitle.insertAdjacentHTML('afterend', ingredientsHtml + instructionsHtml + tagsHtml + servingsHtml + originHtml);
         favoriteCheckbox.checked = data.is_favorite;
-        favoriteCheckbox.setAttribute('data-recipe-id', recipeId); // Set recipe ID on the checkbox
-
-        // Scroll to the top of the container
-        recipeDetailsContainer.scrollTop = 0;
         recipeDetailsContainer.style.display = 'block';
+
+        const recipeButtons = document.createElement('div');
+        recipeButtons.id = 'recipe-buttons';
+        recipeButtons.innerHTML = `
+            <button id="edit-recipe-btn" class="edit-recipe-btn">Edit Recipe</button>
+            <button id="delete-recipe-btn" class="delete-recipe-btn">Delete Recipe</button>
+        `;
+        recipeDetailsContainer.appendChild(recipeButtons);
 
         document.getElementById('edit-recipe-btn').onclick = () => {
             formJustOpened = true;
@@ -168,12 +191,21 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
                     if (data.success) {
                         recipeDetailsContainer.style.display = 'none';
                         toggleBlurAndOverlay(false);
+                        const currentSearchQuery = searchBox.value.trim();
+                        const updatedRecipes = await fetchRecipes(currentSearchQuery);
+                        renderRecipes(updatedRecipes);
                     }
                 } catch (error) {
                     console.error('Error deleting recipe:', error);
                 }
             }
         };
+
+    } catch (error) {
+        console.error('Error fetching recipe details:', error);
+        showMessage('An error occurred while fetching the recipe details');
+    }
+};
 
         // Share Recipe Button
         const shareButton = document.getElementById('share-recipe-btn');
