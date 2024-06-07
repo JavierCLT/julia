@@ -106,45 +106,35 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
         const data = await response.json();
         console.log('API Response:', data);
 
-        let ingredientsHtml = '<h3>Ingredients:</h3><ul>';
+        // Ingredients
+        const ingredientsList = document.querySelector('.ingredients-list');
+        ingredientsList.innerHTML = '';
         data.ingredients.forEach(ingredient => {
-            ingredientsHtml += `<li>${ingredient.Description}</li>`;
+            const li = document.createElement('li');
+            li.textContent = ingredient.Description;
+            ingredientsList.appendChild(li);
         });
-        ingredientsHtml += '</ul>';
 
-        let instructionsHtml = '<h3>Instructions:</h3><ul>';
+        // Instructions
+        const instructionsList = document.querySelector('.instructions-list');
+        instructionsList.innerHTML = '';
         data.instructions.forEach(instruction => {
-            instructionsHtml += `<li>${instruction.Description}</li>`;
+            const li = document.createElement('li');
+            li.textContent = instruction.Description;
+            instructionsList.appendChild(li);
         });
-        instructionsHtml += '</ul>';
 
-        let tagsHtml = '<h3>Tags:</h3><p>';
-        tagsHtml += data.tags.join(', ');
-        tagsHtml += '</p>';
+        // Tags, Servings, Origin
+        document.querySelector('.tags-list').textContent = data.tags.join(', ');
+        document.querySelector('.servings-count').textContent = data.servings;
+        document.querySelector('.origin').textContent = data.origin;
 
-        let servingsHtml = '<h3>Servings:</h3><p>';
-        servingsHtml += data.servings;
-        servingsHtml += '</p>';
-
-        let originHtml = '<h3>Origin:</h3><p>';
-        originHtml += data.origin;
-        originHtml += '</p>';
-
-        while (recipeTitle.nextSibling) {
-            recipeDetailsContainer.removeChild(recipeTitle.nextSibling);
-        }
-
-        recipeTitle.insertAdjacentHTML('afterend', ingredientsHtml + instructionsHtml + tagsHtml + servingsHtml + originHtml);
         favoriteCheckbox.checked = data.is_favorite;
-        recipeDetailsContainer.style.display = 'block';
+        favoriteCheckbox.setAttribute('data-recipe-id', recipeId); // Set recipe ID on the checkbox
 
-        const recipeButtons = document.createElement('div');
-        recipeButtons.id = 'recipe-buttons';
-        recipeButtons.innerHTML = `
-            <button id="edit-recipe-btn" class="edit-recipe-btn">Edit Recipe</button>
-            <button id="delete-recipe-btn" class="delete-recipe-btn">Delete Recipe</button>
-        `;
-        recipeDetailsContainer.appendChild(recipeButtons);
+        // Scroll to the top of the container
+        recipeDetailsContainer.scrollTop = 0;
+        recipeDetailsContainer.style.display = 'block';
 
         document.getElementById('edit-recipe-btn').onclick = () => {
             formJustOpened = true;
@@ -178,20 +168,12 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
                     if (data.success) {
                         recipeDetailsContainer.style.display = 'none';
                         toggleBlurAndOverlay(false);
-                        const currentSearchQuery = searchBox.value.trim();
-                        const updatedRecipes = await fetchRecipes(currentSearchQuery);
-                        renderRecipes(updatedRecipes);
                     }
                 } catch (error) {
                     console.error('Error deleting recipe:', error);
                 }
             }
         };
-
-    } catch (error) {
-        console.error('Error fetching recipe details:', error);
-    }
-};
 
         // Share Recipe Button
         const shareButton = document.getElementById('share-recipe-btn');
