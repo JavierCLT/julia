@@ -131,6 +131,35 @@ h1 {
     text-align: center;
 }
 
+/* Tags List Styles */
+.tags-list-container {
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tags-list-container ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.tags-list-container li {
+    display: inline-block;
+    margin: 5px;
+    padding: 10px 15px;
+    background-color: var(--desert-sand);
+    color: var(--rich-black);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.tags-list-container li:hover {
+    background-color: var(--paynes-gray);
+    color: var(--desert-sand);
+}
+
 .recipe-box {
     border: 1px solid #ccc;
     padding: 20px;
