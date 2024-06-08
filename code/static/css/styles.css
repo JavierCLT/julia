@@ -120,7 +120,7 @@ h1 {
 }
 
 #results {
-    margin-top: 20px;
+    margin-top: 0px;
 }
 
 .grid {
@@ -212,15 +212,15 @@ h1 {
 @keyframes clickAnimation {
     0% {
         transform: scale(1);
-        background-color: var(--desert-sand);
+        background-color: var(--paynes-gray);
     }
     50% {
-        transform: scale(0.95);
+        transform: scale(0.90);
         background-color: var(--paynes-gray);
     }
     100% {
         transform: scale(1);
-        background-color: var(--desert-sand);
+        background-color: var(--paynes-gray);
     }
 }
 
@@ -300,7 +300,9 @@ p {
 
 .recipe-box:hover {
     transform: translateY(-5px);
-    background-color: var (--desert-sand);
+    background-color: var(--paynes-gray);
+    color: var(--desert-sand); /* Change text color when hovered */
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #delete-recipe-btn {
