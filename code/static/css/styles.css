@@ -531,8 +531,6 @@ button[type="button"]:hover {
 
     .grid {
     grid-template-columns: repeat(2, 1fr);
-    margin-left: 10px;
-    margin-right: 10px;
     display: grid;
     gap: 10px;
     
@@ -608,7 +606,6 @@ button[type="button"]:hover {
     .recipe-box {
     border: 1px solid #ccc;
     padding: 10px;
-    border-radius: 5px;
     background-color: #fff;
     cursor: pointer;
     margin-bottom: 0px;
@@ -628,7 +625,5 @@ button[type="button"]:hover {
         font-size: 3em;
     }
 
-    .grid {
-        
-    }
+    
 }
