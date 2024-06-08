@@ -441,9 +441,42 @@ button[type="button"]:hover {
     }
     
     .button-container {
+        display: flex;
         flex-direction: column; /* Stack buttons vertically */
         align-items: center;
+        width: 100%;
+        gap: 1em; /* Adjust the gap as needed */
     }
+    
+    .mobile-button-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        gap: 1em;
+    }
+
+    .favorite-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        margin-bottom: 1em;
+    }
+
+    .action-buttons-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        gap: 1em;
+    }
+
+    .delete-button-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        margin-top: 1em;
+    }
+}
 }
 
 @media (max-width: 480px) {
