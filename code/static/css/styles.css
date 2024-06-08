@@ -493,6 +493,10 @@ button[type="button"]:hover {
     flex-direction: column;
     align-items: center;
     }
+
+    #favorite-checkbox {
+    transform: translateY(0px); /* Adjust this value to lower the checkbox */
+    }
     #delete-recipe-btn {
     margin-left: 0em;
     }
