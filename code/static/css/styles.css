@@ -110,7 +110,7 @@ h1 {
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: #FFFFFF
+    background-color: #FFFFFF;
     border-radius: 10px;
     border: 3px solid var(--misty-rose); /* Padding around thumb */
 }
@@ -540,6 +540,14 @@ button[type="button"]:hover {
     width: 95%;
     gap: 1em;
     }
+    
+    .button-containerlast {
+    display: grid;
+    align-items: center;
+    margin-top: 20px;
+    width: 100%;
+    gap: 0.5em;
+}
     
 }
 
