@@ -369,7 +369,7 @@ p {
     border-radius: 5px;
     padding: 10px 20px;
     cursor: pointer;
-    margin-left: 20px;
+    
 }
 
 .button-containerlast button:hover {
@@ -518,7 +518,7 @@ button[type="button"]:hover {
     }
 
     #favorite-checkbox {
-    transform: translateY(0px); /* Adjust this value to lower the checkbox */
+    transform: translateY(4px); /* Adjust this value to lower the checkbox */
     }
     #delete-recipe-btn {
     margin-left: 0em;
@@ -533,8 +533,8 @@ button[type="button"]:hover {
     cursor: pointer;
     margin-left: 0px;
     }
+    
     .button-container {
-    display: grid;
     align-items: center;
     margin-top: 20px;
     width: 95%;
