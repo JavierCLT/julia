@@ -534,11 +534,13 @@ button[type="button"]:hover {
     margin-left: 20px;
     margin-right: 20px;
     display: grid;
+    gap: 10px;
     
     }
 
     .container, .card {
         padding: 10px;
+        margin: 0px
     }
 
     h3 {
@@ -603,7 +605,14 @@ button[type="button"]:hover {
     transition: background-color 0.2s ease;
     -webkit-text-fill-color: var(--misty-rose);
     }
-    
+    .recipe-box {
+    border: 1px solid #ccc;
+    padding: 15px;
+    border-radius: 5px;
+    background-color: #fff;
+    cursor: pointer;
+    margin-bottom: 0px;
+    }
     .button-containerlast {
     display: grid;
     align-items: center;
