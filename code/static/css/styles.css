@@ -313,6 +313,14 @@ p {
     gap: 2em;
 }
 
+.button-containerlast {
+    
+    align-items: center;
+    margin-top: 20px;
+    width: 100%;
+    gap: 2em;
+}
+
 .button-container .favorite-container {
     display: flex;
     align-items: center;
