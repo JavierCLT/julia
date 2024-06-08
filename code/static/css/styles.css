@@ -209,7 +209,24 @@ h1 {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+@keyframes clickAnimation {
+    0% {
+        transform: scale(1);
+        background-color: var(--desert-sand);
+    }
+    50% {
+        transform: scale(0.95);
+        background-color: var(--paynes-gray);
+    }
+    100% {
+        transform: scale(1);
+        background-color: var(--desert-sand);
+    }
+}
 
+.tags-list-container li.clicked {
+    animation: clickAnimation 0.3s ease-in-out;
+}
 
 #add-recipe-form-container {
     background-color: var(--misty-rose);
