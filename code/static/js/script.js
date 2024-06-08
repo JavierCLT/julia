@@ -361,6 +361,12 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
             tagItem.textContent = tag;
             tagItem.className = 'tag-item'; // Add a class for styling
             tagItem.addEventListener('click', () => {
+                // Add click animation class
+                tagItem.classList.add('clicked');
+                setTimeout(() => {
+                    tagItem.classList.remove('clicked');
+                }, 300); // Duration of the animation
+
                 searchBox.value = tag;
                 handleSearch({ target: { value: tag } }); // Trigger search
             });
