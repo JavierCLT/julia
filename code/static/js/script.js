@@ -150,6 +150,10 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
             setTimeout(() => { formJustOpened = false; }, 100);
         };
 
+        function clearSearch() {
+    document.getElementById('search-box').value = '';
+}
+        
         document.getElementById('delete-recipe-btn').onclick = async () => {
             const password = prompt("Enter password to delete this recipe:");
             if (password) {
