@@ -99,6 +99,26 @@ h1 {
     margin: 0 auto;
 }
 
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 12px; /* Width of the scrollbar */
+}
+
+::-webkit-scrollbar-track {
+    background: var(--misty-rose); /* Background of the scrollbar track */
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--desert-sand); /* Color of the scrollbar thumb */
+    border-radius: 10px;
+    border: 3px solid var(--misty-rose); /* Padding around thumb */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--paynes-gray); /* Color when hovered */
+}
+
 #results {
     margin-top: 20px;
 }
