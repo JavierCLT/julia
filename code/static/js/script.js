@@ -1,5 +1,3 @@
-
-
 document.addEventListener('DOMContentLoaded', () => {
     const searchBox = document.getElementById('search-box');
     const resultsContainer = document.getElementById('results');
@@ -351,26 +349,30 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
     });
 
     viewTagsLink.addEventListener('click', async () => {
-        try {
-            const tags = await fetchTags();
-            resultsContainer.innerHTML = ''; // Clear the results container
-            const tagList = document.createElement('ul');
-            tags.forEach(tag => {
-                const tagItem = document.createElement('li');
-                tagItem.textContent = tag;
-                tagItem.className = 'tag-item'; // Add a class for styling
-                tagItem.addEventListener('click', () => {
-                    searchBox.value = tag;
-                    handleSearch({ target: { value: tag } }); // Trigger search
-                });
-                tagList.appendChild(tagItem);
+    try {
+        const tags = await fetchTags();
+        resultsContainer.innerHTML = ''; // Clear the results container
+        const tagListContainer = document.createElement('div');
+        tagListContainer.className = 'tags-list-container';
+        
+        const tagList = document.createElement('ul');
+        tags.forEach(tag => {
+            const tagItem = document.createElement('li');
+            tagItem.textContent = tag;
+            tagItem.className = 'tag-item'; // Add a class for styling
+            tagItem.addEventListener('click', () => {
+                searchBox.value = tag;
+                handleSearch({ target: { value: tag } }); // Trigger search
             });
-            resultsContainer.appendChild(tagList);
-            searchBox.value = 'Tags'; // Set the search box text to "Tags"
-        } catch (error) {
-            console.error('Error fetching tags:', error);
-        }
-    });
+            tagList.appendChild(tagItem);
+        });
+        tagListContainer.appendChild(tagList);
+        resultsContainer.appendChild(tagListContainer);
+        searchBox.value = 'Tags'; // Set the search box text to "Tags"
+    } catch (error) {
+        console.error('Error fetching tags:', error);
+    }
+});
 
     viewAllRecipesLink.addEventListener('click', async () => {
         try {
