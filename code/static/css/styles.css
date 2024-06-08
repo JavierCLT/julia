@@ -434,7 +434,6 @@ button[type="button"]:hover {
     }
 
     .container, .card {
-        width: 90%;
         padding: 10px;
     }
 
@@ -442,18 +441,20 @@ button[type="button"]:hover {
         font-size: 1em;
         margin: 0px;
     }
-    
+
+     
     #recipe-title {
     background-color: var(--misty-rose);
     color: var(--rich-black);
     padding: 10px;
     border-radius: 5px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    width: 90%;
+    
 }
     
     #recipe-details-container {
     position: fixed;
+    padding:20px;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
