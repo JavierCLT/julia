@@ -439,6 +439,11 @@ button[type="button"]:hover {
     h3 {
         font-size: 1em;
     }
+    
+    .button-container {
+        flex-direction: column; /* Stack buttons vertically */
+        align-items: center;
+    }
 }
 
 @media (max-width: 480px) {
@@ -448,5 +453,10 @@ button[type="button"]:hover {
 
     .grid {
         grid-template-columns: 1fr;
+    }
+
+    .button-container {
+        flex-direction: column; /* Ensure vertical stacking on very small screens */
+        align-items: center;
     }
 }
