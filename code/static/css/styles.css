@@ -440,6 +440,7 @@ button[type="button"]:hover {
 
     h3 {
         font-size: 1em;
+        margin: 0px;
     }
     
     #recipe-title {
@@ -448,7 +449,7 @@ button[type="button"]:hover {
     padding: 10px;
     border-radius: 5px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    width: 90%
+    width: 90%;
 }
     
     #recipe-details-container {
@@ -457,15 +458,13 @@ button[type="button"]:hover {
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: white;
-    padding-left: 20px;
-    padding-bottom: 20px;
-    padding-right: 6px;
+    padding-bottom: 40px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     z-index: 1000;
     max-height: 90vh;
     overflow-y: auto;
-    width: 78%;
+    width: 75%;
     flex-direction: column;
     align-items: center;
     }
