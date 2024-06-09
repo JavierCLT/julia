@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', () => {
     const searchBox = document.getElementById('search-box');
     const resultsContainer = document.getElementById('results');
@@ -150,23 +151,9 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
             setTimeout(() => { formJustOpened = false; }, 100);
         };
 
-document.addEventListener('DOMContentLoaded', () => {
-        const searchBox = document.getElementById('search-box');
-        const clearButton = document.getElementById('clear-button');
-
-        searchBox.addEventListener('input', () => {
-            clearButton.style.display = searchBox.value ? 'block' : 'none';
-        });
-
-        clearButton.addEventListener('click', () => {
-            searchBox.value = '';
-            clearButton.style.display = 'none';
-            searchBox.focus();
-            // Trigger input event to clear search results
-            const event = new Event('input', { bubbles: true });
-            searchBox.dispatchEvent(event);
-        });
-    });
+        function clearSearch() {
+    document.getElementById('search-box').value = '';
+}
         
         document.getElementById('delete-recipe-btn').onclick = async () => {
             const password = prompt("Enter password to delete this recipe:");
