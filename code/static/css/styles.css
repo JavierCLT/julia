@@ -1,5 +1,3 @@
-
-
 :root {
     --rich-black: #0D1F2D;
     --paynes-gray: #546A7B;
@@ -94,33 +92,10 @@ h1 {
     padding: 10px;
     font-size: 1em;
     font-family: var(--font-family-body);
-    border: 1px solid #e6e5e5;
+    border: 1px solid #ccc;
     color: var(--rich-black);
     border-radius: 20px;
     margin: 0 auto;
-}
-
-.search-box::-webkit-search-cancel-button {
-    -webkit-appearance: none;
-    height: 16px;
-    width: 16px;
-    background: url('path/to/your/icon.svg') no-repeat center center; /* Replace with your custom icon if needed */
-    cursor: pointer;
-}
-
-.clear-button {
-    position: absolute;
-    right: 10px;
-    background: none;
-    border: none;
-    color: var(--paynes-gray);
-    font-size: 1.2em;
-    cursor: pointer;
-    display: none; /* Initially hidden */
-}
-
-.clear-button:focus {
-    outline: none;
 }
 
 /* Scrollbar Styles */
@@ -547,10 +522,6 @@ button[type="button"]:hover {
     background-color: var(--paynes-gray);
     color: var(--desert-sand);
     
-    }
-
-    .search-container {
-        width: 90%;
     }
     
     .search-box {
