@@ -111,8 +111,6 @@ h1 {
 .clear-button {
     position: absolute;
     right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
     background: none;
     border: none;
     color: var(--paynes-gray);
