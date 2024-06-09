@@ -603,8 +603,8 @@ button[type="button"]:hover {
     -webkit-text-fill-color: var(--misty-rose);
     }
     .recipe-box {
-    border: 1px solid #ccc;
-    padding: 10px;
+    border: 1px solid #eae8e8;
+    padding: 9px;
     background-color: #fff;
     cursor: pointer;
     margin-bottom: 0px;
