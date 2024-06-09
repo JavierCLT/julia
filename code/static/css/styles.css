@@ -108,6 +108,23 @@ h1 {
     cursor: pointer;
 }
 
+.clear-button {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--paynes-gray);
+    font-size: 1.2em;
+    cursor: pointer;
+    display: none; /* Initially hidden */
+}
+
+.clear-button:focus {
+    outline: none;
+}
+
 /* Scrollbar Styles */
 ::-webkit-scrollbar {
     width: 12px; /* Width of the scrollbar */
@@ -532,6 +549,10 @@ button[type="button"]:hover {
     background-color: var(--paynes-gray);
     color: var(--desert-sand);
     
+    }
+
+    .search-container {
+        width: 90%;
     }
     
     .search-box {
