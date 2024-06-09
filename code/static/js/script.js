@@ -109,9 +109,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const fetchAndDisplayRecipeDetails = async (recipeId) => {
     try {
-        const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
-        const data = await response.json();
-        console.log('API Response:', data);
+        showLoadingIndicator(true);
+        const data = await fetchRecipeDetails(recipeId);
+        if (data.error) {
+            showMessage('Error fetching recipe details. Please try again.');
+            return;
+        }
 
         // Ingredients
         const ingredientsList = document.querySelector('.ingredients-list');
@@ -159,8 +162,6 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
             setTimeout(() => { formJustOpened = false; }, 100);
         };
 
-    
-        
         document.getElementById('delete-recipe-btn').onclick = async () => {
             const password = prompt("Enter password to delete this recipe:");
             if (password) {
@@ -201,6 +202,9 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
 
     } catch (error) {
         console.error('Error fetching recipe details:', error);
+        showMessage('Error fetching recipe details. Please try again.');
+    } finally {
+        showLoadingIndicator(false);
     }
 };
 
