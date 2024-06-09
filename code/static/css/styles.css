@@ -163,7 +163,7 @@ h1 {
 }
 
 .recipe-box {
-    border: 1px solid #eae8e8;
+    border: 1px solid #ccc;
     padding: 20px;
     border-radius: 5px;
     background-color: #fff;
@@ -603,7 +603,7 @@ button[type="button"]:hover {
     -webkit-text-fill-color: var(--misty-rose);
     }
     .recipe-box {
-    border: 1px solid #eae8e8;
+    border: 0.5px solid #ccc;
     padding: 9px;
     background-color: #fff;
     cursor: pointer;
