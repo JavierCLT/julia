@@ -90,31 +90,20 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const handleSearch = debounce(async (event) => {
-    const searchQuery = event.target.value.trim();
-    if (searchQuery.length > 2) {
-        try {
-            showLoadingIndicator(true);
+        const searchQuery = event.target.value.trim();
+        if (searchQuery.length > 2) {
             const recipes = await fetchRecipes(searchQuery);
             renderRecipes(recipes);
-        } catch (error) {
-            console.error('Error fetching recipes:', error);
-            showMessage('Error fetching recipes. Please try again.');
-        } finally {
-            showLoadingIndicator(false);
+        } else {
+            resultsContainer.innerHTML = '';
         }
-    } else {
-        resultsContainer.innerHTML = '';
-    }
-}, 300);
+    }, 300);
 
 const fetchAndDisplayRecipeDetails = async (recipeId) => {
     try {
-        showLoadingIndicator(true);
-        const data = await fetchRecipeDetails(recipeId);
-        if (data.error) {
-            showMessage('Error fetching recipe details. Please try again.');
-            return;
-        }
+        const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
+        const data = await response.json();
+        console.log('API Response:', data);
 
         // Ingredients
         const ingredientsList = document.querySelector('.ingredients-list');
@@ -162,6 +151,8 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
             setTimeout(() => { formJustOpened = false; }, 100);
         };
 
+    
+        
         document.getElementById('delete-recipe-btn').onclick = async () => {
             const password = prompt("Enter password to delete this recipe:");
             if (password) {
@@ -202,9 +193,6 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
 
     } catch (error) {
         console.error('Error fetching recipe details:', error);
-        showMessage('Error fetching recipe details. Please try again.');
-    } finally {
-        showLoadingIndicator(false);
     }
 };
 
