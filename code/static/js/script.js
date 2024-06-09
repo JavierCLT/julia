@@ -155,10 +155,12 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
     const clearButton = document.getElementById('clear-button');
 
     searchBox.addEventListener('input', () => {
+        console.log('Input event triggered');
         clearButton.style.display = searchBox.value ? 'block' : 'none';
     });
 
     clearButton.addEventListener('click', () => {
+        console.log('Clear button clicked');
         searchBox.value = '';
         clearButton.style.display = 'none';
         searchBox.focus();
