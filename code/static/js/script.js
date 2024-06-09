@@ -152,18 +152,19 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
 
         document.addEventListener('DOMContentLoaded', () => {
     const searchBox = document.getElementById('search-box');
+    const clearButton = document.getElementById('clear-button');
 
     searchBox.addEventListener('input', () => {
-        const clearButtonVisible = searchBox.value ? 'block' : 'none';
+        clearButton.style.display = searchBox.value ? 'block' : 'none';
     });
 
-    searchBox.addEventListener('search', () => {
-        // The 'search' event is fired when the input is cleared via the cancel button
-        if (!searchBox.value) {
-            // Optionally, trigger a search with an empty value to clear results
-            const event = new Event('input', { bubbles: true });
-            searchBox.dispatchEvent(event);
-        }
+    clearButton.addEventListener('click', () => {
+        searchBox.value = '';
+        clearButton.style.display = 'none';
+        searchBox.focus();
+        // Trigger input event to clear search results
+        const event = new Event('input', { bubbles: true });
+        searchBox.dispatchEvent(event);
     });
 });
         
