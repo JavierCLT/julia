@@ -162,6 +162,9 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
                 searchBox.value = '';
                 clearButton.style.display = 'none';
                 searchBox.focus();
+                // Optionally, trigger a search with an empty value to clear results
+                const event = new Event('input', { bubbles: true });
+                searchBox.dispatchEvent(event);
             });
         });
         
