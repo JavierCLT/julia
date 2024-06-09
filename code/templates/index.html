@@ -36,7 +36,7 @@
         </div>
         <div class="search-container">
             <input type="text" id="search-box" class="search-box" placeholder="Search by recipe, ingredient, tag...">
-            <button id="clear-search" class="clear-search" onclick="clearSearch()">&#x2715;</button>
+            <button id="clear-button" class="clear-button">&#x2715;</button>
         </div>
         <div id="results"></div>
         <div id="recipe-details-container" class="yellow-area" style="display:none;">
@@ -105,11 +105,5 @@
             <button type="button" id="cancel-btn">Cancel</button>
         </form>
     </div>
-    <script>
-        function clearSearch() {
-            document.getElementById('search-box').value = '';
-        }
-    </script>
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
