@@ -151,21 +151,19 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
         };
 
         document.addEventListener('DOMContentLoaded', () => {
-    const searchBox = document.getElementById('search-box');
-    const clearButton = document.getElementById('clear-button');
-
-    searchBox.addEventListener('input', () => {
-        console.log('Input event triggered');
-        clearButton.style.display = searchBox.value ? 'block' : 'none';
-    });
-
-    clearButton.addEventListener('click', () => {
-        console.log('Clear button clicked');
-        searchBox.value = '';
-        clearButton.style.display = 'none';
-        searchBox.focus();
-    });
-});
+            const searchBox = document.getElementById('search-box');
+            const clearButton = document.getElementById('clear-button');
+        
+            searchBox.addEventListener('input', () => {
+                clearButton.style.display = searchBox.value ? 'block' : 'none';
+            });
+        
+            clearButton.addEventListener('click', () => {
+                searchBox.value = '';
+                clearButton.style.display = 'none';
+                searchBox.focus();
+            });
+        });
         
         document.getElementById('delete-recipe-btn').onclick = async () => {
             const password = prompt("Enter password to delete this recipe:");
