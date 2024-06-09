@@ -100,6 +100,14 @@ h1 {
     margin: 0 auto;
 }
 
+.search-box::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    height: 16px;
+    width: 16px;
+    background: url('path/to/your/icon.svg') no-repeat center center; /* Replace with your custom icon if needed */
+    cursor: pointer;
+}
+
 /* Scrollbar Styles */
 ::-webkit-scrollbar {
     width: 12px; /* Width of the scrollbar */
