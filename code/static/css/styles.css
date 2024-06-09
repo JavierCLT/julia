@@ -1,4 +1,5 @@
 
+
 :root {
     --rich-black: #0D1F2D;
     --paynes-gray: #546A7B;
@@ -85,8 +86,6 @@ h1 {
     z-index: 999;
     text-align: center;
     font-family: var(--font-family-body);
-    position: relative;
-    display: flex;
 }
 
 .search-box {
@@ -99,7 +98,6 @@ h1 {
     color: var(--rich-black);
     border-radius: 20px;
     margin: 0 auto;
-    box-sizing: border-box;
 }
 
 /* Scrollbar Styles */
@@ -120,21 +118,6 @@ h1 {
 
 ::-webkit-scrollbar-thumb:hover {
     background-color: var(--paynes-gray); /* Color when hovered */
-}
-
-.clear-button {
-    position: absolute;
-    right: 10px;
-    background: none;
-    border: none;
-    color: var(--paynes-gray);
-    font-size: 1.2em;
-    cursor: pointer;
-    display: none; /* Initially hidden */
-}
-
-.clear-button:focus {
-    outline: none;
 }
 
 #results {
