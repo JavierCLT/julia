@@ -119,6 +119,21 @@ h1 {
     background-color: var(--paynes-gray); /* Color when hovered */
 }
 
+.clear-button {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--paynes-gray);
+    font-size: 1.2em;
+    cursor: pointer;
+    display: none; /* Initially hidden */
+}
+
+.clear-button:focus {
+    outline: none;
+}
+
 #results {
     margin-top: 0px;
 }
