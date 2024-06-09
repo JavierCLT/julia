@@ -150,9 +150,22 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
             setTimeout(() => { formJustOpened = false; }, 100);
         };
 
-        function clearSearch() {
-    document.getElementById('search-box').value = '';
-}
+        document.addEventListener('DOMContentLoaded', () => {
+    const searchBox = document.getElementById('search-box');
+
+    searchBox.addEventListener('input', () => {
+        const clearButtonVisible = searchBox.value ? 'block' : 'none';
+    });
+
+    searchBox.addEventListener('search', () => {
+        // The 'search' event is fired when the input is cleared via the cancel button
+        if (!searchBox.value) {
+            // Optionally, trigger a search with an empty value to clear results
+            const event = new Event('input', { bubbles: true });
+            searchBox.dispatchEvent(event);
+        }
+    });
+});
         
         document.getElementById('delete-recipe-btn').onclick = async () => {
             const password = prompt("Enter password to delete this recipe:");
