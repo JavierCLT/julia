@@ -227,6 +227,21 @@ h1 {
     }
 }
 
+.clear-button {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--paynes-gray);
+    font-size: 1.2em;
+    cursor: pointer;
+    display: none; /* Initially hidden */
+}
+
+.clear-button:focus {
+    outline: none;
+}
+
 .tags-list-container li.clicked {
     animation: clickAnimation 0.3s ease-in-out;
 }
