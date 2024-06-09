@@ -1,3 +1,4 @@
+
 :root {
     --rich-black: #0D1F2D;
     --paynes-gray: #546A7B;
@@ -6,12 +7,6 @@
     --desert-sand: #E4C3AD;
     --font-family-heading: 'Merriweather', serif;
     --font-family-body: 'Open Sans', sans-serif;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
 }
 
 body {
@@ -186,7 +181,7 @@ h1 {
     padding-left: 30px;
     padding-right: 30px;
     padding-bottom: 30px;
-    padding-top: 5px;
+    padding-top: 25px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     z-index: 1000;
