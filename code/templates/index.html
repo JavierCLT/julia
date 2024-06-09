@@ -1,13 +1,16 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-FYZ7BKYQ74"></script>
     <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-FYZ7BKYQ74');
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+    
+      gtag('config', 'G-FYZ7BKYQ74');
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,7 +37,7 @@
         </div>
         <div class="search-container">
             <input type="text" id="search-box" class="search-box" placeholder="Search by recipe, ingredient, tag...">
-            <button id="clear-button" class="clear-button">&#x2715;</button>
+            <button id="clear-search" class="clear-search" onclick="clearSearch()">&#x2715;</button>
         </div>
         <div id="results"></div>
         <div id="recipe-details-container" class="yellow-area" style="display:none;">
@@ -103,6 +106,11 @@
             <button type="button" id="cancel-btn">Cancel</button>
         </form>
     </div>
+    <script>
+        function clearSearch() {
+            document.getElementById('search-box').value = '';
+        }
+    </script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
