@@ -85,22 +85,19 @@ h1 {
     padding: 20px;
     z-index: 999;
     text-align: center;
-    width: 80%;
-    max-width: 500px;
     font-family: var(--font-family-body);
-    position: relative;
-    display: flex;
 }
 
 .search-box {
-    width: 100%;
+    width: 80%;
+    max-width: 500px;
     padding: 10px;
     font-size: 1em;
     font-family: var(--font-family-body);
     border: 1px solid #ccc;
     color: var(--rich-black);
     border-radius: 20px;
-    box-sizing: border-box;
+    margin: 0 auto;
 }
 
 /* Scrollbar Styles */
@@ -228,23 +225,6 @@ h1 {
         transform: scale(1);
         background-color: var(--paynes-gray);
     }
-}
-
-.clear-button {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: var(--paynes-gray);
-    font-size: 1.2em;
-    cursor: pointer;
-    display: none; /* Initially hidden */
-}
-
-.clear-button:focus {
-    outline: none;
 }
 
 .tags-list-container li.clicked {
@@ -602,10 +582,6 @@ button[type="button"]:hover {
     margin-left: 0em;
     }
 
-    .search-container {
-        width: 90%;
-    }
-    
     .button-container button {
     background-color: var(--desert-sand);
     color: var(--rich-black);
