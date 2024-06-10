@@ -1,5 +1,3 @@
-
-
 from flask import Flask, request, jsonify, render_template
 from flask_caching import Cache
 import mysql.connector
@@ -7,6 +5,7 @@ from mysql.connector import Error, pooling
 from flask_cors import CORS
 import os
 import re
+import bleach
 
 app = Flask(__name__)
 CORS(app, resources={r"/search*": {"origins": "*"}})
@@ -94,6 +93,9 @@ def recipe_details(recipe_id):
             WHERE RecipeID = %s
         """, (recipe_id,))
         result = cursor.fetchone()
+        if result is None:
+            return jsonify({'error': 'Recipe not found'}), 404
+
         details['title'] = result['Title']
         details['servings'] = result['Servings']
         details['origin'] = result['Origin']
@@ -139,16 +141,14 @@ def recipe_details(recipe_id):
 @app.route('/add_recipe', methods=['POST'])
 def add_recipe():
     data = request.json
-    title = data.get('title')
-    ingredients = data.get('ingredients').split('\n')
-    instructions = data.get('instructions').split('\n')
-    tags = [tag.strip() for tag in data.get('tags').split(',')]
-    servings = data.get('servings')
-    origin = data.get('origin')
+    title = bleach.clean(data.get('title'))
+    ingredients = [bleach.clean(ingredient.strip()) for ingredient in data.get('ingredients').split('\n')]
+    instructions = [bleach.clean(instruction.strip()) for instruction in data.get('instructions').split('\n')]
+    tags = [bleach.clean(tag.strip()) for tag in data.get('tags').split(',')]
+    servings = bleach.clean(data.get('servings'))
+    origin = bleach.clean(data.get('origin'))
     is_favorite = data.get('is_favorite', False)
     password = data.get('password')
-
-    print("Received tags:", tags)  # Debugging line
 
     if password != os.getenv('SECRET_PASSWORD'):
         return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
@@ -162,10 +162,10 @@ def add_recipe():
         recipe_id = cursor.lastrowid
 
         for ingredient in ingredients:
-            cursor.execute("INSERT INTO ingredients (RecipeID, Description) VALUES (%s, %s)", (recipe_id, ingredient.strip()))
+            cursor.execute("INSERT INTO ingredients (RecipeID, Description) VALUES (%s, %s)", (recipe_id, ingredient))
 
         for step_number, instruction in enumerate(instructions, start=1):
-            cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)", (recipe_id, step_number, instruction.strip()))
+            cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)", (recipe_id, step_number, instruction))
 
         for tag in tags:
             cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag,))
@@ -220,17 +220,15 @@ def delete_recipe(recipe_id):
 
 @app.route('/update_recipe/<int:recipe_id>', methods=['POST'])
 def update_recipe(recipe_id):
-    data = request.get_json()
-    title = data.get('title')
-    ingredients = data.get('ingredients').split('\n')
-    instructions = data.get('instructions').split('\n')
-    tags = [tag.strip() for tag in data.get('tags').split(',')]
-    servings = data.get('servings')
-    origin = data.get('origin')
+    data = request.get_json()  # Using get_json() to properly parse JSON body
+    title = bleach.clean(data.get('title'))
+    ingredients = [bleach.clean(ingredient.strip()) for ingredient in data.get('ingredients').split('\n')]
+    instructions = [bleach.clean(instruction.strip()) for instruction in data.get('instructions').split('\n')]
+    tags = [bleach.clean(tag.strip()) for tag in data.get('tags').split(',')]
+    servings = bleach.clean(data.get('servings'))
+    origin = bleach.clean(data.get('origin'))
     is_favorite = data.get('is_favorite', False)
     password = data.get('password')
-
-    print("Received tags for update:", tags)  # Debugging line
 
     if password != os.getenv('SECRET_PASSWORD'):
         return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
@@ -248,11 +246,17 @@ def update_recipe(recipe_id):
 
         cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
         for ingredient in ingredients:
-            cursor.execute("INSERT INTO ingredients (RecipeID, Description) VALUES (%s, %s)", (recipe_id, ingredient.strip()))
+            cursor.execute("""
+                INSERT INTO ingredients (RecipeID, Description)
+                VALUES (%s, %s)
+            """, (recipe_id, ingredient))
 
         cursor.execute("DELETE FROM instructions WHERE RecipeID = %s", (recipe_id,))
         for step_number, instruction in enumerate(instructions, start=1):
-            cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)", (recipe_id, step_number, instruction.strip()))
+            cursor.execute("""
+                INSERT INTO instructions (RecipeID, StepNumber, Description)
+                VALUES (%s, %s, %s)
+            """, (recipe_id, step_number, instruction))
 
         cursor.execute("DELETE FROM recipetags WHERE RecipeID = %s", (recipe_id,))
         for tag in tags:
@@ -262,7 +266,7 @@ def update_recipe(recipe_id):
                 cursor.execute("INSERT INTO tags (TagName) VALUES (%s)", (tag,))
                 tag_id = cursor.lastrowid
             else:
-                tag_id = tag_id[0]
+                tag_id = tag_id[0]  # Fetch the first element which is the TagID
             cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
 
         connection.commit()
@@ -295,26 +299,6 @@ def get_favorites():
 
     return jsonify(result)
 
-@app.route('/update_favorite/<int:recipe_id>', methods=['POST'])
-def update_favorite(recipe_id):
-    data = request.json
-    is_favorite = data.get('is_favorite', False)
-
-    connection = None
-    try:
-        connection = mysql.connector.connect(**db_config)
-        cursor = connection.cursor()
-        cursor.execute("UPDATE recipes SET is_favorite = %s WHERE RecipeID = %s", (is_favorite, recipe_id))
-        connection.commit()
-        cursor.close()
-        return jsonify({'success': True, 'message': 'Favorite status updated successfully!'})
-    except Error as e:
-        print(f"Error while updating favorite status for recipe ID {recipe_id}: {e}")
-        return jsonify({'success': False, 'message': 'An error occurred while updating the favorite status.'}), 500
-    finally:
-        if connection and connection.is_connected():
-            connection.close()
-            
 @app.route('/tags', methods=['GET'])
 def get_tags():
     result = []
