@@ -160,7 +160,7 @@ h1 {
 .tags-list-container li:hover {
     background-color: var(--paynes-gray);
     color: var(--desert-sand);
-    transform: translateY(-9px);
+    transform: translateY(-4px);
 }
 
 .recipe-box {
