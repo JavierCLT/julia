@@ -201,6 +201,7 @@ def delete_recipe(recipe_id):
         return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
 
     connection = None
+    cursor = None
     try:
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
@@ -211,7 +212,7 @@ def delete_recipe(recipe_id):
         cursor.execute("DELETE FROM recipes WHERE RecipeID = %s", (recipe_id,))
 
         connection.commit()
-        cursor.close()
+        return jsonify({'success': True, 'message': 'Recipe deleted successfully!'})
     except Error as e:
         print(f"Error while deleting recipe with ID {recipe_id}: {e}")
         return jsonify({'success': False, 'message': 'An error occurred while deleting the recipe.'}), 500
