@@ -1,5 +1,3 @@
-
-
 from flask import Flask, request, jsonify, render_template
 from flask_caching import Cache
 import mysql.connector
@@ -22,7 +20,7 @@ db_config = {
     'password': os.getenv('DB_PASSWORD'),
     'database': os.getenv('DB_NAME'),
     'pool_name': 'mypool',
-    'pool_size': 5,
+    'pool_size': 15,
 }
 
 # Create a connection pool
@@ -43,6 +41,7 @@ def index():
 def search_recipes():
     query_param = request.args.get('query', '')
     result = []
+    connection = None
 
     try:
         connection = connection_pool.get_connection()
@@ -69,12 +68,13 @@ def search_recipes():
         like_pattern = f"%{query_param}%"
         cursor.execute(query, (like_pattern, like_pattern, like_pattern))
         result = cursor.fetchall()
-        cursor.close()
     except Error as e:
         print(f"Error while connecting to MySQL or executing query: {e}")
         result = []
     finally:
-        if connection.is_connected():
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
             connection.close()
 
     return jsonify(result)
@@ -130,8 +130,9 @@ def recipe_details(recipe_id):
         print(f"Error while connecting to MySQL or executing query: {e}")
         details = {'error': 'An error occurred while fetching recipe details.'}
     finally:
-        if connection.is_connected():
+        if cursor:
             cursor.close()
+        if connection and connection.is_connected():
             connection.close()
 
     return jsonify(details)
@@ -154,8 +155,9 @@ def add_recipe():
         return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
 
     connection = None
+    cursor = None
     try:
-        connection = mysql.connector.connect(**db_config)
+        connection = connection_pool.get_connection()
         cursor = connection.cursor()
 
         cursor.execute("INSERT INTO recipes (Title, Servings, Origin, is_favorite) VALUES (%s, %s, %s, %s)", (title, servings, origin, is_favorite))
@@ -178,12 +180,13 @@ def add_recipe():
             cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
 
         connection.commit()
-        cursor.close()
         return jsonify({'success': True, 'message': 'Recipe added successfully!'})
     except Error as e:
         print(f"Error while adding recipe: {e}")
         return jsonify({'success': False, 'message': 'An error occurred while adding the recipe.'}), 500
     finally:
+        if cursor:
+            cursor.close()
         if connection and connection.is_connected():
             connection.close()
 
@@ -213,6 +216,8 @@ def delete_recipe(recipe_id):
         print(f"Error while deleting recipe with ID {recipe_id}: {e}")
         return jsonify({'success': False, 'message': 'An error occurred while deleting the recipe.'}), 500
     finally:
+       if cursor:
+            cursor.close()
         if connection and connection.is_connected():
             connection.close()
 
@@ -272,6 +277,8 @@ def update_recipe(recipe_id):
         print(f"Error while updating recipe: {e}")
         return jsonify({'success': False, 'message': 'An error occurred while updating the recipe.'}), 500
     finally:
+        if cursor:
+            cursor.close()
         if connection and connection.is_connected():
             connection.close()
 
@@ -290,7 +297,9 @@ def get_favorites():
         print(f"Error while connecting to MySQL or executing query: {e}")
         result = []
     finally:
-        if connection.is_connected():
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
             connection.close()
 
     return jsonify(result)
@@ -312,6 +321,8 @@ def update_favorite(recipe_id):
         print(f"Error while updating favorite status for recipe ID {recipe_id}: {e}")
         return jsonify({'success': False, 'message': 'An error occurred while updating the favorite status.'}), 500
     finally:
+        if cursor:
+            cursor.close()
         if connection and connection.is_connected():
             connection.close()
             
@@ -328,7 +339,9 @@ def get_tags():
         print(f"Error while connecting to MySQL or executing query: {e}")
         result = []
     finally:
-        if connection.is_connected():
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
             connection.close()
 
     return jsonify(result)
