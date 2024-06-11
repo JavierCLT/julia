@@ -20,7 +20,7 @@ db_config = {
     'password': os.getenv('DB_PASSWORD'),
     'database': os.getenv('DB_NAME'),
     'pool_name': 'mypool',
-    'pool_size': 15,
+    'pool_size': 10,
 }
 
 # Create a connection pool
