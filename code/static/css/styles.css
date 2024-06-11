@@ -22,6 +22,14 @@ h1 {
     font-family: var(--font-family-heading);
 }
 
+.correct-letter {
+  color: green;
+}
+
+.incorrect-letter {
+  color: red;
+}
+
 .container {
     max-width: 1200px;
     margin: 20px auto;
