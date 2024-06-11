@@ -207,16 +207,27 @@ def delete_recipe(recipe_id):
     connection = None
     cursor = None
     try:
-        connection = mysql.connector.connect(**db_config)
+        connection = connection_pool.get_connection()
         cursor = connection.cursor()
 
+        # Delete the recipe and associated data
         cursor.execute("DELETE FROM instructions WHERE RecipeID = %s", (recipe_id,))
         cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
         cursor.execute("DELETE FROM recipetags WHERE RecipeID = %s", (recipe_id,))
         cursor.execute("DELETE FROM recipes WHERE RecipeID = %s", (recipe_id,))
 
+        # Commit the changes
         connection.commit()
-        return jsonify({'success': True, 'message': 'Recipe deleted successfully!'})
+
+        # Cleanup orphaned tags
+        cursor.execute("""
+            DELETE tags FROM tags
+            LEFT JOIN recipetags ON tags.TagID = recipetags.TagID
+            WHERE recipetags.TagID IS NULL
+        """)
+        connection.commit()
+
+        return jsonify({'success': True, 'message': 'Recipe deleted and orphaned tags cleaned up successfully!'})
     except Error as e:
         print(f"Error while deleting recipe with ID {recipe_id}: {e}")
         return jsonify({'success': False, 'message': 'An error occurred while deleting the recipe.'}), 500
@@ -225,8 +236,6 @@ def delete_recipe(recipe_id):
             cursor.close()
         if connection and connection.is_connected():
             connection.close()
-
-    return jsonify({'success': True, 'message': 'Recipe deleted successfully!'})
 
 @app.route('/update_recipe/<int:recipe_id>', methods=['POST'])
 def update_recipe(recipe_id):
