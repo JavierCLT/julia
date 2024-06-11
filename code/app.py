@@ -42,6 +42,7 @@ def search_recipes():
     query_param = request.args.get('query', '')
     result = []
     connection = None
+    cursor = None
 
     try:
         connection = connection_pool.get_connection()
@@ -83,6 +84,8 @@ def search_recipes():
 @cache.cached(timeout=60)
 def recipe_details(recipe_id):
     details = {'ingredients': [], 'instructions': [], 'tags': [], 'servings': None, 'origin': None, 'title': None, 'is_favorite': False}
+    connection = None
+    cursor = None
     try:
         connection = connection_pool.get_connection()
         cursor = connection.cursor(dictionary=True)
@@ -94,37 +97,38 @@ def recipe_details(recipe_id):
             WHERE RecipeID = %s
         """, (recipe_id,))
         result = cursor.fetchone()
-        details['title'] = result['Title']
-        details['servings'] = result['Servings']
-        details['origin'] = result['Origin']
-        details['is_favorite'] = result['is_favorite']
+        if result:
+            details['title'] = result['Title']
+            details['servings'] = result['Servings']
+            details['origin'] = result['Origin']
+            details['is_favorite'] = result['is_favorite']
 
-        # Fetch ingredients
-        cursor.execute("""
-            SELECT Description
-            FROM ingredients
-            WHERE RecipeID = %s
-            ORDER BY IngredientID
-        """, (recipe_id,))
-        details['ingredients'] = cursor.fetchall()
+            # Fetch ingredients
+            cursor.execute("""
+                SELECT Description
+                FROM ingredients
+                WHERE RecipeID = %s
+                ORDER BY IngredientID
+            """, (recipe_id,))
+            details['ingredients'] = cursor.fetchall()
 
-        # Fetch instructions
-        cursor.execute("""
-            SELECT StepNumber, Description
-            FROM instructions
-            WHERE RecipeID = %s
-            ORDER BY StepNumber
-        """, (recipe_id,))
-        details['instructions'] = cursor.fetchall()
+            # Fetch instructions
+            cursor.execute("""
+                SELECT StepNumber, Description
+                FROM instructions
+                WHERE RecipeID = %s
+                ORDER BY StepNumber
+            """, (recipe_id,))
+            details['instructions'] = cursor.fetchall()
 
-        # Fetch tags
-        cursor.execute("""
-            SELECT TagName
-            FROM tags
-            LEFT JOIN recipetags ON tags.TagID = recipetags.TagID
-            WHERE recipetags.RecipeID = %s
-        """, (recipe_id,))
-        details['tags'] = [tag['TagName'] for tag in cursor.fetchall()]
+            # Fetch tags
+            cursor.execute("""
+                SELECT TagName
+                FROM tags
+                LEFT JOIN recipetags ON tags.TagID = recipetags.TagID
+                WHERE recipetags.RecipeID = %s
+            """, (recipe_id,))
+            details['tags'] = [tag['TagName'] for tag in cursor.fetchall()]
 
     except Error as e:
         print(f"Error while connecting to MySQL or executing query: {e}")
@@ -246,6 +250,7 @@ def update_recipe(recipe_id):
         return jsonify({'success': False, 'message': 'Invalid format for servings. Use a number or a range like "8-10".'})
 
     connection = None
+    cursor = None
     try:
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
@@ -272,7 +277,6 @@ def update_recipe(recipe_id):
             cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
 
         connection.commit()
-        cursor.close()
         return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
     except Error as e:
         print(f"Error while updating recipe: {e}")
@@ -288,12 +292,13 @@ def update_recipe(recipe_id):
 @app.route('/favorites', methods=['GET'])
 def get_favorites():
     result = []
+    connection = None
+    cursor = None
     try:
         connection = connection_pool.get_connection()
         cursor = connection.cursor(dictionary=True)
         cursor.execute("SELECT * FROM recipes WHERE is_favorite = TRUE")
         result = cursor.fetchall()
-        cursor.close()
     except Error as e:
         print(f"Error while connecting to MySQL or executing query: {e}")
         result = []
@@ -311,12 +316,12 @@ def update_favorite(recipe_id):
     is_favorite = data.get('is_favorite', False)
 
     connection = None
+    cursor = None
     try:
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
         cursor.execute("UPDATE recipes SET is_favorite = %s WHERE RecipeID = %s", (is_favorite, recipe_id))
         connection.commit()
-        cursor.close()
         return jsonify({'success': True, 'message': 'Favorite status updated successfully!'})
     except Error as e:
         print(f"Error while updating favorite status for recipe ID {recipe_id}: {e}")
@@ -330,12 +335,13 @@ def update_favorite(recipe_id):
 @app.route('/tags', methods=['GET'])
 def get_tags():
     result = []
+    connection = None
+    cursor = None
     try:
         connection = connection_pool.get_connection()
         cursor = connection.cursor(dictionary=True)
         cursor.execute("SELECT TagName FROM tags")
         result = [tag['TagName'] for tag in cursor.fetchall()]
-        cursor.close()
     except Error as e:
         print(f"Error while connecting to MySQL or executing query: {e}")
         result = []
