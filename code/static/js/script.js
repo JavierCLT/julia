@@ -297,6 +297,36 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
         }
     });
 
+document.addEventListener('DOMContentLoaded', () => {
+    const halfButton = document.getElementById('1/2');
+    const doubleButton = document.getElementById('2x');
+
+    if (halfButton) {
+        halfButton.addEventListener('click', () => updateQuantities(0.5));
+    }
+
+    if (doubleButton) {
+        doubleButton.addEventListener('click', () => updateQuantities(2));
+    }
+
+    function updateQuantities(factor) {
+        const ingredientsList = document.querySelectorAll('.ingredients-list li');
+        ingredientsList.forEach(item => {
+            const originalText = item.getAttribute('data-original-text') || item.textContent;
+            const updatedText = originalText.replace(/(\d+(\.\d+)?\s?)(cup|cups|teaspoon|teaspoons|tablespoon|tablespoons|ounce|ounces|pound|pounds|gram|grams|ml|l|L|g)/g, (match, quantity, decimal, unit) => {
+                const newQuantity = parseFloat(quantity) * factor;
+                return `${newQuantity.toFixed(2)} ${unit}`;
+            });
+
+            item.textContent = updatedText;
+            item.setAttribute('data-original-text', originalText);
+        });
+    }
+});
+
+
+
+    
     document.addEventListener('click', (event) => {
         const targetElement = event.target.closest('.recipe-box');
         if (targetElement) {
