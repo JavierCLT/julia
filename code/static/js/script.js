@@ -1,183 +1,398 @@
-// The list of words for the child to practice
-const originalWordsToPractice = ["apple", "banana", "bathroom", "bedroom", "car", "carrot", "cat", "chair", "chimpanzee", "computer", "dad", "day", "dog", "drums", "ear", "fall", "feet", "fridge", "garlic", "gorilla", "guitar", "hand", "happiness", "harmonica", "hawk", "house", "ice", "jellyfish", "lemon", "lion", "milk", "mom", "motorcycle", "night", "onion", "orange", "parrot", "pepper", "plane", "potato", "salt", "school", "spacecraft", "spring", "summer", "table", "tomato", "violin", "wall", "water", "whale", "winter"];
 
-// Clone the original array to manipulate
-let wordsToPractice = [...originalWordsToPractice];
-
-// Initialize the counter
-let wordsTypedCount = 0;
-
-// Prevent the glitch of re-typing words quickly
-let inputLocked = false;
-
-// Track the Caps Lock state
-let isCapsLockActive = false;
-
-// Function to play the word sound
-function playWordSound(word, callback) {
-  const wordSound = new Audio(`sounds/word_sounds/english/${word}.mp3`);
-  wordSound.play();
-
-  // When the sound has finished playing, call the callback if provided
-  wordSound.onended = () => {
-    if (callback) {
-      callback();
-    }
-  };
-}
-
-// Function to play the letter sound
-function playLetterSound(letter) {
-  const letterSound = new Audio(`sounds/letter_sounds/${letter.toUpperCase()}.wav`);
-  letterSound.play();
-}
-
-// Function to play the success sound
-function playSuccessSound() {
-  const successSound = new Audio('sounds/success/fanfare.mp3');
-  successSound.play();
-}
-
-function updateDisplayedWord(word, isUppercase = false) {
-  const wordDisplay = document.getElementById('wordDisplay');
-  // Clear the previous word display
-  wordDisplay.innerHTML = '';
-
-  // Create a span for each letter in the word
-  word.split('').forEach((letter, index) => {
-    const letterSpan = document.createElement('span');
-    letterSpan.textContent = isUppercase ? letter.toUpperCase() : letter;
-    letterSpan.id = `letter${index}`;
-    wordDisplay.appendChild(letterSpan);
-  });
-}
-
-// Function to show a message below the word input
-function showMessage(message) {
-  const messageElement = document.getElementById('message');
-  messageElement.textContent = message;
-}
-
-// Function to update counter
-function updateWordsTypedCountDisplay() {
-  const countDisplay = document.getElementById('counter');
-  countDisplay.textContent = `${wordsTypedCount}`;
-}
-
-// Function to handle keypresses and color changes
-function handleKeyPress(event) {
-  const wordInput = document.getElementById('wordInput');
-  const typedWord = wordInput.value;
-  const currentWord = wordInput.dataset.currentWord.toLowerCase(); // Retrieve the current word
-
-  // Add or remove the 'uppercase' class based on the Caps Lock state
-  if (isCapsLockActive) {
-    wordInput.classList.add('uppercase');
-  } else {
-    wordInput.classList.remove('uppercase');
-  }
-
-  // Update the colors of the displayed letters
-  currentWord.split('').forEach((letter, index) => {
-    const letterElement = document.getElementById(`letter${index}`);
-    if (index < typedWord.length) {
-      letterElement.className = typedWord[index].toLowerCase() === currentWord[index] ? 'correct-letter' : 'incorrect-letter';
-    } else {
-      letterElement.className = ''; // Remove classes if the letter has not been typed yet
-    }
-  });
-
-  // Play the sound of the last letter typed
-  if (typedWord) {
-    playLetterSound(typedWord[typedWord.length - 1]);
-  }
-
-  // Check if the word is fully and correctly typed
-  if (typedWord.toLowerCase() === currentWord) {
-    inputLocked = true;
-    // Delay after the last letter sound before playing the word sound again
-    setTimeout(() => {
-      playWordSound(currentWord, () => {
-        // Determine the delay for the success sound based on the word's length
-        let successSoundDelay;
-        if (currentWord.length <= 4) {
-          successSoundDelay = 400;
-        } else if (currentWord.length >= 5 && currentWord.length <= 9) {
-          successSoundDelay = 480;
-        } else { // for 10 letters or more
-          successSoundDelay = 600;
-        }
-
-        // Delay the success sound based on the length of the word
-        setTimeout(() => {
-          playSuccessSound();
-        }, successSoundDelay);
-
-        // Show the success message shortly after the success sound starts
-        setTimeout(() => {
-          showMessage('Good job! That\'s correct!');
-          confetti(); // Play the success animation here
-          wordsTypedCount++; // Increment the words typed count
-          updateWordsTypedCountDisplay(); // Update the display
-        }, successSoundDelay - 300); // Adjust as needed
-
-        // Clear the input and set a new word a bit after the message is displayed
-        setTimeout(() => {
-          wordInput.value = ''; // Clear the input field
-          setNewWord(); // Set a new word
-        }, successSoundDelay + 2000); // This waits a bit after the message to reset
-      });
-    }, 500); // Delay before replaying the word sound after the last letter sound
-  }
-}
-
-function setNewWord() {
-  // Check if there are no more words to practice
-  if (wordsToPractice.length === 0) {
-    // Reset the wordsToPractice array to start over
-    wordsToPractice = [...originalWordsToPractice];
-    showMessage('All words completed! Starting again...');
-  }
-
-  const randomIndex = Math.floor(Math.random() * wordsToPractice.length);
-  const newWord = wordsToPractice[randomIndex];
-  updateDisplayedWord(newWord, isCapsLockActive);
-
-  // Set the image source based on the new word
-  const wordImage = document.getElementById('wordImage');
-  wordImage.src = `images/${newWord}.png`; // Assuming the images are named exactly like the words
-  wordImage.style.display = 'block'; // Show the image
-
-  // Remove the used word from the array
-  wordsToPractice.splice(randomIndex, 1);
-
-  const wordInput = document.getElementById('wordInput');
-  wordInput.dataset.currentWord = newWord; // Store the current word in the dataset
-  wordInput.setAttribute('maxlength', newWord.length); // Set the maxlength attribute
-  showMessage(''); // Clear any previous messages
-  playWordSound(newWord); // Play the word sound
-
-  inputLocked = false; // Unlock the input for the new word
-}
-
-// Function to toggle case of displayed word
-function toggleCase(event) {
-  isCapsLockActive = event.getModifierState('CapsLock');
-  const currentWord = document.getElementById('wordInput').dataset.currentWord;
-  updateDisplayedWord(currentWord, isCapsLockActive);
-}
 
 document.addEventListener('DOMContentLoaded', () => {
-  const container = document.querySelector('.container');
-  container.classList.add('fade-in');
+    const searchBox = document.getElementById('search-box');
+    const resultsContainer = document.getElementById('results');
+    const addRecipeFormContainer = document.getElementById('add-recipe-form-container');
+    const addRecipeForm = document.getElementById('add-recipe-form');
+    const recipeDetailsContainer = document.getElementById('recipe-details-container');
+    const recipeTitle = document.getElementById('recipe-title');
+    const deleteRecipeBtn = document.getElementById('delete-recipe-btn');
+    const editRecipeBtn = document.getElementById('edit-recipe-btn');
+    const favoriteCheckbox = document.getElementById('favorite-checkbox');
+    const darkOverlay = document.getElementById('darkOverlay');
+    const container = document.querySelector('.container');
+    const errorMessage = document.getElementById('error-message');
+    const messageContainer = document.getElementById('message-container');
+    const addRecipeButton = addRecipeForm.querySelector('button[type="submit"]');
+    const viewFavoritesLink = document.getElementById('view-favorites-link');
+    const viewTagsLink = document.getElementById('view-tags-link');
+    const viewAllRecipesLink = document.getElementById('view-all-recipes-link');
+    let formJustOpened = false;
 
-  const wordInput = document.getElementById('wordInput');
-  wordInput.addEventListener('input', handleKeyPress);
-  wordInput.addEventListener('keydown', toggleCase); // Add event listener for keydown to check Caps Lock state
-  wordInput.addEventListener('keyup', toggleCase); // Add event listener for keyup to check Caps Lock state
-  setNewWord(); // Set the initial word
-  wordInput.focus(); // Automatically focus the input field
+    const debounce = (func, delay) => {
+        let timer;
+        return (...args) => {
+            clearTimeout(timer);
+            timer = setTimeout(() => func.apply(this, args), delay);
+        };
+    };
 
-  // Attempt to play the word sound immediately
-  playWordSound(wordInput.dataset.currentWord);
+    const toggleBlurAndOverlay = (show) => {
+        if (show) {
+            darkOverlay.style.display = 'block';
+            container.classList.add('blur-background');
+        } else {
+            darkOverlay.style.display = 'none';
+            container.classList.remove('blur-background');
+        }
+    };
+
+    const showLoadingIndicator = (show) => {
+        const loadingIndicator = document.getElementById('loading-indicator');
+        loadingIndicator.style.display = show ? 'block' : 'none';
+    };
+    
+    const showMessage = (message) => {
+        messageContainer.textContent = '';
+        messageContainer.textContent = message;
+        messageContainer.classList.add('show');
+        setTimeout(() => {
+            messageContainer.classList.remove('show');
+        }, 2000);
+    };
+
+    const fetchRecipes = async (query) => {
+        try {
+            const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
+            const data = await response.json();
+            return Array.isArray(data) ? data : [];
+        } catch (error) {
+            console.error('Error fetching recipes:', error);
+            return [];
+        }
+    };
+
+    const fetchTags = async () => {
+        try {
+            const response = await fetch('/tags');
+            const data = await response.json();
+            return Array.isArray(data) ? data : [];
+        } catch (error) {
+            console.error('Error fetching tags:', error);
+            return [];
+        }
+    };
+
+    const renderRecipes = (recipes) => {
+        resultsContainer.innerHTML = '';
+        const grid = document.createElement('div');
+        grid.className = 'grid';
+        recipes.forEach(recipe => {
+            const recipeElement = document.createElement('div');
+            recipeElement.className = 'recipe-box';
+            recipeElement.setAttribute('data-recipe-id', recipe.RecipeID);
+            recipeElement.innerHTML = `<div class="recipe-content">
+                                          <h3 class="recipe-title">${recipe.Title}</h3>
+                                       </div>`;
+            grid.appendChild(recipeElement);
+        });
+        resultsContainer.appendChild(grid);
+    };
+
+    const handleSearch = debounce(async (event) => {
+        const searchQuery = event.target.value.trim();
+        if (searchQuery.length > 2) {
+            const recipes = await fetchRecipes(searchQuery);
+            renderRecipes(recipes);
+        } else {
+            resultsContainer.innerHTML = '';
+        }
+    }, 300);
+
+const fetchAndDisplayRecipeDetails = async (recipeId) => {
+    try {
+        const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
+        const data = await response.json();
+        console.log('API Response:', data);
+
+        // Ingredients
+        const ingredientsList = document.querySelector('.ingredients-list');
+        ingredientsList.innerHTML = '';
+        data.ingredients.forEach(ingredient => {
+            const li = document.createElement('li');
+            li.textContent = ingredient.Description;
+            ingredientsList.appendChild(li);
+        });
+
+        // Instructions
+        const instructionsList = document.querySelector('.instructions-list');
+        instructionsList.innerHTML = '';
+        data.instructions.forEach(instruction => {
+            const li = document.createElement('li');
+            li.textContent = instruction.Description;
+            instructionsList.appendChild(li);
+        });
+
+        // Tags, Servings, Origin
+        document.querySelector('.tags-list').textContent = data.tags.join(', ');
+        document.querySelector('.servings-count').textContent = data.servings;
+        document.querySelector('.origin').textContent = data.origin;
+
+        favoriteCheckbox.checked = data.is_favorite;
+        favoriteCheckbox.setAttribute('data-recipe-id', recipeId); // Set recipe ID on the checkbox
+
+        recipeDetailsContainer.style.display = 'block';
+        // Scroll to the top of the container
+        setTimeout(() => {
+            recipeDetailsContainer.scrollTop = 0;
+        }, 0);
+        
+        document.getElementById('edit-recipe-btn').onclick = () => {
+            formJustOpened = true;
+            console.log('Edit button clicked for recipe ID:', recipeId);
+            const recipeData = {
+                title: data.title,
+                ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
+                instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
+                tags: data.tags.join(','),
+                servings: data.servings,
+                origin: data.origin
+            };
+            console.log('Recipe data:', recipeData);
+            populateEditForm(recipeId, recipeData);
+            setTimeout(() => { formJustOpened = false; }, 100);
+        };
+
+    
+        
+        document.getElementById('delete-recipe-btn').onclick = async () => {
+            const password = prompt("Enter password to delete this recipe:");
+            if (password) {
+                try {
+                    const response = await fetch(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
+                        method: 'POST',
+                        body: JSON.stringify({ password: password }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const data = await response.json();
+                    showMessage(data.message);
+                    if (data.success) {
+                        recipeDetailsContainer.style.display = 'none';
+                        toggleBlurAndOverlay(false);
+                    }
+                } catch (error) {
+                    console.error('Error deleting recipe:', error);
+                }
+            }
+        };
+
+        // Share Recipe Button
+        const shareButton = document.getElementById('share-recipe-btn');
+        shareButton.onclick = () => {
+            const shareData = {
+                title: `Check out this recipe: ${data.title}`,
+                text: `Ingredients:\n${data.ingredients.map(i => i.Description).join('\n')}\n\nInstructions:\n${data.instructions.map(i => i.Description).join('\n')}\n\nTags: ${data.tags.join(', ')}\n\nServings: ${data.servings}`,
+                url: window.location.href
+            };
+            navigator.share(shareData).then(() => {
+                console.log('Recipe shared successfully');
+            }).catch((error) => {
+                console.error('Error sharing recipe:', error);
+            });
+        };
+
+    } catch (error) {
+        console.error('Error fetching recipe details:', error);
+    }
+};
+
+    const populateEditForm = (recipeId, recipeData) => {
+        console.log('Populating edit form with data:', recipeData); 
+
+        addRecipeFormContainer.style.display = 'block'; 
+        addRecipeButton.textContent = 'Save'; 
+        console.log('Form container display set to block');
+        toggleBlurAndOverlay(true);
+
+        document.getElementById('recipe-title-input').value = recipeData.title || '';
+        document.getElementById('recipe-ingredients-input').value = recipeData.ingredients || '';
+        document.getElementById('recipe-instructions-input').value = recipeData.instructions || '';
+        document.getElementById('recipe-tags-input').value = recipeData.tags || '';
+        document.getElementById('recipe-servings-input').value = recipeData.servings || '';
+        document.getElementById('recipe-origin-input').value = recipeData.origin || '';
+
+        addRecipeForm.onsubmit = async (event) => {
+            event.preventDefault();
+            const formData = new FormData(addRecipeForm);
+            const updatedRecipeData = Object.fromEntries(formData.entries());
+
+            try {
+                console.log('Sending update request with data:', updatedRecipeData);
+                const response = await fetch(`/update_recipe/${recipeId}`, {
+                    method: 'POST',
+                    body: JSON.stringify(updatedRecipeData),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                showMessage(data.message);
+                if (data.success) {
+                    addRecipeForm.reset();
+                    addRecipeFormContainer.style.display = 'none';
+                    toggleBlurAndOverlay(false);
+                    fetchAndDisplayRecipeDetails(recipeId);
+                }
+            } catch (error) {
+                console.error('Error updating recipe:', error);
+            }
+        };
+    };
+
+    const checkDuplicateTags = (tags) => {
+        const tagSet = new Set(tags);
+        return tagSet.size !== tags.length;
+    };
+
+    searchBox.addEventListener('input', handleSearch);
+
+    document.getElementById('add-recipe-btn').addEventListener('click', () => {
+        addRecipeFormContainer.style.display = 'block';
+        addRecipeButton.textContent = 'Add Recipe'; 
+        toggleBlurAndOverlay(true);
+    });
+
+    document.getElementById('cancel-btn').addEventListener('click', () => {
+        addRecipeFormContainer.style.display = 'none';
+        toggleBlurAndOverlay(false);
+    });
+
+    addRecipeForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(addRecipeForm);
+        const tags = formData.get('tags').split(',').map(tag => tag.trim());
+        const formDataObject = Object.fromEntries(formData.entries());
+        formDataObject.is_favorite = formDataObject.is_favorite ? true : false;
+
+        if (checkDuplicateTags(tags)) {
+            errorMessage.textContent = 'Duplicate tags are not allowed.';
+            errorMessage.style.display = 'block';
+            return;
+        } else {
+            errorMessage.style.display = 'none';
+        }
+
+        formData.set('tags', tags.join(','));
+
+        try {
+            const response = await fetch('/add_recipe', {
+                method: 'POST',
+                body: JSON.stringify(Object.fromEntries(formData.entries())),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
+            showMessage(data.message);
+            if (data.success) {
+                addRecipeForm.reset();
+                addRecipeFormContainer.style.display = 'none';
+                toggleBlurAndOverlay(false);
+            }
+        } catch (error) {
+            console.error('Error adding recipe:', error);
+        }
+    });
+
+    document.addEventListener('click', (event) => {
+        const targetElement = event.target.closest('.recipe-box');
+        if (targetElement) {
+            const recipeId = targetElement.getAttribute('data-recipe-id');
+            if (recipeId) {
+                const recipeTitleText = targetElement.querySelector('.recipe-title').textContent;
+                recipeTitle.textContent = recipeTitleText;
+                fetchAndDisplayRecipeDetails(recipeId);
+                toggleBlurAndOverlay(true);
+            }
+        }
+    });
+
+    window.addEventListener('click', (event) => {
+        console.log('Window click event:', event.target);
+        if (!recipeDetailsContainer.contains(event.target) && recipeDetailsContainer.style.display === 'block') {
+            recipeDetailsContainer.style.display = 'none';
+            recipeTitle.textContent = '';
+            toggleBlurAndOverlay(false);
+            
+        }
+        if (!formJustOpened && !addRecipeFormContainer.contains(event.target) && addRecipeFormContainer.style.display === 'block' && !event.target.closest('#add-recipe-btn')) {
+            addRecipeFormContainer.style.display = 'none';
+            toggleBlurAndOverlay(false);
+        }
+    });
+    
+    favoriteCheckbox.onchange = async () => {
+        const recipeId = favoriteCheckbox.getAttribute('data-recipe-id');
+        const isFavorite = favoriteCheckbox.checked;
+
+        try {
+            await fetch(`/update_favorite/${recipeId}`, {
+                method: 'POST',
+                body: JSON.stringify({ is_favorite: isFavorite }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+        } catch (error) {
+            console.error('Error updating favorite status:', error);
+            // Optionally revert the checkbox state if an error occurs
+            favoriteCheckbox.checked = !isFavorite;
+        }
+    };
+
+    viewFavoritesLink.addEventListener('click', async () => {
+        try {
+            const response = await fetch('/favorites');
+            const favorites = await response.json();
+            renderRecipes(favorites);
+            searchBox.value = 'Favorites'; // Set the search box text to "Favorites"
+        } catch (error) {
+            console.error('Error fetching favorite recipes:', error);
+        }
+    });
+
+    viewTagsLink.addEventListener('click', async () => {
+    try {
+        const tags = await fetchTags();
+        resultsContainer.innerHTML = ''; // Clear the results container
+        const tagListContainer = document.createElement('div');
+        tagListContainer.className = 'tags-list-container';
+        
+        const tagList = document.createElement('ul');
+        tags.forEach(tag => {
+            const tagItem = document.createElement('li');
+            tagItem.textContent = tag;
+            tagItem.className = 'tag-item'; // Add a class for styling
+            tagItem.addEventListener('click', () => {
+                // Add click animation class
+                tagItem.classList.add('clicked');
+                setTimeout(() => {
+                    tagItem.classList.remove('clicked');
+                }, 300); // Duration of the animation
+
+                searchBox.value = tag;
+                handleSearch({ target: { value: tag } }); // Trigger search
+            });
+            tagList.appendChild(tagItem);
+        });
+        tagListContainer.appendChild(tagList);
+        resultsContainer.appendChild(tagListContainer);
+        searchBox.value = 'Tags'; // Set the search box text to "Tags"
+    } catch (error) {
+        console.error('Error fetching tags:', error);
+    }
+});
+
+    viewAllRecipesLink.addEventListener('click', async () => {
+        try {
+            const recipes = await fetchRecipes(''); // Fetch all recipes with an empty query
+            renderRecipes(recipes);
+            searchBox.value = 'All Recipes'; // Set the search box text to "All Recipes"
+        } catch (error) {
+            console.error('Error fetching all recipes:', error);
+        }
+    });
 });
