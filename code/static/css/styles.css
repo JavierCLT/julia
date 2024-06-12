@@ -171,6 +171,25 @@ h1 {
     transform: translateY(-2px);
 }
 
+.recipe-controls {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.recipe-controls button {
+    margin: 0 10px;
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+}
+
+.ingredients-card {
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
 .recipe-box {
     border: 1px solid #ccc;
     padding: 20px;
@@ -257,7 +276,7 @@ li {
 .ingredients-list {
     color: var(--rich-black);
     padding-left: 2em;
-}
+    list-style-type: disc;
 
 /* Remove bullet points and style instructions */
 .instructions-list {
