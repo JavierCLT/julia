@@ -4,4 +4,5 @@ Flask-CORS==3.0.10
 gunicorn==21.2.0
 python-dotenv
 Flask-Caching
+Flask-Bcrypt
 
