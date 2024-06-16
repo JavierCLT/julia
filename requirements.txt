@@ -5,4 +5,4 @@ gunicorn==21.2.0
 python-dotenv
 Flask-Caching
 Flask-Bcrypt
-
+Flask-Login
