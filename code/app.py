@@ -1,5 +1,7 @@
-from flask import Flask, request, jsonify, render_template, session
+from flask import Flask, request, jsonify, render_template, session, redirect, url_for
+from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from flask_caching import Cache
+from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
 from mysql.connector import Error, pooling
 from flask_cors import CORS
@@ -9,6 +11,11 @@ import re
 
 app = Flask(__name__)
 CORS(app, resources={r"/search*": {"origins": "*"}})
+bcrypt = Bcrypt(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+app.secret_key = os.getenv('SECRET_KEY', 'mysecret')
 
 # Cache configuration
 cache = Cache(config={'CACHE_TYPE': 'simple'})
@@ -32,6 +39,37 @@ connection_pool = mysql.connector.pooling.MySQLConnectionPool(pool_name=db_confi
                                                               database=db_config['database'],
                                                               user=db_config['user'],
                                                               password=db_config['password'])
+
+# User class for Flask-Login
+class User(UserMixin):
+    def __init__(self, id, username, email, password):
+        self.id = id
+        self.username = username
+        self.email = email
+        self.password = password
+
+    @staticmethod
+    def get(user_id):
+        try:
+            connection = connection_pool.get_connection()
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM users WHERE UserID = %s", (user_id,))
+            user_data = cursor.fetchone()
+            if user_data:
+                return User(user_data['UserID'], user_data['Username'], user_data['Email'], user_data['Password'])
+            return None
+        except Error as e:
+            print(f"Error while connecting to MySQL or executing query: {e}")
+            return None
+        finally:
+            if cursor:
+                cursor.close()
+            if connection and connection.is_connected():
+                connection.close()
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get(user_id)
 
 @app.route('/')
 def index():
@@ -145,7 +183,6 @@ def recipe_details(recipe_id):
 @app.route('/add_recipe', methods=['POST'])
 @login_required
 def add_recipe():
-    user_id = session['user_id']
     data = request.json
     title = data.get('title')
     ingredients = data.get('ingredients').split('\n')
@@ -154,12 +191,8 @@ def add_recipe():
     servings = data.get('servings')
     origin = data.get('origin')
     is_favorite = data.get('is_favorite', False)
-    password = data.get('password')
 
     print("Received tags:", tags)  # Debugging line
-
-    if password != os.getenv('SECRET_PASSWORD'):
-        return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
 
     connection = None
     cursor = None
@@ -167,7 +200,7 @@ def add_recipe():
         connection = connection_pool.get_connection()
         cursor = connection.cursor()
 
-        cursor.execute("INSERT INTO recipes (Title, UserID, Servings, Origin, is_favorite) VALUES (%s, %s, %s, %s, %s)", (title, user_id, servings, origin, is_favorite))
+        cursor.execute("INSERT INTO recipes (Title, UserID, Servings, Origin, is_favorite) VALUES (%s, %s, %s, %s, %s)", (title, current_user.id, servings, origin, is_favorite))
         recipe_id = cursor.lastrowid
 
         for ingredient in ingredients:
@@ -200,13 +233,8 @@ def add_recipe():
     return jsonify({'success': True, 'message': 'Recipe added successfully!'})
 
 @app.route('/delete_recipe/<int:recipe_id>', methods=['POST'])
+@login_required
 def delete_recipe(recipe_id):
-    data = request.json
-    password = data.get('password')
-
-    if password != os.getenv('SECRET_PASSWORD'):
-        return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
-
     connection = None
     cursor = None
     try:
@@ -217,7 +245,7 @@ def delete_recipe(recipe_id):
         cursor.execute("DELETE FROM instructions WHERE RecipeID = %s", (recipe_id,))
         cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
         cursor.execute("DELETE FROM recipetags WHERE RecipeID = %s", (recipe_id,))
-        cursor.execute("DELETE FROM recipes WHERE RecipeID = %s", (recipe_id,))
+        cursor.execute("DELETE FROM recipes WHERE RecipeID = %s AND UserID = %s", (recipe_id, current_user.id))
 
         # Commit the changes
         connection.commit()
@@ -241,6 +269,7 @@ def delete_recipe(recipe_id):
             connection.close()
 
 @app.route('/update_recipe/<int:recipe_id>', methods=['POST'])
+@login_required
 def update_recipe(recipe_id):
     data = request.get_json()
     title = data.get('title')
@@ -250,12 +279,8 @@ def update_recipe(recipe_id):
     servings = data.get('servings')
     origin = data.get('origin')
     is_favorite = data.get('is_favorite', False)
-    password = data.get('password')
 
     print("Received tags for update:", tags)  # Debugging line
-
-    if password != os.getenv('SECRET_PASSWORD'):
-        return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
 
     # Validate servings to allow numbers and ranges like "8-10"
     if not re.match(r'^\d+(-\d+)?$', servings):
@@ -264,10 +289,10 @@ def update_recipe(recipe_id):
     connection = None
     cursor = None
     try:
-        connection = mysql.connector.connect(**db_config)
+        connection = connection_pool.get_connection()
         cursor = connection.cursor()
 
-        cursor.execute("UPDATE recipes SET Title = %s, Servings = %s, Origin = %s, is_favorite = %s WHERE RecipeID = %s", (title, servings, origin, is_favorite, recipe_id))
+        cursor.execute("UPDATE recipes SET Title = %s, Servings = %s, Origin = %s, is_favorite = %s WHERE RecipeID = %s AND UserID = %s", (title, servings, origin, is_favorite, recipe_id, current_user.id))
 
         cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
         for ingredient in ingredients:
@@ -302,6 +327,7 @@ def update_recipe(recipe_id):
     return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
 
 @app.route('/favorites', methods=['GET'])
+@login_required
 def get_favorites():
     result = []
     connection = None
@@ -309,7 +335,7 @@ def get_favorites():
     try:
         connection = connection_pool.get_connection()
         cursor = connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM recipes WHERE is_favorite = TRUE")
+        cursor.execute("SELECT * FROM recipes WHERE is_favorite = TRUE AND UserID = %s", (current_user.id,))
         result = cursor.fetchall()
     except Error as e:
         print(f"Error while connecting to MySQL or executing query: {e}")
@@ -323,6 +349,7 @@ def get_favorites():
     return jsonify(result)
 
 @app.route('/update_favorite/<int:recipe_id>', methods=['POST'])
+@login_required
 def update_favorite(recipe_id):
     data = request.json
     is_favorite = data.get('is_favorite', False)
@@ -330,9 +357,9 @@ def update_favorite(recipe_id):
     connection = None
     cursor = None
     try:
-        connection = mysql.connector.connect(**db_config)
+        connection = connection_pool.get_connection()
         cursor = connection.cursor()
-        cursor.execute("UPDATE recipes SET is_favorite = %s WHERE RecipeID = %s", (is_favorite, recipe_id))
+        cursor.execute("UPDATE recipes SET is_favorite = %s WHERE RecipeID = %s AND UserID = %s", (is_favorite, recipe_id, current_user.id))
         connection.commit()
         return jsonify({'success': True, 'message': 'Favorite status updated successfully!'})
     except Error as e:
@@ -345,6 +372,7 @@ def update_favorite(recipe_id):
             connection.close()
             
 @app.route('/tags', methods=['GET'])
+@login_required
 def get_tags():
     result = []
     connection = None
@@ -364,8 +392,6 @@ def get_tags():
             connection.close()
 
     return jsonify(result)
-
-bcrypt = Bcrypt(app)
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -404,7 +430,8 @@ def login():
         cursor.execute("SELECT UserID, Password FROM users WHERE Email = %s", (email,))
         user = cursor.fetchone()
         if user and bcrypt.check_password_hash(user['Password'], password):
-            session['user_id'] = user['UserID']
+            user_obj = User(user['UserID'], None, email, user['Password'])
+            login_user(user_obj)
             return jsonify({'success': True, 'message': 'Login successful.'})
         else:
             return jsonify({'success': False, 'message': 'Invalid email or password.'}), 401
@@ -416,6 +443,12 @@ def login():
             cursor.close()
         if connection and connection.is_connected():
             connection.close()
-    
+
+@app.route('/logout', methods=['POST'])
+@login_required
+def logout():
+    logout_user()
+    return jsonify({'success': True, 'message': 'Logged out successfully!'})
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
