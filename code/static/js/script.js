@@ -255,14 +255,14 @@ document.addEventListener('DOMContentLoaded', () => {
     searchBox.addEventListener('input', handleSearch);
 
     document.getElementById('add-recipe-btn').addEventListener('click', () => {
-        if (sessionStorage.getItem('loggedIn') === 'true') {
-            addRecipeFormContainer.style.display = 'block';
-            addRecipeButton.textContent = 'Add Recipe'; 
-            toggleBlurAndOverlay(true);
-        } else {
-            showMessage('You must be logged in to add a recipe.');
-        }
-    });
+    if (sessionStorage.getItem('loggedIn') === 'true') {
+        addRecipeFormContainer.style.display = 'block';
+        addRecipeButton.textContent = 'Add Recipe'; 
+        toggleBlurAndOverlay(true);
+    } else {
+        showMessage('You must be logged in to add a recipe.');
+    }
+});
 
     document.getElementById('cancel-btn').addEventListener('click', () => {
         addRecipeFormContainer.style.display = 'none';
@@ -396,6 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
       viewAllRecipesLink.addEventListener('click', async () => {
+    if (sessionStorage.getItem('loggedIn') === 'true') {
         try {
             const recipes = await fetchRecipes(''); // Fetch all recipes with an empty query
             renderRecipes(recipes);
@@ -403,5 +404,80 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error fetching all recipes:', error);
         }
-    });
+    } else {
+        showMessage('You must be logged in to view all recipes.');
+    }
+});
+    
+loginLink.addEventListener('click', () => {
+    loginFormContainer.style.display = 'block';
+    toggleBlurAndOverlay(true);
+});
+
+registerLink.addEventListener('click', () => {
+    registerFormContainer.style.display = 'block';
+    toggleBlurAndOverlay(true);
+});
+
+logoutLink.addEventListener('click', () => {
+    sessionStorage.setItem('loggedIn', 'false');
+    showMessage('You have logged out.');
+    loginLink.style.display = 'block';
+    registerLink.style.display = 'block';
+    logoutLink.style.display = 'none';
+});
+    loginForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const formData = new FormData(loginForm);
+    const loginData = Object.fromEntries(formData.entries());
+
+    try {
+        const response = await fetch('/login', {
+            method: 'POST',
+            body: JSON.stringify(loginData),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+        showMessage(data.message);
+        if (data.success) {
+            sessionStorage.setItem('loggedIn', 'true');
+            loginForm.reset();
+            loginFormContainer.style.display = 'none';
+            toggleBlurAndOverlay(false);
+            loginLink.style.display = 'none';
+            registerLink.style.display = 'none';
+            logoutLink.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Error logging in:', error);
+    }
+});
+
+registerForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const formData = new FormData(registerForm);
+    const registerData = Object.fromEntries(formData.entries());
+
+    try {
+        const response = await fetch('/register', {
+            method: 'POST',
+            body: JSON.stringify(registerData),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+        showMessage(data.message);
+        if (data.success) {
+            registerForm.reset();
+            registerFormContainer.style.display = 'none';
+            toggleBlurAndOverlay(false);
+        }
+    } catch (error) {
+        console.error('Error registering:', error);
+    }
+});
+    
 });
