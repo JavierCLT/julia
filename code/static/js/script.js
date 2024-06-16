@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', () => {
     const searchBox = document.getElementById('search-box');
     const resultsContainer = document.getElementById('results');
@@ -16,13 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewFavoritesLink = document.getElementById('view-favorites-link');
     const viewTagsLink = document.getElementById('view-tags-link');
     const viewAllRecipesLink = document.getElementById('view-all-recipes-link');
-    const loginFormContainer = document.getElementById('login-form-container');
-    const loginForm = document.getElementById('login-form');
-    const registerFormContainer = document.getElementById('register-form-container');
-    const registerForm = document.getElementById('register-form');
-    const loginLink = document.getElementById('login-link');
-    const registerLink = document.getElementById('register-link');
-    const logoutLink = document.getElementById('logout-link');
     let formJustOpened = false;
 
     const debounce = (func, delay) => {
@@ -105,104 +99,104 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 300);
 
-    const fetchAndDisplayRecipeDetails = async (recipeId) => {
-        try {
-            const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
-            const data = await response.json();
-            console.log('API Response:', data);
+const fetchAndDisplayRecipeDetails = async (recipeId) => {
+    try {
+        const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
+        const data = await response.json();
+        console.log('API Response:', data);
 
-            // Ingredients
-            const ingredientsList = document.querySelector('.ingredients-list');
-            ingredientsList.innerHTML = '';
-            data.ingredients.forEach(ingredient => {
-                const li = document.createElement('li');
-                li.textContent = ingredient.Description;
-                ingredientsList.appendChild(li);
-            });
+        // Ingredients
+        const ingredientsList = document.querySelector('.ingredients-list');
+        ingredientsList.innerHTML = '';
+        data.ingredients.forEach(ingredient => {
+            const li = document.createElement('li');
+            li.textContent = ingredient.Description;
+            ingredientsList.appendChild(li);
+        });
 
-            // Instructions
-            const instructionsList = document.querySelector('.instructions-list');
-            instructionsList.innerHTML = '';
-            data.instructions.forEach(instruction => {
-                const li = document.createElement('li');
-                li.textContent = instruction.Description;
-                instructionsList.appendChild(li);
-            });
+        // Instructions
+        const instructionsList = document.querySelector('.instructions-list');
+        instructionsList.innerHTML = '';
+        data.instructions.forEach(instruction => {
+            const li = document.createElement('li');
+            li.textContent = instruction.Description;
+            instructionsList.appendChild(li);
+        });
 
-            // Tags, Servings, Origin
-            document.querySelector('.tags-list').textContent = data.tags.join(', ');
-            document.querySelector('.servings-count').textContent = data.servings;
-            document.querySelector('.origin').textContent = data.origin;
+        // Tags, Servings, Origin
+        document.querySelector('.tags-list').textContent = data.tags.join(', ');
+        document.querySelector('.servings-count').textContent = data.servings;
+        document.querySelector('.origin').textContent = data.origin;
 
-            favoriteCheckbox.checked = data.is_favorite;
-            favoriteCheckbox.setAttribute('data-recipe-id', recipeId); // Set recipe ID on the checkbox
+        favoriteCheckbox.checked = data.is_favorite;
+        favoriteCheckbox.setAttribute('data-recipe-id', recipeId); // Set recipe ID on the checkbox
 
-            recipeDetailsContainer.style.display = 'block';
-            // Scroll to the top of the container
-            setTimeout(() => {
-                recipeDetailsContainer.scrollTop = 0;
-            }, 0);
-            
-            document.getElementById('edit-recipe-btn').onclick = () => {
-                formJustOpened = true;
-                console.log('Edit button clicked for recipe ID:', recipeId);
-                const recipeData = {
-                    title: data.title,
-                    ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
-                    instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
-                    tags: data.tags.join(','),
-                    servings: data.servings,
-                    origin: data.origin
-                };
-                console.log('Recipe data:', recipeData);
-                populateEditForm(recipeId, recipeData);
-                setTimeout(() => { formJustOpened = false; }, 100);
-            };
-
+        recipeDetailsContainer.style.display = 'block';
+        // Scroll to the top of the container
+        setTimeout(() => {
+            recipeDetailsContainer.scrollTop = 0;
+        }, 0);
         
-            
-            document.getElementById('delete-recipe-btn').onclick = async () => {
-                const password = prompt("Enter password to delete this recipe:");
-                if (password) {
-                    try {
-                        const response = await fetch(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
-                            method: 'POST',
-                            body: JSON.stringify({ password: password }),
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        });
-                        const data = await response.json();
-                        showMessage(data.message);
-                        if (data.success) {
-                            recipeDetailsContainer.style.display = 'none';
-                            toggleBlurAndOverlay(false);
+        document.getElementById('edit-recipe-btn').onclick = () => {
+            formJustOpened = true;
+            console.log('Edit button clicked for recipe ID:', recipeId);
+            const recipeData = {
+                title: data.title,
+                ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
+                instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
+                tags: data.tags.join(','),
+                servings: data.servings,
+                origin: data.origin
+            };
+            console.log('Recipe data:', recipeData);
+            populateEditForm(recipeId, recipeData);
+            setTimeout(() => { formJustOpened = false; }, 100);
+        };
+
+    
+        
+        document.getElementById('delete-recipe-btn').onclick = async () => {
+            const password = prompt("Enter password to delete this recipe:");
+            if (password) {
+                try {
+                    const response = await fetch(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
+                        method: 'POST',
+                        body: JSON.stringify({ password: password }),
+                        headers: {
+                            'Content-Type': 'application/json'
                         }
-                    } catch (error) {
-                        console.error('Error deleting recipe:', error);
+                    });
+                    const data = await response.json();
+                    showMessage(data.message);
+                    if (data.success) {
+                        recipeDetailsContainer.style.display = 'none';
+                        toggleBlurAndOverlay(false);
                     }
+                } catch (error) {
+                    console.error('Error deleting recipe:', error);
                 }
-            };
+            }
+        };
 
-            // Share Recipe Button
-            const shareButton = document.getElementById('share-recipe-btn');
-            shareButton.onclick = () => {
-                const shareData = {
-                    title: `Check out this recipe: ${data.title}`,
-                    text: `Ingredients:\n${data.ingredients.map(i => i.Description).join('\n')}\n\nInstructions:\n${data.instructions.map(i => i.Description).join('\n')}\n\nTags: ${data.tags.join(', ')}\n\nServings: ${data.servings}`,
-                    url: window.location.href
-                };
-                navigator.share(shareData).then(() => {
-                    console.log('Recipe shared successfully');
-                }).catch((error) => {
-                    console.error('Error sharing recipe:', error);
-                });
+        // Share Recipe Button
+        const shareButton = document.getElementById('share-recipe-btn');
+        shareButton.onclick = () => {
+            const shareData = {
+                title: `Check out this recipe: ${data.title}`,
+                text: `Ingredients:\n${data.ingredients.map(i => i.Description).join('\n')}\n\nInstructions:\n${data.instructions.map(i => i.Description).join('\n')}\n\nTags: ${data.tags.join(', ')}\n\nServings: ${data.servings}`,
+                url: window.location.href
             };
+            navigator.share(shareData).then(() => {
+                console.log('Recipe shared successfully');
+            }).catch((error) => {
+                console.error('Error sharing recipe:', error);
+            });
+        };
 
-        } catch (error) {
-            console.error('Error fetching recipe details:', error);
-        }
-    };
+    } catch (error) {
+        console.error('Error fetching recipe details:', error);
+    }
+};
 
     const populateEditForm = (recipeId, recipeData) => {
         console.log('Populating edit form with data:', recipeData); 
@@ -255,14 +249,10 @@ document.addEventListener('DOMContentLoaded', () => {
     searchBox.addEventListener('input', handleSearch);
 
     document.getElementById('add-recipe-btn').addEventListener('click', () => {
-    if (sessionStorage.getItem('loggedIn') === 'true') {
         addRecipeFormContainer.style.display = 'block';
         addRecipeButton.textContent = 'Add Recipe'; 
         toggleBlurAndOverlay(true);
-    } else {
-        showMessage('You must be logged in to add a recipe.');
-    }
-});
+    });
 
     document.getElementById('cancel-btn').addEventListener('click', () => {
         addRecipeFormContainer.style.display = 'none';
@@ -364,39 +354,38 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     viewTagsLink.addEventListener('click', async () => {
-        try {
-            const tags = await fetchTags();
-            resultsContainer.innerHTML = ''; // Clear the results container
-            const tagListContainer = document.createElement('div');
-            tagListContainer.className = 'tags-list-container';
-            
-            const tagList = document.createElement('ul');
-            tags.forEach(tag => {
-                const tagItem = document.createElement('li');
-                tagItem.textContent = tag;
-                tagItem.className = 'tag-item'; // Add a class for styling
-                tagItem.addEventListener('click', () => {
-                    // Add click animation class
-                    tagItem.classList.add('clicked');
-                    setTimeout(() => {
-                        tagItem.classList.remove('clicked');
-                    }, 300); // Duration of the animation
+    try {
+        const tags = await fetchTags();
+        resultsContainer.innerHTML = ''; // Clear the results container
+        const tagListContainer = document.createElement('div');
+        tagListContainer.className = 'tags-list-container';
+        
+        const tagList = document.createElement('ul');
+        tags.forEach(tag => {
+            const tagItem = document.createElement('li');
+            tagItem.textContent = tag;
+            tagItem.className = 'tag-item'; // Add a class for styling
+            tagItem.addEventListener('click', () => {
+                // Add click animation class
+                tagItem.classList.add('clicked');
+                setTimeout(() => {
+                    tagItem.classList.remove('clicked');
+                }, 300); // Duration of the animation
 
-                    searchBox.value = tag;
-                    handleSearch({ target: { value: tag } }); // Trigger search
-                });
-                tagList.appendChild(tagItem);
+                searchBox.value = tag;
+                handleSearch({ target: { value: tag } }); // Trigger search
             });
-            tagListContainer.appendChild(tagList);
-            resultsContainer.appendChild(tagListContainer);
-            searchBox.value = 'Tags'; // Set the search box text to "Tags"
-        } catch (error) {
-            console.error('Error fetching tags:', error);
-        }
-    });
+            tagList.appendChild(tagItem);
+        });
+        tagListContainer.appendChild(tagList);
+        resultsContainer.appendChild(tagListContainer);
+        searchBox.value = 'Tags'; // Set the search box text to "Tags"
+    } catch (error) {
+        console.error('Error fetching tags:', error);
+    }
+});
 
-      viewAllRecipesLink.addEventListener('click', async () => {
-    if (sessionStorage.getItem('loggedIn') === 'true') {
+    viewAllRecipesLink.addEventListener('click', async () => {
         try {
             const recipes = await fetchRecipes(''); // Fetch all recipes with an empty query
             renderRecipes(recipes);
@@ -404,80 +393,5 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error fetching all recipes:', error);
         }
-    } else {
-        showMessage('You must be logged in to view all recipes.');
-    }
-});
-    
-loginLink.addEventListener('click', () => {
-    loginFormContainer.style.display = 'block';
-    toggleBlurAndOverlay(true);
-});
-
-registerLink.addEventListener('click', () => {
-    registerFormContainer.style.display = 'block';
-    toggleBlurAndOverlay(true);
-});
-
-logoutLink.addEventListener('click', () => {
-    sessionStorage.setItem('loggedIn', 'false');
-    showMessage('You have logged out.');
-    loginLink.style.display = 'block';
-    registerLink.style.display = 'block';
-    logoutLink.style.display = 'none';
-});
-    loginForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const formData = new FormData(loginForm);
-    const loginData = Object.fromEntries(formData.entries());
-
-    try {
-        const response = await fetch('/login', {
-            method: 'POST',
-            body: JSON.stringify(loginData),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        const data = await response.json();
-        showMessage(data.message);
-        if (data.success) {
-            sessionStorage.setItem('loggedIn', 'true');
-            loginForm.reset();
-            loginFormContainer.style.display = 'none';
-            toggleBlurAndOverlay(false);
-            loginLink.style.display = 'none';
-            registerLink.style.display = 'none';
-            logoutLink.style.display = 'block';
-        }
-    } catch (error) {
-        console.error('Error logging in:', error);
-    }
-});
-
-registerForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const formData = new FormData(registerForm);
-    const registerData = Object.fromEntries(formData.entries());
-
-    try {
-        const response = await fetch('/register', {
-            method: 'POST',
-            body: JSON.stringify(registerData),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        const data = await response.json();
-        showMessage(data.message);
-        if (data.success) {
-            registerForm.reset();
-            registerFormContainer.style.display = 'none';
-            toggleBlurAndOverlay(false);
-        }
-    } catch (error) {
-        console.error('Error registering:', error);
-    }
-});
-    
+    });
 });
