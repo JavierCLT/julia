@@ -1,8 +1,9 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, session
 from flask_caching import Cache
 import mysql.connector
 from mysql.connector import Error, pooling
 from flask_cors import CORS
+from flask_bcrypt import Bcrypt
 import os
 import re
 
@@ -142,7 +143,9 @@ def recipe_details(recipe_id):
     return jsonify(details)
 
 @app.route('/add_recipe', methods=['POST'])
+@login_required
 def add_recipe():
+    user_id = session['user_id']
     data = request.json
     title = data.get('title')
     ingredients = data.get('ingredients').split('\n')
@@ -164,7 +167,7 @@ def add_recipe():
         connection = connection_pool.get_connection()
         cursor = connection.cursor()
 
-        cursor.execute("INSERT INTO recipes (Title, Servings, Origin, is_favorite) VALUES (%s, %s, %s, %s)", (title, servings, origin, is_favorite))
+        cursor.execute("INSERT INTO recipes (Title, UserID, Servings, Origin, is_favorite) VALUES (%s, %s, %s, %s, %s)", (title, user_id, servings, origin, is_favorite))
         recipe_id = cursor.lastrowid
 
         for ingredient in ingredients:
@@ -362,5 +365,57 @@ def get_tags():
 
     return jsonify(result)
 
+bcrypt = Bcrypt(app)
+
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.json
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+    try:
+        connection = connection_pool.get_connection()
+        cursor = connection.cursor()
+        cursor.execute("INSERT INTO users (Username, Email, Password) VALUES (%s, %s, %s)", (username, email, hashed_password))
+        connection.commit()
+    except Error as e:
+        print(f"Error: {e}")
+        return jsonify({'success': False, 'message': 'Registration failed.'}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+    return jsonify({'success': True, 'message': 'Registration successful.'})
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
+
+    try:
+        connection = connection_pool.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT UserID, Password FROM users WHERE Email = %s", (email,))
+        user = cursor.fetchone()
+        if user and bcrypt.check_password_hash(user['Password'], password):
+            session['user_id'] = user['UserID']
+            return jsonify({'success': True, 'message': 'Login successful.'})
+        else:
+            return jsonify({'success': False, 'message': 'Invalid email or password.'}), 401
+    except Error as e:
+        print(f"Error: {e}")
+        return jsonify({'success': False, 'message': 'Login failed.'}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+    
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
