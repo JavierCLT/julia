@@ -500,6 +500,71 @@ button[type="button"]:hover {
     background-color: var(--cadet-gray);
 }
 
+/* Registration Form */
+#register-form {
+    background: #f9f9f9;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 300px;
+    margin: 20px auto;
+}
+
+#register-form h2 {
+    margin-bottom: 15px;
+}
+
+#register-form label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+#register-form input {
+    width: calc(100% - 20px);
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+/* Login Form */
+#login-form {
+    background: #f9f9f9;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 300px;
+    margin: 20px auto;
+}
+
+#login-form h2 {
+    margin-bottom: 15px;
+}
+
+#login-form label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+#login-form input {
+    width: calc(100% - 20px);
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+#login-link, #register-link, #logout-link {
+    margin-left: 10px;
+    color: #007bff;
+    text-decoration: none;
+}
+
+#login-link:hover, #register-link:hover, #logout-link:hover {
+    text-decoration: underline;
+}
+
+
 @media (max-width: 768px) {
     .header {
         flex-direction: column;
