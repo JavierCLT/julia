@@ -16,7 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewFavoritesLink = document.getElementById('view-favorites-link');
     const viewTagsLink = document.getElementById('view-tags-link');
     const viewAllRecipesLink = document.getElementById('view-all-recipes-link');
+    const loginFormContainer = document.getElementById('login-form-container');
     const loginForm = document.getElementById('login-form');
+    const registerFormContainer = document.getElementById('register-form-container');
     const registerForm = document.getElementById('register-form');
     const loginLink = document.getElementById('login-link');
     const registerLink = document.getElementById('register-link');
@@ -253,9 +255,13 @@ document.addEventListener('DOMContentLoaded', () => {
     searchBox.addEventListener('input', handleSearch);
 
     document.getElementById('add-recipe-btn').addEventListener('click', () => {
-        addRecipeFormContainer.style.display = 'block';
-        addRecipeButton.textContent = 'Add Recipe'; 
-        toggleBlurAndOverlay(true);
+        if (sessionStorage.getItem('loggedIn') === 'true') {
+            addRecipeFormContainer.style.display = 'block';
+            addRecipeButton.textContent = 'Add Recipe'; 
+            toggleBlurAndOverlay(true);
+        } else {
+            showMessage('You must be logged in to add a recipe.');
+        }
     });
 
     document.getElementById('cancel-btn').addEventListener('click', () => {
@@ -358,38 +364,38 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     viewTagsLink.addEventListener('click', async () => {
-    try {
-        const tags = await fetchTags();
-        resultsContainer.innerHTML = ''; // Clear the results container
-        const tagListContainer = document.createElement('div');
-        tagListContainer.className = 'tags-list-container';
-        
-        const tagList = document.createElement('ul');
-        tags.forEach(tag => {
-            const tagItem = document.createElement('li');
-            tagItem.textContent = tag;
-            tagItem.className = 'tag-item'; // Add a class for styling
-            tagItem.addEventListener('click', () => {
-                // Add click animation class
-                tagItem.classList.add('clicked');
-                setTimeout(() => {
-                    tagItem.classList.remove('clicked');
-                }, 300); // Duration of the animation
+        try {
+            const tags = await fetchTags();
+            resultsContainer.innerHTML = ''; // Clear the results container
+            const tagListContainer = document.createElement('div');
+            tagListContainer.className = 'tags-list-container';
+            
+            const tagList = document.createElement('ul');
+            tags.forEach(tag => {
+                const tagItem = document.createElement('li');
+                tagItem.textContent = tag;
+                tagItem.className = 'tag-item'; // Add a class for styling
+                tagItem.addEventListener('click', () => {
+                    // Add click animation class
+                    tagItem.classList.add('clicked');
+                    setTimeout(() => {
+                        tagItem.classList.remove('clicked');
+                    }, 300); // Duration of the animation
 
-                searchBox.value = tag;
-                handleSearch({ target: { value: tag } }); // Trigger search
+                    searchBox.value = tag;
+                    handleSearch({ target: { value: tag } }); // Trigger search
+                });
+                tagList.appendChild(tagItem);
             });
-            tagList.appendChild(tagItem);
-        });
-        tagListContainer.appendChild(tagList);
-        resultsContainer.appendChild(tagListContainer);
-        searchBox.value = 'Tags'; // Set the search box text to "Tags"
-    } catch (error) {
-        console.error('Error fetching tags:', error);
-    }
-});
+            tagListContainer.appendChild(tagList);
+            resultsContainer.appendChild(tagListContainer);
+            searchBox.value = 'Tags'; // Set the search box text to "Tags"
+        } catch (error) {
+            console.error('Error fetching tags:', error);
+        }
+    });
 
-    viewAllRecipesLink.addEventListener('click', async () => {
+      viewAllRecipesLink.addEventListener('click', async () => {
         try {
             const recipes = await fetchRecipes(''); // Fetch all recipes with an empty query
             renderRecipes(recipes);
