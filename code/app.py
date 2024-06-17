@@ -1,4 +1,3 @@
-
 from flask import Flask, request, jsonify, render_template
 from flask_caching import Cache
 import mysql.connector
@@ -144,6 +143,9 @@ def recipe_details(recipe_id):
 
 @app.route('/add_recipe', methods=['POST'])
 def add_recipe():
+    # Temporarily hardcoding the UserID for 'defaultuser'
+    user_id = 1  # Replace with the actual UserID of 'defaultuser'
+    
     data = request.json
     title = data.get('title')
     ingredients = data.get('ingredients').split('\n')
@@ -165,7 +167,7 @@ def add_recipe():
         connection = connection_pool.get_connection()
         cursor = connection.cursor()
 
-        cursor.execute("INSERT INTO recipes (Title, Servings, Origin, is_favorite) VALUES (%s, %s, %s, %s)", (title, servings, origin, is_favorite))
+        cursor.execute("INSERT INTO recipes (Title, UserID, Servings, Origin, is_favorite) VALUES (%s, %s, %s, %s, %s)", (title, user_id, servings, origin, is_favorite))
         recipe_id = cursor.lastrowid
 
         for ingredient in ingredients:
@@ -262,10 +264,10 @@ def update_recipe(recipe_id):
     connection = None
     cursor = None
     try:
-        connection = mysql.connector.connect(**db_config)
+        connection = connection_pool.get_connection()
         cursor = connection.cursor()
 
-        cursor.execute("UPDATE recipes SET Title = %s, Servings = %s, Origin = %s, is_favorite = %s WHERE RecipeID = %s", (title, servings, origin, is_favorite, recipe_id))
+        cursor.execute("UPDATE recipes SET Title = %s, UserID = %s, Servings = %s, Origin = %s, is_favorite = %s WHERE RecipeID = %s", (title, user_id, servings, origin, is_favorite, recipe_id))
 
         cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
         for ingredient in ingredients:
