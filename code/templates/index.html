@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,6 +26,11 @@
         <div class="header">
             <h1>JH Recipes</h1>
             <button id="add-recipe-btn" class="add-recipe-btn">Add New Recipe</button>
+            <div class="auth-links">
+                <a href="#" id="login-link">Login</a>
+                <a href="#" id="register-link">Register</a>
+                <a href="#" id="logout-link" style="display: none;">Logout</a>
+            </div>
         </div>
         <div id="message-container" class="message-container"></div>
         <div class="nav-links">
@@ -37,23 +40,17 @@
         </div>
         <div class="search-container">
             <input type="text" id="search-box" class="search-box" placeholder="Search by recipe, ingredient, tag...">
-            
         </div>
         <div id="results"></div>
         <div id="recipe-details-container" class="yellow-area" style="display:none;">
             <h2 id="recipe-title" class="recipe-title"></h2>
-            
             <div class="card ingredients-card">
                 <h3>Ingredients:</h3>
-                <ul class="ingredients-list">
-                  <!-- Ingredient items will be inserted here by JavaScript -->
-                </ul>
+                <ul class="ingredients-list"></ul>
             </div>
             <div class="card instructions-card">
                 <h3>Instructions:</h3>
-                <ul class="instructions-list">
-                  <!-- Instruction items will be inserted here by JavaScript -->
-                </ul>
+                <ul class="instructions-list"></ul>
             </div>
             <div class="card servings-card">
                 <h3>Servings:</h3>
@@ -63,16 +60,14 @@
                 <h3>Origin:</h3>
                 <p id="origin" class="origin"></p>
             </div>
-             <div class="card tags-card">
+            <div class="card tags-card">
                 <h3>Tags:</h3>
-                <p id="tags-list" class="tags-list">
-                    <!-- Tag items will be inserted here by JavaScript -->
-                </p>
+                <p id="tags-list" class="tags-list"></p>
             </div>
             <div class="button-container">
                 <label for="favorite-checkbox">Favorite:</label>
                 <input type="checkbox" id="favorite-checkbox">
-            </div>   
+            </div>
             <div class="button-containerlast">
                 <button id="share-recipe-btn">Share</button>
                 <button id="edit-recipe-btn">Edit Recipe</button>
@@ -80,7 +75,6 @@
             </div>
         </div>
     </div>
-    
     <div id="add-recipe-form-container" class="form-container" style="display:none;">
         <h2 id="form-title">Add New Recipe</h2>
         <form id="add-recipe-form">
@@ -92,21 +86,39 @@
             <textarea id="recipe-instructions-input" name="instructions" required></textarea>
             <label for="recipe-tags-input">Tags (comma separated, e.g., breakfast, quick):</label>
             <input type="text" id="recipe-tags-input" name="tags" required>
-            <!-- Error message positioned below the tags input field -->
             <p id="error-message" style="color: red; display: none;">Duplicate tags are not allowed.</p>
             <label for="recipe-servings-input">Servings:</label>
             <input type="text" id="recipe-servings-input" name="servings" required>
             <label for="recipe-origin-input">Origin:</label>
             <input type="text" id="recipe-origin-input" name="origin" required>
-            <label for="password-input">Password:</label>
-            <input type="password" id="password-input" name="password" required>
-            <label for="recipe-favorite-input">Favorite:</label>
-            <input type="checkbox" id="recipe-favorite-input" name="is_favorite">
             <button type="submit" id="form-submit-button">Add Recipe</button>
             <button type="button" id="cancel-btn">Cancel</button>
         </form>
     </div>
-    
+    <div id="login-form-container" class="form-container" style="display:none;">
+        <h2>Login</h2>
+        <form id="login-form">
+            <label for="login-email-input">Email:</label>
+            <input type="email" id="login-email-input" name="email" required>
+            <label for="login-password-input">Password:</label>
+            <input type="password" id="login-password-input" name="password" required>
+            <button type="submit">Login</button>
+            <button type="button" id="cancel-login-btn">Cancel</button>
+        </form>
+    </div>
+    <div id="register-form-container" class="form-container" style="display:none;">
+        <h2>Register</h2>
+        <form id="register-form">
+            <label for="register-username-input">Username:</label>
+            <input type="text" id="register-username-input" name="username" required>
+            <label for="register-email-input">Email:</label>
+            <input type="email" id="register-email-input" name="email" required>
+            <label for="register-password-input">Password:</label>
+            <input type="password" id="register-password-input" name="password" required>
+            <button type="submit">Register</button>
+            <button type="button" id="cancel-register-btn">Cancel</button>
+        </form>
+    </div>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
