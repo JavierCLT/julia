@@ -1,6 +1,3 @@
-
-
-
 document.addEventListener('DOMContentLoaded', () => {
     const searchBox = document.getElementById('search-box');
     const resultsContainer = document.getElementById('results');
@@ -396,34 +393,4 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
             console.error('Error fetching all recipes:', error);
         }
     });
-
-    function onSignIn(googleUser) {
-    const profile = googleUser.getBasicProfile();
-    console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-    console.log('Name: ' + profile.getName());
-    console.log('Image URL: ' + profile.getImageUrl());
-    console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
-
-    const id_token = googleUser.getAuthResponse().id_token;
-    console.log('ID Token: ' + id_token);
-
-    // Send the ID token to your backend to verify the user and create a session
-    fetch('/google-login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ token: id_token })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            sessionStorage.setItem('loggedIn', 'true');
-            location.reload();
-        } else {
-            console.error('Failed to log in with Google');
-        }
-    })
-    .catch(error => console.error('Error:', error));
-}
 });
