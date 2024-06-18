@@ -1,4 +1,5 @@
 
+
 document.addEventListener('DOMContentLoaded', () => {
     const searchBox = document.getElementById('search-box');
     const resultsContainer = document.getElementById('results');
@@ -17,13 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewFavoritesLink = document.getElementById('view-favorites-link');
     const viewTagsLink = document.getElementById('view-tags-link');
     const viewAllRecipesLink = document.getElementById('view-all-recipes-link');
-    const loginFormContainer = document.getElementById('login-form-container');
-    const loginForm = document.getElementById('login-form');
-    const registerFormContainer = document.getElementById('register-form-container');
-    const registerForm = document.getElementById('register-form');
-    const loginLink = document.getElementById('login-link');
-    const registerLink = document.getElementById('register-link');
-    const logoutLink = document.getElementById('logout-link');
     let formJustOpened = false;
 
     const debounce = (func, delay) => {
@@ -401,87 +395,4 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
             console.error('Error fetching all recipes:', error);
         }
     });
-
-    loginLink.addEventListener('click', () => {
-        loginFormContainer.style.display = 'block';
-        toggleBlurAndOverlay(true);
-    });
-
-    registerLink.addEventListener('click', () => {
-        registerFormContainer.style.display = 'block';
-        toggleBlurAndOverlay(true);
-    });
-
-    document.getElementById('cancel-login-btn').addEventListener('click', () => {
-        loginFormContainer.style.display = 'none';
-        toggleBlurAndOverlay(false);
-    });
-
-    document.getElementById('cancel-register-btn').addEventListener('click', () => {
-        registerFormContainer.style.display = 'none';
-        toggleBlurAndOverlay(false);
-    });
-
-    logoutLink.addEventListener('click', () => {
-        sessionStorage.setItem('loggedIn', 'false');
-        showMessage('You have logged out.');
-        loginLink.style.display = 'block';
-        registerLink.style.display = 'block';
-        logoutLink.style.display = 'none';
-    });
-
-    loginForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const formData = new FormData(loginForm);
-        const loginData = Object.fromEntries(formData.entries());
-
-        try {
-            const response = await fetch('/login', {
-                method: 'POST',
-                body: JSON.stringify(loginData),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            const data = await response.json();
-            showMessage(data.message);
-            if (data.success) {
-                sessionStorage.setItem('loggedIn', 'true');
-                loginForm.reset();
-                loginFormContainer.style.display = 'none';
-                toggleBlurAndOverlay(false);
-                loginLink.style.display = 'none';
-                registerLink.style.display = 'none';
-                logoutLink.style.display = 'block';
-            }
-        } catch (error) {
-            console.error('Error logging in:', error);
-        }
-    });
-
-    registerForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const formData = new FormData(registerForm);
-        const registerData = Object.fromEntries(formData.entries());
-
-        try {
-            const response = await fetch('/register', {
-                method: 'POST',
-                body: JSON.stringify(registerData),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            const data = await response.json();
-            showMessage(data.message);
-            if (data.success) {
-                registerForm.reset();
-                registerFormContainer.style.display = 'none';
-                toggleBlurAndOverlay(false);
-            }
-        } catch (error) {
-            console.error('Error registering:', error);
-        }
-    });
-
 });
