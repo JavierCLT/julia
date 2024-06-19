@@ -1,4 +1,5 @@
 
+
 :root {
     --rich-black: #0D1F2D;
     --paynes-gray: #546A7B;
@@ -445,7 +446,7 @@ input[type="checkbox"] {
     z-index: 1000;
     max-height: 90vh;
     overflow-y: auto;
-    width: 70%;
+    width: 80%;
 }
 
 form {
@@ -464,7 +465,7 @@ textarea {
     font-size: 1em;
     font-family: var(--font-family-body);
     border: 1px solid #ccc;
-    border-radius: 10px;
+    border-radius: 20px;
     margin-bottom: 10px;
     width: 100%;
     box-sizing: border-box;
