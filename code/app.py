@@ -255,7 +255,6 @@ def update_recipe(recipe_id):
     if password != os.getenv('SECRET_PASSWORD'):
         return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
 
-    # Validate servings to allow numbers and ranges like "8-10"
     if not re.match(r'^\d+(-\d+)?$', servings):
         return jsonify({'success': False, 'message': 'Invalid format for servings. Use a number or a range like "8-10".'})
 
@@ -287,6 +286,12 @@ def update_recipe(recipe_id):
             else:
                 tag_id = tag_id[0]
             cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
+
+        cursor.execute("""
+            DELETE tags FROM tags
+            LEFT JOIN recipetags ON tags.TagID = recipetags.TagID
+            WHERE recipetags.TagID IS NULL
+        """)
 
         connection.commit()
         return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
