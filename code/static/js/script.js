@@ -229,7 +229,7 @@ const populateEditForm = (recipeId, recipeData) => {
     };
 };
 
-    const showMessage = (message) => {
+const showMessage = (message) => {
     messageContainer.textContent = '';
     messageContainer.textContent = message;
     messageContainer.classList.add('show');
