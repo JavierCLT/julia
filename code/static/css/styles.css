@@ -612,6 +612,97 @@ button[type="button"]:hover {
         font-size: 1.2em;
     }
 
+    .auth-buttons {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.auth-btn {
+    background-color: var(--desert-sand);
+    color: var(--rich-black);
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.auth-btn:hover {
+    background-color: var(--paynes-gray);
+    color: var(--desert-sand);
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: var(--misty-rose);
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 400px;
+    border-radius: 10px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.or-divider {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.or-hr {
+    flex-grow: 1;
+    border: none;
+    border-top: 1px solid #ccc;
+}
+
+.or-span {
+    padding: 0 10px;
+    color: #999;
+}
+
+#email-auth-form input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.remember-me input {
+    margin-right: 5px;
+}
     .tags-list-container li:hover {
     background-color: var(--paynes-gray);
     color: var(--desert-sand);
