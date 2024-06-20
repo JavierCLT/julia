@@ -5,6 +5,10 @@ from mysql.connector import Error, pooling
 from flask_cors import CORS
 import os
 import re
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 CORS(app, resources={r"/search*": {"origins": "*"}})
@@ -269,9 +273,11 @@ def update_recipe(recipe_id):
             WHERE rt.RecipeID = %s
         """, (recipe_id,))
         existing_tags = [row['TagName'] for row in cursor.fetchall()]
+        logging.info(f"Existing tags: {existing_tags}")
 
         # Identify tags to be removed
         tags_to_remove = set(existing_tags) - set(updated_tags)
+        logging.info(f"Tags to remove: {tags_to_remove}")
 
         # Update recipe details
         cursor.execute("""
@@ -313,9 +319,10 @@ def update_recipe(recipe_id):
             """, (tag,))
 
         connection.commit()
+        logging.info("Recipe updated successfully")
         return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
     except Error as e:
-        print(f"Error while updating recipe: {e}")
+        logging.error(f"Error while updating recipe: {e}")
         return jsonify({'success': False, 'message': 'An error occurred while updating the recipe.'}), 500
     finally:
         if cursor:
