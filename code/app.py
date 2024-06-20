@@ -293,15 +293,13 @@ def update_recipe(recipe_id):
 
         # Cleanup orphaned tags by deleting associations first
         cursor.execute("""
-            DELETE rt FROM recipetags rt
-            JOIN tags t ON rt.TagID = t.TagID
-            WHERE t.TagName = 'Americans';
+            DELETE FROM recipetags 
+            WHERE TagID NOT IN (SELECT TagID FROM tags);
         """)
 
         cursor.execute("""
             DELETE FROM tags
-            WHERE TagName = 'Americans'
-            AND TagID NOT IN (SELECT TagID FROM recipetags);
+            WHERE TagID NOT IN (SELECT TagID FROM recipetags);
         """)
 
         connection.commit()
@@ -314,6 +312,7 @@ def update_recipe(recipe_id):
             cursor.close()
         if connection and connection.is_connected():
             connection.close()
+
             
     return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
 
