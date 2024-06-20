@@ -326,6 +326,27 @@ def update_recipe(recipe_id):
         if connection and connection.is_connected():
             connection.close()
 
+   return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
+
+@app.route('/favorites', methods=['GET'])
+def get_favorites():
+    result = []
+    connection = None
+    cursor = None
+    try:
+        connection = connection_pool.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM recipes WHERE is_favorite = TRUE")
+        result = cursor.fetchall()
+    except Error as e:
+        print(f"Error while connecting to MySQL or executing query: {e}")
+        result = []
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
     return jsonify(result)
 
 @app.route('/update_favorite/<int:recipe_id>', methods=['POST'])
