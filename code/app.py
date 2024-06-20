@@ -314,20 +314,17 @@ def update_recipe(recipe_id):
                 AND TagID NOT IN (SELECT TagID FROM recipetags)
             """, (tag,))
 
-            connection.commit()
-            logging.info("Recipe updated successfully")
-            return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
-            
-        except Error as e:
-            logging.error(f"Error while updating recipe: {e}")
-            return jsonify({'success': False, 'message': 'An error occurred while updating the recipe.'}), 500
-        finally:
-            if cursor:
-                cursor.close()
-            if connection and connection.is_connected():
-                connection.close()
-
+        connection.commit()
+        logging.info("Recipe updated successfully")
         return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
+    except Error as e:
+        logging.error(f"Error while updating recipe: {e}")
+        return jsonify({'success': False, 'message': 'An error occurred while updating the recipe.'}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
 
 @app.route('/favorites', methods=['GET'])
 def get_favorites():
