@@ -274,7 +274,9 @@ def update_recipe(recipe_id):
             cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)", 
                            (recipe_id, step_number, instruction.strip()))
 
+        # First, delete the current tag associations
         cursor.execute("DELETE FROM recipetags WHERE RecipeID = %s", (recipe_id,))
+        # Then, insert the updated tags
         for tag in tags:
             cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag,))
             tag_id = cursor.fetchone()
