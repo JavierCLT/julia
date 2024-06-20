@@ -41,15 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
         loadingIndicator.style.display = show ? 'block' : 'none';
     };
     
-    const showMessage = (message) => {
-    messageContainer.textContent = '';
-    messageContainer.textContent = message;
-    messageContainer.classList.add('show');
-    setTimeout(() => {
-        messageContainer.classList.remove('show');
-    }, 2000);
-};
-
     const fetchRecipes = async (query) => {
         try {
             const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
@@ -238,6 +229,15 @@ const populateEditForm = (recipeId, recipeData) => {
     };
 };
 
+    const showMessage = (message) => {
+    messageContainer.textContent = '';
+    messageContainer.textContent = message;
+    messageContainer.classList.add('show');
+    setTimeout(() => {
+        messageContainer.classList.remove('show');
+    }, 2000);
+};
+    
     const checkDuplicateTags = (tags) => {
         const tagSet = new Set(tags);
         return tagSet.size !== tags.length;
