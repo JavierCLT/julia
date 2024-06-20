@@ -244,7 +244,7 @@ def update_recipe(recipe_id):
     title = data.get('title')
     ingredients = data.get('ingredients').split('\n')
     instructions = data.get('instructions').split('\n')
-    tags = [tag.strip() for tag in data.get('tags').split(',')]
+    updated_tags = [tag.strip() for tag in data.get('tags').split(',')]
     servings = data.get('servings')
     origin = data.get('origin')
     is_favorite = data.get('is_favorite', False)
@@ -260,11 +260,24 @@ def update_recipe(recipe_id):
     cursor = None
     try:
         connection = connection_pool.get_connection()
-        cursor = connection.cursor()
+        cursor = connection.cursor(dictionary=True)
+
+        # Retrieve existing tags
+        cursor.execute("""
+            SELECT t.TagName FROM tags t
+            JOIN recipetags rt ON t.TagID = rt.TagID
+            WHERE rt.RecipeID = %s
+        """, (recipe_id,))
+        existing_tags = [row['TagName'] for row in cursor.fetchall()]
+
+        # Identify tags to be removed
+        tags_to_remove = set(existing_tags) - set(updated_tags)
 
         # Update recipe details
-        cursor.execute("UPDATE recipes SET Title = %s, Servings = %s, Origin = %s, is_favorite = %s WHERE RecipeID = %s", 
-                       (title, servings, origin, is_favorite, recipe_id))
+        cursor.execute("""
+            UPDATE recipes SET Title = %s, Servings = %s, Origin = %s, is_favorite = %s
+            WHERE RecipeID = %s
+        """, (title, servings, origin, is_favorite, recipe_id))
 
         # Delete existing ingredients and insert updated ones
         cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
@@ -281,7 +294,7 @@ def update_recipe(recipe_id):
         cursor.execute("DELETE FROM recipetags WHERE RecipeID = %s", (recipe_id,))
 
         # Insert updated tag associations
-        for tag in tags:
+        for tag in updated_tags:
             cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag,))
             tag_id = cursor.fetchone()
             if not tag_id:
@@ -291,45 +304,19 @@ def update_recipe(recipe_id):
                 tag_id = tag_id[0]
             cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
 
-        # Cleanup orphaned tags by deleting associations first
-        cursor.execute("""
-            DELETE FROM recipetags 
-            WHERE TagID NOT IN (SELECT TagID FROM tags);
-        """)
-
-        cursor.execute("""
-            DELETE FROM tags
-            WHERE TagID NOT IN (SELECT TagID FROM recipetags);
-        """)
+        # Cleanup orphaned tags
+        for tag in tags_to_remove:
+            cursor.execute("""
+                DELETE FROM tags
+                WHERE TagName = %s
+                AND TagID NOT IN (SELECT TagID FROM recipetags)
+            """, (tag,))
 
         connection.commit()
         return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
     except Error as e:
         print(f"Error while updating recipe: {e}")
         return jsonify({'success': False, 'message': 'An error occurred while updating the recipe.'}), 500
-    finally:
-        if cursor:
-            cursor.close()
-        if connection and connection.is_connected():
-            connection.close()
-
-            
-    return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
-
-
-@app.route('/favorites', methods=['GET'])
-def get_favorites():
-    result = []
-    connection = None
-    cursor = None
-    try:
-        connection = connection_pool.get_connection()
-        cursor = connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM recipes WHERE is_favorite = TRUE")
-        result = cursor.fetchall()
-    except Error as e:
-        print(f"Error while connecting to MySQL or executing query: {e}")
-        result = []
     finally:
         if cursor:
             cursor.close()
