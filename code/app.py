@@ -262,21 +262,25 @@ def update_recipe(recipe_id):
         connection = connection_pool.get_connection()
         cursor = connection.cursor()
 
+        # Update recipe details
         cursor.execute("UPDATE recipes SET Title = %s, Servings = %s, Origin = %s, is_favorite = %s WHERE RecipeID = %s", 
                        (title, servings, origin, is_favorite, recipe_id))
 
+        # Delete existing ingredients and insert updated ones
         cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
         for ingredient in ingredients:
             cursor.execute("INSERT INTO ingredients (RecipeID, Description) VALUES (%s, %s)", (recipe_id, ingredient.strip()))
 
+        # Delete existing instructions and insert updated ones
         cursor.execute("DELETE FROM instructions WHERE RecipeID = %s", (recipe_id,))
         for step_number, instruction in enumerate(instructions, start=1):
             cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)", 
                            (recipe_id, step_number, instruction.strip()))
 
-        # First, delete the current tag associations
+        # Delete existing tag associations
         cursor.execute("DELETE FROM recipetags WHERE RecipeID = %s", (recipe_id,))
-        # Then, insert the updated tags
+
+        # Insert updated tag associations
         for tag in tags:
             cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag,))
             tag_id = cursor.fetchone()
