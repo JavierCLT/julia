@@ -143,9 +143,7 @@ def recipe_details(recipe_id):
 
 @app.route('/add_recipe', methods=['POST'])
 def add_recipe():
-    # Temporarily hardcoding the UserID for 'defaultuser'
     user_id = 1  # Replace with the actual UserID of 'defaultuser'
-    
     data = request.json
     title = data.get('title')
     ingredients = data.get('ingredients').split('\n')
@@ -156,8 +154,6 @@ def add_recipe():
     is_favorite = data.get('is_favorite', False)
     password = data.get('password')
 
-    print("Received tags:", tags)  # Debugging line
-
     if password != os.getenv('SECRET_PASSWORD'):
         return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
 
@@ -167,14 +163,16 @@ def add_recipe():
         connection = connection_pool.get_connection()
         cursor = connection.cursor()
 
-        cursor.execute("INSERT INTO recipes (Title, UserID, Servings, Origin, is_favorite) VALUES (%s, %s, %s, %s, %s)", (title, user_id, servings, origin, is_favorite))
+        cursor.execute("INSERT INTO recipes (Title, UserID, Servings, Origin, is_favorite) VALUES (%s, %s, %s, %s, %s)",
+                       (title, user_id, servings, origin, is_favorite))
         recipe_id = cursor.lastrowid
 
         for ingredient in ingredients:
             cursor.execute("INSERT INTO ingredients (RecipeID, Description) VALUES (%s, %s)", (recipe_id, ingredient.strip()))
 
         for step_number, instruction in enumerate(instructions, start=1):
-            cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)", (recipe_id, step_number, instruction.strip()))
+            cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)",
+                           (recipe_id, step_number, instruction.strip()))
 
         for tag in tags:
             cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag,))
