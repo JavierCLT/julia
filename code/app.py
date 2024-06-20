@@ -303,11 +303,11 @@ def update_recipe(recipe_id):
         for tag in updated_tags:
             cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag,))
             tag_id = cursor.fetchone()
-            if not tag_id:
+            if tag_id is None:
                 cursor.execute("INSERT INTO tags (TagName) VALUES (%s)", (tag,))
                 tag_id = cursor.lastrowid
             else:
-                tag_id = tag_id[0]
+                tag_id = tag_id['TagID']
             cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
 
         # Cleanup orphaned tags
