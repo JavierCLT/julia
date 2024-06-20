@@ -287,9 +287,8 @@ def update_recipe(recipe_id):
 
         # Cleanup orphaned tags
         cursor.execute("""
-            DELETE tags FROM tags
-            LEFT JOIN recipetags ON tags.TagID = recipetags.TagID
-            WHERE recipetags.TagID IS NULL
+            DELETE FROM tags
+            WHERE TagID NOT IN (SELECT TagID FROM recipetags)
         """)
 
         connection.commit()
@@ -302,6 +301,7 @@ def update_recipe(recipe_id):
             cursor.close()
         if connection and connection.is_connected():
             connection.close()
+            
     return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
 
 
