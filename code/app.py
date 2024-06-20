@@ -5,10 +5,6 @@ from mysql.connector import Error, pooling
 from flask_cors import CORS
 import os
 import re
-import logging
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 CORS(app, resources={r"/search*": {"origins": "*"}})
