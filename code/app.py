@@ -248,7 +248,7 @@ def update_recipe(recipe_id):
     title = data.get('title')
     ingredients = data.get('ingredients').split('\n')
     instructions = data.get('instructions').split('\n')
-    updated_tags = [tag.strip() for tag in data.get('tags').split(',')]
+    updated_tags = [tag.strip() for tag in data.get('tags')]  # Handle tags as a list
     servings = data.get('servings')
     origin = data.get('origin')
     is_favorite = data.get('is_favorite', False)
