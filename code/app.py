@@ -291,10 +291,17 @@ def update_recipe(recipe_id):
                 tag_id = tag_id[0]
             cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
 
-        # Cleanup orphaned tags
+        # Cleanup orphaned tags by deleting associations first
+        cursor.execute("""
+            DELETE rt FROM recipetags rt
+            JOIN tags t ON rt.TagID = t.TagID
+            WHERE t.TagName = 'Americans';
+        """)
+
         cursor.execute("""
             DELETE FROM tags
-            WHERE TagID NOT IN (SELECT TagID FROM recipetags)
+            WHERE TagName = 'Americans'
+            AND TagID NOT IN (SELECT TagID FROM recipetags);
         """)
 
         connection.commit()
