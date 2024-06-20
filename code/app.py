@@ -252,8 +252,6 @@ def update_recipe(recipe_id):
     is_favorite = data.get('is_favorite', False)
     password = data.get('password')
 
-    print("Received tags for update:", tags)  # Debugging line
-
     if password != os.getenv('SECRET_PASSWORD'):
         return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
 
@@ -267,7 +265,8 @@ def update_recipe(recipe_id):
         connection = connection_pool.get_connection()
         cursor = connection.cursor()
 
-        cursor.execute("UPDATE recipes SET Title = %s, UserID = %s, Servings = %s, Origin = %s, is_favorite = %s WHERE RecipeID = %s", (title, user_id, servings, origin, is_favorite, recipe_id))
+        cursor.execute("UPDATE recipes SET Title = %s, Servings = %s, Origin = %s, is_favorite = %s WHERE RecipeID = %s", 
+                       (title, servings, origin, is_favorite, recipe_id))
 
         cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
         for ingredient in ingredients:
@@ -275,7 +274,8 @@ def update_recipe(recipe_id):
 
         cursor.execute("DELETE FROM instructions WHERE RecipeID = %s", (recipe_id,))
         for step_number, instruction in enumerate(instructions, start=1):
-            cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)", (recipe_id, step_number, instruction.strip()))
+            cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)", 
+                           (recipe_id, step_number, instruction.strip()))
 
         cursor.execute("DELETE FROM recipetags WHERE RecipeID = %s", (recipe_id,))
         for tag in tags:
@@ -300,6 +300,7 @@ def update_recipe(recipe_id):
             connection.close()
 
     return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
+
 
 @app.route('/favorites', methods=['GET'])
 def get_favorites():
