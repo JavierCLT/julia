@@ -197,48 +197,46 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
     }
 };
 
-    const populateEditForm = (recipeId, recipeData) => {
-        console.log('Populating edit form with data:', recipeData); 
+const populateEditForm = (recipeId, recipeData) => {
+    addRecipeFormContainer.style.display = 'block';
+    addRecipeButton.textContent = 'Save';
+    toggleBlurAndOverlay(true);
 
-        addRecipeFormContainer.style.display = 'block'; 
-        addRecipeButton.textContent = 'Save'; 
-        console.log('Form container display set to block');
-        toggleBlurAndOverlay(true);
+    document.getElementById('recipe-title-input').value = recipeData.title || '';
+    document.getElementById('recipe-ingredients-input').value = recipeData.ingredients || '';
+    document.getElementById('recipe-instructions-input').value = recipeData.instructions || '';
+    document.getElementById('recipe-tags-input').value = recipeData.tags || '';
+    document.getElementById('recipe-servings-input').value = recipeData.servings || '';
+    document.getElementById('recipe-origin-input').value = recipeData.origin || '';
 
-        document.getElementById('recipe-title-input').value = recipeData.title || '';
-        document.getElementById('recipe-ingredients-input').value = recipeData.ingredients || '';
-        document.getElementById('recipe-instructions-input').value = recipeData.instructions || '';
-        document.getElementById('recipe-tags-input').value = recipeData.tags || '';
-        document.getElementById('recipe-servings-input').value = recipeData.servings || '';
-        document.getElementById('recipe-origin-input').value = recipeData.origin || '';
+    addRecipeForm.onsubmit = async (event) => {
+        event.preventDefault();
+        const formData = new FormData(addRecipeForm);
+        const updatedRecipeData = Object.fromEntries(formData.entries());
+        const tags = updatedRecipeData.tags.split(',').map(tag => tag.trim());
+        updatedRecipeData.tags = tags;
 
-        addRecipeForm.onsubmit = async (event) => {
-            event.preventDefault();
-            const formData = new FormData(addRecipeForm);
-            const updatedRecipeData = Object.fromEntries(formData.entries());
-
-            try {
-                console.log('Sending update request with data:', updatedRecipeData);
-                const response = await fetch(`/update_recipe/${recipeId}`, {
-                    method: 'POST',
-                    body: JSON.stringify(updatedRecipeData),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                const data = await response.json();
-                showMessage(data.message);
-                if (data.success) {
-                    addRecipeForm.reset();
-                    addRecipeFormContainer.style.display = 'none';
-                    toggleBlurAndOverlay(false);
-                    fetchAndDisplayRecipeDetails(recipeId);
+        try {
+            const response = await fetch(`/update_recipe/${recipeId}`, {
+                method: 'POST',
+                body: JSON.stringify(updatedRecipeData),
+                headers: {
+                    'Content-Type': 'application/json'
                 }
-            } catch (error) {
-                console.error('Error updating recipe:', error);
+            });
+            const data = await response.json();
+            showMessage(data.message);
+            if (data.success) {
+                addRecipeForm.reset();
+                addRecipeFormContainer.style.display = 'none';
+                toggleBlurAndOverlay(false);
+                fetchAndDisplayRecipeDetails(recipeId);
             }
-        };
+        } catch (error) {
+            console.error('Error updating recipe:', error);
+        }
     };
+};
 
     const checkDuplicateTags = (tags) => {
         const tagSet = new Set(tags);
