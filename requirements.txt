@@ -7,3 +7,4 @@ Flask-Caching
 flask_login
 werkzeug
 oauthlib
+requests
