@@ -391,4 +391,76 @@ const showMessage = (message) => {
             console.error('Error fetching all recipes:', error);
         }
     });
+    document.addEventListener('DOMContentLoaded', () => {
+    const loginButton = document.getElementById('login-button');
+    const logoutButton = document.getElementById('logout-button');
+    const loginModal = document.getElementById('login-modal');
+    const closeButton = loginModal.querySelector('.close');
+    const googleSignInButton = document.getElementById('google-signin');
+    const emailAuthForm = document.getElementById('email-auth-form');
+
+    loginButton.addEventListener('click', () => {
+        loginModal.style.display = 'block';
+    });
+
+    closeButton.addEventListener('click', () => {
+        loginModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target == loginModal) {
+            loginModal.style.display = 'none';
+        }
+    });
+
+    googleSignInButton.addEventListener('click', async () => {
+        const response = await fetch('/google_login');
+        const data = await response.json();
+        window.location.href = data.auth_url;
+    });
+
+    emailAuthForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const rememberMe = document.getElementById('remember-me').checked;
+
+        const response = await fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password, remember: rememberMe }),
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            loginModal.style.display = 'none';
+            loginButton.style.display = 'none';
+            logoutButton.style.display = 'block';
+            showMessage(`Welcome, ${data.name}!`);
+        } else {
+            showMessage(data.message);
+        }
+    });
+
+    logoutButton.addEventListener('click', async () => {
+        const response = await fetch('/logout');
+        const data = await response.json();
+        if (data.success) {
+            loginButton.style.display = 'block';
+            logoutButton.style.display = 'none';
+            showMessage('You have been logged out.');
+        }
+    });
+});
+
+function showMessage(message) {
+    const messageContainer = document.getElementById('message-container');
+    messageContainer.textContent = message;
+    messageContainer.classList.add('show');
+    setTimeout(() => {
+        messageContainer.classList.remove('show');
+    }, 3000);
+}
 });
