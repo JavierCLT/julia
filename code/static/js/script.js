@@ -450,4 +450,39 @@ document.addEventListener('DOMContentLoaded', () => {
             showMessage('You have been logged out.');
         }
     });
+
+    function onSignIn(googleUser) {
+    var profile = googleUser.getBasicProfile();
+    console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+    console.log('Name: ' + profile.getName());
+    console.log('Image URL: ' + profile.getImageUrl());
+    console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+
+    // You can use the ID token to authenticate the user on the server
+    var id_token = googleUser.getAuthResponse().id_token;
+    console.log('ID Token: ' + id_token);
+
+    // Send the ID token to your server for validation and user session creation
+    fetch('/google_login/callback', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id_token: id_token })
+    }).then(response => {
+        return response.json();
+    }).then(data => {
+        console.log('Server response:', data);
+        if (data.success) {
+            // Handle successful login (e.g., update UI, show a welcome message)
+            location.reload(); // Reload the page to update UI elements
+        } else {
+            // Handle error
+            alert('Login failed: ' + data.message);
+        }
+    }).catch(error => {
+        console.error('Error:', error);
+    });
+}
+
 });
