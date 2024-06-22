@@ -40,6 +40,11 @@ h1 {
     background-color: var(--misty-rose);
 }
 
+.auth-buttons {
+    display: flex;
+    gap: 10px;
+}
+
 .header h1 {
     position: absolute;
     left: 50%;
@@ -612,6 +617,9 @@ button[type="button"]:hover {
         font-size: 1.2em;
     }
 
+    .auth-buttons {
+        margin-top: 10px;
+    }
     
     .tags-list-container li:hover {
     background-color: var(--paynes-gray);
