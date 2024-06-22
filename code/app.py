@@ -12,7 +12,7 @@ import os
 import re
 
 app = Flask(__name__)
-CORS(app, resources={r"/search*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": "https://jhrecipes.com"}})
 
 # Cache configuration
 cache = Cache(config={'CACHE_TYPE': 'simple'})
@@ -150,8 +150,8 @@ def recipe_details(recipe_id):
     return jsonify(details)
 
 @app.route('/add_recipe', methods=['POST'])
+@login_required
 def add_recipe():
-    user_id = 1  # Replace with the actual UserID of 'defaultuser'
     data = request.json
     title = data.get('title')
     ingredients = data.get('ingredients').split('\n')
@@ -160,10 +160,6 @@ def add_recipe():
     servings = data.get('servings')
     origin = data.get('origin')
     is_favorite = data.get('is_favorite', False)
-    password = data.get('password')
-
-    if password != os.getenv('SECRET_PASSWORD'):
-        return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
 
     connection = None
     cursor = None
@@ -172,7 +168,7 @@ def add_recipe():
         cursor = connection.cursor()
 
         cursor.execute("INSERT INTO recipes (Title, UserID, Servings, Origin, is_favorite) VALUES (%s, %s, %s, %s, %s)",
-                       (title, user_id, servings, origin, is_favorite))
+                       (title, current_user.id, servings, origin, is_favorite))
         recipe_id = cursor.lastrowid
 
         for ingredient in ingredients:
@@ -206,18 +202,19 @@ def add_recipe():
     return jsonify({'success': True, 'message': 'Recipe added successfully!'})
 
 @app.route('/delete_recipe/<int:recipe_id>', methods=['POST'])
+@login_required
 def delete_recipe(recipe_id):
-    data = request.json
-    password = data.get('password')
-
-    if password != os.getenv('SECRET_PASSWORD'):
-        return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
-
     connection = None
     cursor = None
     try:
         connection = connection_pool.get_connection()
         cursor = connection.cursor()
+
+        # Check if the current user owns the recipe
+        cursor.execute("SELECT UserID FROM recipes WHERE RecipeID = %s", (recipe_id,))
+        result = cursor.fetchone()
+        if not result or result[0] != current_user.id:
+            return jsonify({'success': False, 'message': 'You do not have permission to delete this recipe.'}), 403
 
         # Delete the recipe and associated data
         cursor.execute("DELETE FROM instructions WHERE RecipeID = %s", (recipe_id,))
@@ -363,7 +360,7 @@ def update_favorite(recipe_id):
     connection = None
     cursor = None
     try:
-        connection = mysql.connector.connect(**db_config)
+        connection = connection_pool.get_connection()
         cursor = connection.cursor()
         cursor.execute("UPDATE recipes SET is_favorite = %s WHERE RecipeID = %s", (is_favorite, recipe_id))
         connection.commit()
@@ -511,6 +508,27 @@ def google_callback():
     # Log in the user
     login_user(user)
     return jsonify({"success": True, "name": user.name})
+
+    def handle_database_error(e, operation):
+    print(f"Error during {operation}: {e}")
+    return jsonify({'success': False, 'message': f'An error occurred during {operation}.'}), 500
+
+@app.route('/some_route', methods=['GET'])
+def some_route():
+    connection = None
+    cursor = None
+    try:
+        connection = connection_pool.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        # ... your database operations ...
+        return jsonify({'success': True, 'data': result})
+    except Error as e:
+        return handle_database_error(e, 'fetching data')
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
