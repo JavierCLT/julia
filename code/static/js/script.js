@@ -540,5 +540,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+function onSignIn(googleUser) {
+    var profile = googleUser.getBasicProfile();
+    var id_token = googleUser.getAuthResponse().id_token;
+
+    fetch('/google_login/callback', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id_token: id_token })
+    }).then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              location.reload(); // Reload the page to update UI elements
+          } else {
+              alert('Login failed: ' + data.message);
+          }
+      });
+}
+
+
 
 });
