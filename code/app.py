@@ -1,13 +1,6 @@
-from flask import Flask, request, jsonify, render_template, session
+
+from flask import Flask, request, jsonify, render_template
 from flask_caching import Cache
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
-from oauthlib.oauth2 import WebApplicationClient
-from google.oauth2 import id_token as google_id_token
-from google.auth.transport import requests as google_requests
-from dotenv import load_dotenv
-import requests
-import json
 import mysql.connector
 from mysql.connector import Error, pooling
 from flask_cors import CORS
@@ -15,18 +8,11 @@ import os
 import re
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "https://jhrecipes.com"}})
+CORS(app, resources={r"/search*": {"origins": "*"}})
 
 # Cache configuration
 cache = Cache(config={'CACHE_TYPE': 'simple'})
 cache.init_app(app)
-
-load_dotenv()  # This loads the variables from .env
-GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
-
-# Secret Key configuration
-app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY") or os.urandom(24)
-GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 
 # Database configuration using environment variables
 db_config = {
@@ -49,7 +35,7 @@ connection_pool = mysql.connector.pooling.MySQLConnectionPool(pool_name=db_confi
 
 @app.route('/')
 def index():
-    return render_template('index.html', google_client_id=GOOGLE_CLIENT_ID)
+    return render_template('index.html')
 
 @app.route('/search', methods=['GET'])
 @cache.cached(timeout=60, query_string=True)
@@ -157,8 +143,8 @@ def recipe_details(recipe_id):
     return jsonify(details)
 
 @app.route('/add_recipe', methods=['POST'])
-@login_required
 def add_recipe():
+    user_id = 1  # Replace with the actual UserID of 'defaultuser'
     data = request.json
     title = data.get('title')
     ingredients = data.get('ingredients').split('\n')
@@ -167,6 +153,10 @@ def add_recipe():
     servings = data.get('servings')
     origin = data.get('origin')
     is_favorite = data.get('is_favorite', False)
+    password = data.get('password')
+
+    if password != os.getenv('SECRET_PASSWORD'):
+        return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
 
     connection = None
     cursor = None
@@ -175,7 +165,7 @@ def add_recipe():
         cursor = connection.cursor()
 
         cursor.execute("INSERT INTO recipes (Title, UserID, Servings, Origin, is_favorite) VALUES (%s, %s, %s, %s, %s)",
-                       (title, current_user.id, servings, origin, is_favorite))
+                       (title, user_id, servings, origin, is_favorite))
         recipe_id = cursor.lastrowid
 
         for ingredient in ingredients:
@@ -209,19 +199,18 @@ def add_recipe():
     return jsonify({'success': True, 'message': 'Recipe added successfully!'})
 
 @app.route('/delete_recipe/<int:recipe_id>', methods=['POST'])
-@login_required
 def delete_recipe(recipe_id):
+    data = request.json
+    password = data.get('password')
+
+    if password != os.getenv('SECRET_PASSWORD'):
+        return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
+
     connection = None
     cursor = None
     try:
         connection = connection_pool.get_connection()
         cursor = connection.cursor()
-
-        # Check if the current user owns the recipe
-        cursor.execute("SELECT UserID FROM recipes WHERE RecipeID = %s", (recipe_id,))
-        result = cursor.fetchone()
-        if not result or result[0] != current_user.id:
-            return jsonify({'success': False, 'message': 'You do not have permission to delete this recipe.'}), 403
 
         # Delete the recipe and associated data
         cursor.execute("DELETE FROM instructions WHERE RecipeID = %s", (recipe_id,))
@@ -367,7 +356,7 @@ def update_favorite(recipe_id):
     connection = None
     cursor = None
     try:
-        connection = connection_pool.get_connection()
+        connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
         cursor.execute("UPDATE recipes SET is_favorite = %s WHERE RecipeID = %s", (is_favorite, recipe_id))
         connection.commit()
@@ -402,147 +391,5 @@ def get_tags():
 
     return jsonify(result)
 
-# Authentication configuration
-login_manager = LoginManager()
-login_manager.init_app(app)
-
-GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
-GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
-GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
-
-client = WebApplicationClient(GOOGLE_CLIENT_ID)
-
-class User(UserMixin):
-    def __init__(self, id, email, name):
-        self.id = id
-        self.email = email
-        self.name = name
-
-    @staticmethod
-    def get(user_id):
-        connection = connection_pool.get_connection()
-        cursor = connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
-        user = cursor.fetchone()
-        cursor.close()
-        connection.close()
-        if not user:
-            return None
-        return User(id=user['id'], email=user['email'], name=user['name'])
-
-    @staticmethod
-    def create(email, name, password=None):
-        connection = connection_pool.get_connection()
-        cursor = connection.cursor()
-        if password:
-            hashed_password = generate_password_hash(password)
-            cursor.execute("INSERT INTO users (email, name, password) VALUES (%s, %s, %s)", (email, name, hashed_password))
-        else:
-            cursor.execute("INSERT INTO users (email, name) VALUES (%s, %s)", (email, name))
-        user_id = cursor.lastrowid
-        connection.commit()
-        cursor.close()
-        connection.close()
-        return User(id=user_id, email=email, name=name)
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.get(user_id)
-
-@app.route("/login", methods=["POST"])
-def login():
-    data = request.get_json()
-    email = data.get("email")
-    password = data.get("password")
-    remember = data.get("remember", False)
-
-    connection = connection_pool.get_connection()
-    cursor = connection.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
-    user = cursor.fetchone()
-    cursor.close()
-    connection.close()
-
-    if user and check_password_hash(user['password'], password):
-        user_obj = User(id=user['id'], email=user['email'], name=user['name'])
-        login_user(user_obj, remember=remember)
-        return jsonify({"success": True, "name": user['name']})
-    return jsonify({"success": False, "message": "Invalid email or password"}), 401
-
-@app.route("/logout")
-@login_required
-def logout():
-    logout_user()
-    return jsonify({"success": True})
-
-@app.route("/google_login")
-def google_login():
-    google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
-    authorization_endpoint = google_provider_cfg["authorization_endpoint"]
-
-    request_uri = client.prepare_request_uri(
-        authorization_endpoint,
-        redirect_uri=request.base_url + "/callback",
-        scope=["openid", "email", "profile"],
-    )
-    return jsonify({"auth_url": request_uri})
-
-@app.route("/google_login/callback", methods=["POST"])
-def google_callback():
-    token = request.json.get("id_token")
-    if not token:
-        return jsonify({"success": False, "message": "Missing ID token"}), 400
-
-    try:
-        # Use google_id_token instead of id_token
-        idinfo = google_id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
-        if idinfo['aud'] not in [GOOGLE_CLIENT_ID]:
-            raise ValueError('Could not verify audience.')
-
-        # Token is valid, extract user information
-        unique_id = idinfo["sub"]
-        users_email = idinfo["email"]
-        users_name = idinfo["name"]
-    except ValueError as e:
-        return jsonify({"success": False, "message": "Invalid token"}), 400
-
-    # Check if user exists
-    user = User.get(unique_id)
-    if not user:
-        # Create a new user if they don't exist
-        user = User.create(users_email, users_name)
-
-    # Log in the user
-    login_user(user)
-    return jsonify({"success": True, "name": user.name})
-
-    def handle_database_error(e, operation):
-    print(f"Error during {operation}: {e}")
-    return jsonify({'success': False, 'message': f'An error occurred during {operation}.'}), 500
-
-@app.route('/some_route', methods=['GET'])
-def some_route():
-    connection = None
-    cursor = None
-    try:
-        connection = connection_pool.get_connection()
-        cursor = connection.cursor(dictionary=True)
-        # ... your database operations ...
-        return jsonify({'success': True, 'data': result})
-    except Error as e:
-        return handle_database_error(e, 'fetching data')
-    finally:
-        if cursor:
-            cursor.close()
-        if connection and connection.is_connected():
-            connection.close()
-
-@app.route('/check_login')
-def check_login():
-    if current_user.is_authenticated:
-        return jsonify({'logged_in': True})
-    else:
-        return jsonify({'logged_in': False})
-        
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
