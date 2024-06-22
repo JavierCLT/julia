@@ -144,7 +144,9 @@ def recipe_details(recipe_id):
 
 @app.route('/add_recipe', methods=['POST'])
 def add_recipe():
+    # Temporarily hardcoding the UserID for 'defaultuser'
     user_id = 1  # Replace with the actual UserID of 'defaultuser'
+    
     data = request.json
     title = data.get('title')
     ingredients = data.get('ingredients').split('\n')
@@ -155,6 +157,8 @@ def add_recipe():
     is_favorite = data.get('is_favorite', False)
     password = data.get('password')
 
+    print("Received tags:", tags)  # Debugging line
+
     if password != os.getenv('SECRET_PASSWORD'):
         return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
 
@@ -164,16 +168,14 @@ def add_recipe():
         connection = connection_pool.get_connection()
         cursor = connection.cursor()
 
-        cursor.execute("INSERT INTO recipes (Title, UserID, Servings, Origin, is_favorite) VALUES (%s, %s, %s, %s, %s)",
-                       (title, user_id, servings, origin, is_favorite))
+        cursor.execute("INSERT INTO recipes (Title, UserID, Servings, Origin, is_favorite) VALUES (%s, %s, %s, %s, %s)", (title, user_id, servings, origin, is_favorite))
         recipe_id = cursor.lastrowid
 
         for ingredient in ingredients:
             cursor.execute("INSERT INTO ingredients (RecipeID, Description) VALUES (%s, %s)", (recipe_id, ingredient.strip()))
 
         for step_number, instruction in enumerate(instructions, start=1):
-            cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)",
-                           (recipe_id, step_number, instruction.strip()))
+            cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)", (recipe_id, step_number, instruction.strip()))
 
         for tag in tags:
             cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag,))
@@ -245,15 +247,18 @@ def update_recipe(recipe_id):
     title = data.get('title')
     ingredients = data.get('ingredients').split('\n')
     instructions = data.get('instructions').split('\n')
-    updated_tags = [tag.strip() for tag in data.get('tags')]  # Handle tags as a list
+    tags = [tag.strip() for tag in data.get('tags').split(',')]
     servings = data.get('servings')
     origin = data.get('origin')
     is_favorite = data.get('is_favorite', False)
     password = data.get('password')
 
+    print("Received tags for update:", tags)  # Debugging line
+
     if password != os.getenv('SECRET_PASSWORD'):
         return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
 
+    # Validate servings to allow numbers and ranges like "8-10"
     if not re.match(r'^\d+(-\d+)?$', servings):
         return jsonify({'success': False, 'message': 'Invalid format for servings. Use a number or a range like "8-10".'})
 
@@ -261,71 +266,41 @@ def update_recipe(recipe_id):
     cursor = None
     try:
         connection = connection_pool.get_connection()
-        cursor = connection.cursor(dictionary=True)
+        cursor = connection.cursor()
 
-        # Retrieve existing tags
-        cursor.execute("""
-            SELECT t.TagName FROM tags t
-            JOIN recipetags rt ON t.TagID = rt.TagID
-            WHERE rt.RecipeID = %s
-        """, (recipe_id,))
-        existing_tags = [row['TagName'] for row in cursor.fetchall()]
-        logging.info(f"Existing tags: {existing_tags}")
+        cursor.execute("UPDATE recipes SET Title = %s, UserID = %s, Servings = %s, Origin = %s, is_favorite = %s WHERE RecipeID = %s", (title, user_id, servings, origin, is_favorite, recipe_id))
 
-        # Identify tags to be removed
-        tags_to_remove = set(existing_tags) - set(updated_tags)
-        logging.info(f"Tags to remove: {tags_to_remove}")
-
-        # Update recipe details
-        cursor.execute("""
-            UPDATE recipes SET Title = %s, Servings = %s, Origin = %s, is_favorite = %s
-            WHERE RecipeID = %s
-        """, (title, servings, origin, is_favorite, recipe_id))
-
-        # Delete existing ingredients and insert updated ones
         cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
         for ingredient in ingredients:
             cursor.execute("INSERT INTO ingredients (RecipeID, Description) VALUES (%s, %s)", (recipe_id, ingredient.strip()))
 
-        # Delete existing instructions and insert updated ones
         cursor.execute("DELETE FROM instructions WHERE RecipeID = %s", (recipe_id,))
         for step_number, instruction in enumerate(instructions, start=1):
-            cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)", 
-                           (recipe_id, step_number, instruction.strip()))
+            cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)", (recipe_id, step_number, instruction.strip()))
 
-        # Delete existing tag associations
         cursor.execute("DELETE FROM recipetags WHERE RecipeID = %s", (recipe_id,))
-
-        # Insert updated tag associations
-        for tag in updated_tags:
+        for tag in tags:
             cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag,))
             tag_id = cursor.fetchone()
-            if tag_id is None:
+            if not tag_id:
                 cursor.execute("INSERT INTO tags (TagName) VALUES (%s)", (tag,))
                 tag_id = cursor.lastrowid
             else:
-                tag_id = tag_id['TagID']
+                tag_id = tag_id[0]
             cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
 
-        # Cleanup orphaned tags
-        for tag in tags_to_remove:
-            cursor.execute("""
-                DELETE FROM tags
-                WHERE TagName = %s
-                AND TagID NOT IN (SELECT TagID FROM recipetags)
-            """, (tag,))
-
         connection.commit()
-        logging.info("Recipe updated successfully")
         return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
     except Error as e:
-        logging.error(f"Error while updating recipe: {e}")
+        print(f"Error while updating recipe: {e}")
         return jsonify({'success': False, 'message': 'An error occurred while updating the recipe.'}), 500
     finally:
         if cursor:
             cursor.close()
         if connection and connection.is_connected():
             connection.close()
+
+    return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
 
 @app.route('/favorites', methods=['GET'])
 def get_favorites():
