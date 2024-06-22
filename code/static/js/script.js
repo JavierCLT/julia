@@ -89,154 +89,152 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 300);
 
-const fetchAndDisplayRecipeDetails = async (recipeId) => {
-    try {
-        const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
-        const data = await response.json();
-        console.log('API Response:', data);
-
-        // Ingredients
-        const ingredientsList = document.querySelector('.ingredients-list');
-        ingredientsList.innerHTML = '';
-        data.ingredients.forEach(ingredient => {
-            const li = document.createElement('li');
-            li.textContent = ingredient.Description;
-            ingredientsList.appendChild(li);
-        });
-
-        // Instructions
-        const instructionsList = document.querySelector('.instructions-list');
-        instructionsList.innerHTML = '';
-        data.instructions.forEach(instruction => {
-            const li = document.createElement('li');
-            li.textContent = instruction.Description;
-            instructionsList.appendChild(li);
-        });
-
-        // Tags, Servings, Origin
-        document.querySelector('.tags-list').textContent = data.tags.join(', ');
-        document.querySelector('.servings-count').textContent = data.servings;
-        document.querySelector('.origin').textContent = data.origin;
-
-        favoriteCheckbox.checked = data.is_favorite;
-        favoriteCheckbox.setAttribute('data-recipe-id', recipeId); // Set recipe ID on the checkbox
-
-        recipeDetailsContainer.style.display = 'block';
-        // Scroll to the top of the container
-        setTimeout(() => {
-            recipeDetailsContainer.scrollTop = 0;
-        }, 0);
-        
-        document.getElementById('edit-recipe-btn').onclick = () => {
-            formJustOpened = true;
-            console.log('Edit button clicked for recipe ID:', recipeId);
-            const recipeData = {
-                title: data.title,
-                ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
-                instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
-                tags: data.tags.join(','),
-                servings: data.servings,
-                origin: data.origin
-            };
-            console.log('Recipe data:', recipeData);
-            populateEditForm(recipeId, recipeData);
-            setTimeout(() => { formJustOpened = false; }, 100);
-        };
-
-    
-        
-        document.getElementById('delete-recipe-btn').onclick = async () => {
-            const password = prompt("Enter password to delete this recipe:");
-            if (password) {
-                try {
-                    const response = await fetch(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
-                        method: 'POST',
-                        body: JSON.stringify({ password: password }),
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    const data = await response.json();
-                    showMessage(data.message);
-                    if (data.success) {
-                        recipeDetailsContainer.style.display = 'none';
-                        toggleBlurAndOverlay(false);
-                    }
-                } catch (error) {
-                    console.error('Error deleting recipe:', error);
-                }
-            }
-        };
-
-        // Share Recipe Button
-        const shareButton = document.getElementById('share-recipe-btn');
-        shareButton.onclick = () => {
-            const shareData = {
-                title: `Check out this recipe: ${data.title}`,
-                text: `Ingredients:\n${data.ingredients.map(i => i.Description).join('\n')}\n\nInstructions:\n${data.instructions.map(i => i.Description).join('\n')}\n\nTags: ${data.tags.join(', ')}\n\nServings: ${data.servings}`,
-                url: window.location.href
-            };
-            navigator.share(shareData).then(() => {
-                console.log('Recipe shared successfully');
-            }).catch((error) => {
-                console.error('Error sharing recipe:', error);
-            });
-        };
-
-    } catch (error) {
-        console.error('Error fetching recipe details:', error);
-    }
-};
-
-const populateEditForm = (recipeId, recipeData) => {
-    addRecipeFormContainer.style.display = 'block';
-    addRecipeButton.textContent = 'Save';
-    toggleBlurAndOverlay(true);
-
-    document.getElementById('recipe-title-input').value = recipeData.title || '';
-    document.getElementById('recipe-ingredients-input').value = recipeData.ingredients || '';
-    document.getElementById('recipe-instructions-input').value = recipeData.instructions || '';
-    document.getElementById('recipe-tags-input').value = recipeData.tags || '';
-    document.getElementById('recipe-servings-input').value = recipeData.servings || '';
-    document.getElementById('recipe-origin-input').value = recipeData.origin || '';
-
-    addRecipeForm.onsubmit = async (event) => {
-        event.preventDefault();
-        const formData = new FormData(addRecipeForm);
-        const updatedRecipeData = Object.fromEntries(formData.entries());
-        const tags = updatedRecipeData.tags.split(',').map(tag => tag.trim());
-        updatedRecipeData.tags = tags;
-
+    const fetchAndDisplayRecipeDetails = async (recipeId) => {
         try {
-            const response = await fetch(`/update_recipe/${recipeId}`, {
-                method: 'POST',
-                body: JSON.stringify(updatedRecipeData),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
+            const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
             const data = await response.json();
-            showMessage(data.message);
-            if (data.success) {
-                addRecipeForm.reset();
-                addRecipeFormContainer.style.display = 'none';
-                toggleBlurAndOverlay(false);
-                fetchAndDisplayRecipeDetails(recipeId);
-            }
+            console.log('API Response:', data);
+
+            // Ingredients
+            const ingredientsList = document.querySelector('.ingredients-list');
+            ingredientsList.innerHTML = '';
+            data.ingredients.forEach(ingredient => {
+                const li = document.createElement('li');
+                li.textContent = ingredient.Description;
+                ingredientsList.appendChild(li);
+            });
+
+            // Instructions
+            const instructionsList = document.querySelector('.instructions-list');
+            instructionsList.innerHTML = '';
+            data.instructions.forEach(instruction => {
+                const li = document.createElement('li');
+                li.textContent = instruction.Description;
+                instructionsList.appendChild(li);
+            });
+
+            // Tags, Servings, Origin
+            document.querySelector('.tags-list').textContent = data.tags.join(', ');
+            document.querySelector('.servings-count').textContent = data.servings;
+            document.querySelector('.origin').textContent = data.origin;
+
+            favoriteCheckbox.checked = data.is_favorite;
+            favoriteCheckbox.setAttribute('data-recipe-id', recipeId); // Set recipe ID on the checkbox
+
+            recipeDetailsContainer.style.display = 'block';
+            // Scroll to the top of the container
+            setTimeout(() => {
+                recipeDetailsContainer.scrollTop = 0;
+            }, 0);
+            
+            document.getElementById('edit-recipe-btn').onclick = () => {
+                formJustOpened = true;
+                console.log('Edit button clicked for recipe ID:', recipeId);
+                const recipeData = {
+                    title: data.title,
+                    ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
+                    instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
+                    tags: data.tags.join(','),
+                    servings: data.servings,
+                    origin: data.origin
+                };
+                console.log('Recipe data:', recipeData);
+                populateEditForm(recipeId, recipeData);
+                setTimeout(() => { formJustOpened = false; }, 100);
+            };
+    
+            document.getElementById('delete-recipe-btn').onclick = async () => {
+                const password = prompt("Enter password to delete this recipe:");
+                if (password) {
+                    try {
+                        const response = await fetch(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
+                            method: 'POST',
+                            body: JSON.stringify({ password: password }),
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        const data = await response.json();
+                        showMessage(data.message);
+                        if (data.success) {
+                            recipeDetailsContainer.style.display = 'none';
+                            toggleBlurAndOverlay(false);
+                        }
+                    } catch (error) {
+                        console.error('Error deleting recipe:', error);
+                    }
+                }
+            };
+
+            // Share Recipe Button
+            const shareButton = document.getElementById('share-recipe-btn');
+            shareButton.onclick = () => {
+                const shareData = {
+                    title: `Check out this recipe: ${data.title}`,
+                    text: `Ingredients:\n${data.ingredients.map(i => i.Description).join('\n')}\n\nInstructions:\n${data.instructions.map(i => i.Description).join('\n')}\n\nTags: ${data.tags.join(', ')}\n\nServings: ${data.servings}`,
+                    url: window.location.href
+                };
+                navigator.share(shareData).then(() => {
+                    console.log('Recipe shared successfully');
+                }).catch((error) => {
+                    console.error('Error sharing recipe:', error);
+                });
+            };
+
         } catch (error) {
-            console.error('Error updating recipe:', error);
+            console.error('Error fetching recipe details:', error);
         }
     };
-};
 
-const showMessage = (message) => {
-    messageContainer.textContent = '';
-    messageContainer.textContent = message;
-    messageContainer.classList.add('show');
-    setTimeout(() => {
-        messageContainer.classList.remove('show');
-    }, 2000);
-};
+    const populateEditForm = (recipeId, recipeData) => {
+        addRecipeFormContainer.style.display = 'block';
+        addRecipeButton.textContent = 'Save';
+        toggleBlurAndOverlay(true);
+
+        document.getElementById('recipe-title-input').value = recipeData.title || '';
+        document.getElementById('recipe-ingredients-input').value = recipeData.ingredients || '';
+        document.getElementById('recipe-instructions-input').value = recipeData.instructions || '';
+        document.getElementById('recipe-tags-input').value = recipeData.tags || '';
+        document.getElementById('recipe-servings-input').value = recipeData.servings || '';
+        document.getElementById('recipe-origin-input').value = recipeData.origin || '';
+
+        addRecipeForm.onsubmit = async (event) => {
+            event.preventDefault();
+            const formData = new FormData(addRecipeForm);
+            const updatedRecipeData = Object.fromEntries(formData.entries());
+            const tags = updatedRecipeData.tags.split(',').map(tag => tag.trim());
+            updatedRecipeData.tags = tags;
+
+            try {
+                const response = await fetch(`/update_recipe/${recipeId}`, {
+                    method: 'POST',
+                    body: JSON.stringify(updatedRecipeData),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                showMessage(data.message);
+                if (data.success) {
+                    addRecipeForm.reset();
+                    addRecipeFormContainer.style.display = 'none';
+                    toggleBlurAndOverlay(false);
+                    fetchAndDisplayRecipeDetails(recipeId);
+                }
+            } catch (error) {
+                console.error('Error updating recipe:', error);
+            }
+        };
+    };
+
+    const showMessage = (message) => {
+        messageContainer.textContent = '';
+        messageContainer.textContent = message;
+        messageContainer.classList.add('show');
+        setTimeout(() => {
+            messageContainer.classList.remove('show');
+        }, 2000);
+    };
     
     const checkDuplicateTags = (tags) => {
         const tagSet = new Set(tags);
@@ -257,41 +255,41 @@ const showMessage = (message) => {
     });
 
     addRecipeForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const formData = new FormData(addRecipeForm);
-    const tags = formData.get('tags').split(',').map(tag => tag.trim());
-    const formDataObject = Object.fromEntries(formData.entries());
-    formDataObject.is_favorite = formDataObject.is_favorite ? true : false;
+        event.preventDefault();
+        const formData = new FormData(addRecipeForm);
+        const tags = formData.get('tags').split(',').map(tag => tag.trim());
+        const formDataObject = Object.fromEntries(formData.entries());
+        formDataObject.is_favorite = formDataObject.is_favorite ? true : false;
 
-    if (checkDuplicateTags(tags)) {
-        errorMessage.textContent = 'Duplicate tags are not allowed.';
-        errorMessage.style.display = 'block';
-        return;
-    } else {
-        errorMessage.style.display = 'none';
-    }
-
-    formData.set('tags', tags.join(','));
-
-    try {
-        const response = await fetch('/add_recipe', {
-            method: 'POST',
-            body: JSON.stringify(Object.fromEntries(formData.entries())),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        const data = await response.json();
-        showMessage(data.message);
-        if (data.success) {
-            addRecipeForm.reset();
-            addRecipeFormContainer.style.display = 'none';
-            toggleBlurAndOverlay(false);
+        if (checkDuplicateTags(tags)) {
+            errorMessage.textContent = 'Duplicate tags are not allowed.';
+            errorMessage.style.display = 'block';
+            return;
+        } else {
+            errorMessage.style.display = 'none';
         }
-    } catch (error) {
-        console.error('Error adding recipe:', error);
-    }
-});
+
+        formData.set('tags', tags.join(','));
+
+        try {
+            const response = await fetch('/add_recipe', {
+                method: 'POST',
+                body: JSON.stringify(Object.fromEntries(formData.entries())),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
+            showMessage(data.message);
+            if (data.success) {
+                addRecipeForm.reset();
+                addRecipeFormContainer.style.display = 'none';
+                toggleBlurAndOverlay(false);
+            }
+        } catch (error) {
+            console.error('Error adding recipe:', error);
+        }
+    });
 
     document.addEventListener('click', (event) => {
         const targetElement = event.target.closest('.recipe-box');
@@ -312,7 +310,6 @@ const showMessage = (message) => {
             recipeDetailsContainer.style.display = 'none';
             recipeTitle.textContent = '';
             toggleBlurAndOverlay(false);
-            
         }
         if (!formJustOpened && !addRecipeFormContainer.contains(event.target) && addRecipeFormContainer.style.display === 'block' && !event.target.closest('#add-recipe-btn')) {
             addRecipeFormContainer.style.display = 'none';
@@ -351,36 +348,36 @@ const showMessage = (message) => {
     });
 
     viewTagsLink.addEventListener('click', async () => {
-    try {
-        const tags = await fetchTags();
-        resultsContainer.innerHTML = ''; // Clear the results container
-        const tagListContainer = document.createElement('div');
-        tagListContainer.className = 'tags-list-container';
-        
-        const tagList = document.createElement('ul');
-        tags.forEach(tag => {
-            const tagItem = document.createElement('li');
-            tagItem.textContent = tag;
-            tagItem.className = 'tag-item'; // Add a class for styling
-            tagItem.addEventListener('click', () => {
-                // Add click animation class
-                tagItem.classList.add('clicked');
-                setTimeout(() => {
-                    tagItem.classList.remove('clicked');
-                }, 300); // Duration of the animation
+        try {
+            const tags = await fetchTags();
+            resultsContainer.innerHTML = ''; // Clear the results container
+            const tagListContainer = document.createElement('div');
+            tagListContainer.className = 'tags-list-container';
+            
+            const tagList = document.createElement('ul');
+            tags.forEach(tag => {
+                const tagItem = document.createElement('li');
+                tagItem.textContent = tag;
+                tagItem.className = 'tag-item'; // Add a class for styling
+                tagItem.addEventListener('click', () => {
+                    // Add click animation class
+                    tagItem.classList.add('clicked');
+                    setTimeout(() => {
+                        tagItem.classList.remove('clicked');
+                    }, 300); // Duration of the animation
 
-                searchBox.value = tag;
-                handleSearch({ target: { value: tag } }); // Trigger search
+                    searchBox.value = tag;
+                    handleSearch({ target: { value: tag } }); // Trigger search
+                });
+                tagList.appendChild(tagItem);
             });
-            tagList.appendChild(tagItem);
-        });
-        tagListContainer.appendChild(tagList);
-        resultsContainer.appendChild(tagListContainer);
-        searchBox.value = 'Tags'; // Set the search box text to "Tags"
-    } catch (error) {
-        console.error('Error fetching tags:', error);
-    }
-});
+            tagListContainer.appendChild(tagList);
+            resultsContainer.appendChild(tagListContainer);
+            searchBox.value = 'Tags'; // Set the search box text to "Tags"
+        } catch (error) {
+            console.error('Error fetching tags:', error);
+        }
+    });
 
     viewAllRecipesLink.addEventListener('click', async () => {
         try {
@@ -391,7 +388,7 @@ const showMessage = (message) => {
             console.error('Error fetching all recipes:', error);
         }
     });
-    document.addEventListener('DOMContentLoaded', () => {
+
     const loginButton = document.getElementById('login-button');
     const logoutButton = document.getElementById('logout-button');
     const loginModal = document.getElementById('login-modal');
@@ -453,14 +450,4 @@ const showMessage = (message) => {
             showMessage('You have been logged out.');
         }
     });
-});
-
-function showMessage(message) {
-    const messageContainer = document.getElementById('message-container');
-    messageContainer.textContent = message;
-    messageContainer.classList.add('show');
-    setTimeout(() => {
-        messageContainer.classList.remove('show');
-    }, 3000);
-}
 });
