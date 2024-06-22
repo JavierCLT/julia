@@ -542,7 +542,7 @@ button[type="button"]:hover {
 
 .modal-content {
     background-color: var(--misty-rose);
-    margin: 15% auto;
+    margin: 10% auto;
     padding: 20px;
     border: 1px solid #888;
     width: 80%;
@@ -551,11 +551,12 @@ button[type="button"]:hover {
     text-align: center;
 }
 
+.modal-content h2 {
+    margin-bottom: 20px;
+}
 
-.modal-content form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.modal-content .g-signin2 {
+    margin-bottom: 20px;
 }
 
 .modal-content input[type="email"],
@@ -566,6 +567,51 @@ button[type="button"]:hover {
     border: 1px solid #ccc;
     border-radius: 5px;
 }
+
+.modal-content .auth-btn {
+    background-color: var(--desert-sand);
+    color: var(--rich-black);
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    margin: 10px auto;
+    width: calc(100% - 40px); /* Full width with margin */
+}
+
+.modal-content .auth-btn:hover {
+    background-color: var(--paynes-gray);
+    color: var(--desert-sand);
+}
+
+.modal-content .or-divider {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.modal-content .or-hr {
+    flex-grow: 1;
+    border: none;
+    border-top: 1px solid #ccc;
+}
+
+.modal-content .or-span {
+    padding: 0 10px;
+    color: #999;
+}
+
+.modal-content .remember-me {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px 0;
+}
+
+.modal-content .remember-me input {
+    margin-right: 5px;
+}
+
 
 .close {
     color: #aaa;
