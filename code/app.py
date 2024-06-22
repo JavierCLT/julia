@@ -535,5 +535,12 @@ def some_route():
         if connection and connection.is_connected():
             connection.close()
 
+@app.route('/check_login')
+def check_login():
+    if current_user.is_authenticated:
+        return jsonify({'logged_in': True})
+    else:
+        return jsonify({'logged_in': False})
+        
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
