@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +17,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='images/apple-touch-icon.png')}}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon-32x32.png')}}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon-16x16.png')}}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
@@ -25,36 +26,7 @@
     <div class="container">
         <div class="header">
             <h1>JH Recipes</h1>
-            <button id="add-recipe-btn" class="add-recipe-btn" style="display: none;">Add New Recipe</button>
-        </div>
-        <div id="auth-buttons" class="auth-buttons">
-            <button id="login-button" class="auth-btn">Log In / Sign Up</button>
-            <button id="logout-button" class="auth-btn" style="display: none;">Log Out</button>
-        </div>
-        
-        <div id="login-modal" class="modal" style="display: none;">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h2>Log In / Sign Up</h2>
-                <div id="g_id_onload"
-                     data-client_id="{{ google_client_id }}"
-                     data-callback="handleCredentialResponse">
-                </div>
-                <div class="g_id_signin" data-type="standard"></div>
-                <div class="or-divider">
-                    <hr class="or-hr" /><span class="or-span">or</span><hr class="or-hr" />
-                </div>
-                <form id="email-auth-form">
-                    <input type="email" id="email" placeholder="Email" required>
-                    <input type="password" id="password" placeholder="Password" required>
-                    <div class="remember-me">
-                        <input type="checkbox" id="remember-me">
-                        <label for="remember-me">Remember me</label>
-                    </div>
-                    <button type="submit" class="auth-btn">Log In</button>
-                </form>
-                <button id="signup-button" class="auth-btn">Sign Up</button>
-            </div>
+            <button id="add-recipe-btn" class="add-recipe-btn">Add New Recipe</button>
         </div>
         <div id="message-container" class="message-container"></div>
         <div class="nav-links">
@@ -134,7 +106,6 @@
         </form>
     </div>
     
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
-    <script src="{{ url_for('static', filename='js/script.js') }}?v=1"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
