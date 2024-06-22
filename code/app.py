@@ -268,27 +268,33 @@ def update_recipe(recipe_id):
         connection = connection_pool.get_connection()
         cursor = connection.cursor()
 
-        cursor.execute("UPDATE recipes SET Title = %s, UserID = %s, Servings = %s, Origin = %s, is_favorite = %s WHERE RecipeID = %s", (title, user_id, servings, origin, is_favorite, recipe_id))
+        # Update the recipe
+        cursor.execute("UPDATE recipes SET Title = %s, Servings = %s, Origin = %s, is_favorite = %s WHERE RecipeID = %s", 
+                       (title, servings, origin, is_favorite, recipe_id))
 
+        # Update ingredients
         cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
         for ingredient in ingredients:
-            cursor.execute("INSERT INTO ingredients (RecipeID, Description) VALUES (%s, %s)", (recipe_id, ingredient.strip()))
+            cursor.execute("INSERT INTO ingredients (RecipeID, Description) VALUES (%s, %s)", 
+                           (recipe_id, ingredient.strip()))
 
+        # Update instructions
         cursor.execute("DELETE FROM instructions WHERE RecipeID = %s", (recipe_id,))
         for step_number, instruction in enumerate(instructions, start=1):
-            cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)", (recipe_id, step_number, instruction.strip()))
+            cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)", 
+                           (recipe_id, step_number, instruction.strip()))
 
+        # Update tags
         cursor.execute("DELETE FROM recipetags WHERE RecipeID = %s", (recipe_id,))
         for tag in tags:
-        cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag,))
-        tag_id = cursor.fetchone()
-        if not tag_id:
-            cursor.execute("INSERT INTO tags (TagName) VALUES (%s)", (tag,))
-            tag_id = cursor.lastrowid
-        else:
-            tag_id = tag_id[0]
-        cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
-
+            cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag,))
+            tag_id = cursor.fetchone()
+            if not tag_id:
+                cursor.execute("INSERT INTO tags (TagName) VALUES (%s)", (tag,))
+                tag_id = cursor.lastrowid
+            else:
+                tag_id = tag_id[0]
+            cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
 
         connection.commit()
         return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
