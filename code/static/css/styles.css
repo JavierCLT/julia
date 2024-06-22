@@ -520,7 +520,7 @@ button[type="button"]:hover {
     border-radius: 5px;
     padding: 10px 20px;
     cursor: pointer;
-    margin-left: 10px;
+    margin: 10px auto;
 }
 
 .auth-btn:hover {
@@ -548,6 +548,23 @@ button[type="button"]:hover {
     width: 80%;
     max-width: 400px;
     border-radius: 10px;
+    text-align: center;
+}
+
+
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.modal-content input[type="email"],
+.modal-content input[type="password"] {
+    width: calc(100% - 20px); /* Adjusted for padding */
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }
 
 .close {
