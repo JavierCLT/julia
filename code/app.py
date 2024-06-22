@@ -3,6 +3,7 @@ from flask_caching import Cache
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from oauthlib.oauth2 import WebApplicationClient
+from dotenv import load_dotenv
 import requests
 import json
 import mysql.connector
@@ -17,6 +18,9 @@ CORS(app, resources={r"/*": {"origins": "https://jhrecipes.com"}})
 # Cache configuration
 cache = Cache(config={'CACHE_TYPE': 'simple'})
 cache.init_app(app)
+
+load_dotenv()  # This loads the variables from .env
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 
 # Secret Key configuration
 app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY") or os.urandom(24)
@@ -43,7 +47,7 @@ connection_pool = mysql.connector.pooling.MySQLConnectionPool(pool_name=db_confi
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', google_client_id=GOOGLE_CLIENT_ID)
 
 @app.route('/search', methods=['GET'])
 @cache.cached(timeout=60, query_string=True)
