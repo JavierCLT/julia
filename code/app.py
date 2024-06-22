@@ -483,42 +483,32 @@ def google_login():
     )
     return jsonify({"auth_url": request_uri})
 
-@app.route("/google_login/callback")
+@app.route("/google_login/callback", methods=["POST"])
 def google_callback():
-    code = request.args.get("code")
-    google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
-    token_endpoint = google_provider_cfg["token_endpoint"]
+    id_token = request.json.get("id_token")
+    if not id_token:
+        return jsonify({"success": False, "message": "Missing ID token"}), 400
 
-    token_url, headers, body = client.prepare_token_request(
-        token_endpoint,
-        authorization_response=request.url,
-        redirect_url=request.base_url,
-        code=code
-    )
-    token_response = requests.post(
-        token_url,
-        headers=headers,
-        data=body,
-        auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
-    )
+    # Verify the token
+    try:
+        id_info = id_token.verify_oauth2_token(id_token, requests.Request(), GOOGLE_CLIENT_ID)
+        if id_info['aud'] not in [GOOGLE_CLIENT_ID]:
+            raise ValueError('Could not verify audience.')
 
-    client.parse_request_body_response(json.dumps(token_response.json()))
+        # Token is valid, extract user information
+        unique_id = id_info["sub"]
+        users_email = id_info["email"]
+        users_name = id_info["name"]
+    except ValueError as e:
+        return jsonify({"success": False, "message": "Invalid token"}), 400
 
-    userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
-    uri, headers, body = client.add_token(userinfo_endpoint)
-    userinfo_response = requests.get(uri, headers=headers, data=body)
-
-    if userinfo_response.json().get("email_verified"):
-        unique_id = userinfo_response.json()["sub"]
-        users_email = userinfo_response.json()["email"]
-        users_name = userinfo_response.json()["given_name"]
-    else:
-        return "User email not available or not verified by Google.", 400
-
+    # Check if user exists
     user = User.get(unique_id)
     if not user:
-        user = User.create(users_email, users_name)
+        # Create a new user if they don't exist
+        user = User.create(users_email, users_name, unique_id)
 
+    # Log in the user
     login_user(user)
     return jsonify({"success": True, "name": user.name})
 
