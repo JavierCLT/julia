@@ -280,14 +280,15 @@ def update_recipe(recipe_id):
 
         cursor.execute("DELETE FROM recipetags WHERE RecipeID = %s", (recipe_id,))
         for tag in tags:
-            cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag,))
-            tag_id = cursor.fetchone()
-            if not tag_id:
-                cursor.execute("INSERT INTO tags (TagName) VALUES (%s)", (tag,))
-                tag_id = cursor.lastrowid
-            else:
-                tag_id = tag_id[0]
-            cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
+        cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag,))
+        tag_id = cursor.fetchone()
+        if not tag_id:
+            cursor.execute("INSERT INTO tags (TagName) VALUES (%s)", (tag,))
+            tag_id = cursor.lastrowid
+        else:
+            tag_id = tag_id[0]
+        cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
+
 
         connection.commit()
         return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
