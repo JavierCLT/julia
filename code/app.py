@@ -3,7 +3,7 @@ from flask_caching import Cache
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from oauthlib.oauth2 import WebApplicationClient
-from google.oauth2 import id_token
+from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
 from dotenv import load_dotenv
 import requests
@@ -489,20 +489,20 @@ def google_login():
 
 @app.route("/google_login/callback", methods=["POST"])
 def google_callback():
-    id_token = request.json.get("id_token")
-    if not id_token:
+    token = request.json.get("id_token")
+    if not token:
         return jsonify({"success": False, "message": "Missing ID token"}), 400
 
-    # Verify the token
     try:
-    idinfo = id_token.verify_oauth2_token(id_token, google_requests.Request(), GOOGLE_CLIENT_ID)
-        if id_info['aud'] not in [GOOGLE_CLIENT_ID]:
+        # Use google_id_token instead of id_token
+        idinfo = google_id_token.verify_oauth2_token(token, google_requests.Request(), GOOGLE_CLIENT_ID)
+        if idinfo['aud'] not in [GOOGLE_CLIENT_ID]:
             raise ValueError('Could not verify audience.')
 
         # Token is valid, extract user information
-        unique_id = id_info["sub"]
-        users_email = id_info["email"]
-        users_name = id_info["name"]
+        unique_id = idinfo["sub"]
+        users_email = idinfo["email"]
+        users_name = idinfo["name"]
     except ValueError as e:
         return jsonify({"success": False, "message": "Invalid token"}), 400
 
@@ -510,7 +510,7 @@ def google_callback():
     user = User.get(unique_id)
     if not user:
         # Create a new user if they don't exist
-        user = User.create(users_email, users_name, unique_id)
+        user = User.create(users_email, users_name)
 
     # Log in the user
     login_user(user)
