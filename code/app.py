@@ -18,6 +18,9 @@ CORS(app, resources={r"/search*": {"origins": "*"}})
 cache = Cache(config={'CACHE_TYPE': 'simple'})
 cache.init_app(app)
 
+# Secret Key configuration
+app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY") or os.urandom(24)
+
 # Database configuration using environment variables
 db_config = {
     'host': os.getenv('DB_HOST'),
@@ -395,7 +398,7 @@ def get_tags():
 
     return jsonify(result)
 
-    app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY") or os.urandom(24)
+# Authentication configuration
 login_manager = LoginManager()
 login_manager.init_app(app)
 
