@@ -3,6 +3,8 @@ from flask_caching import Cache
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from oauthlib.oauth2 import WebApplicationClient
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 from dotenv import load_dotenv
 import requests
 import json
@@ -493,7 +495,7 @@ def google_callback():
 
     # Verify the token
     try:
-        id_info = id_token.verify_oauth2_token(id_token, requests.Request(), GOOGLE_CLIENT_ID)
+    idinfo = id_token.verify_oauth2_token(id_token, google_requests.Request(), GOOGLE_CLIENT_ID)
         if id_info['aud'] not in [GOOGLE_CLIENT_ID]:
             raise ValueError('Could not verify audience.')
 
