@@ -453,36 +453,92 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function onSignIn(googleUser) {
     var profile = googleUser.getBasicProfile();
-    console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-    console.log('Name: ' + profile.getName());
-    console.log('Image URL: ' + profile.getImageUrl());
-    console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
-
-    // You can use the ID token to authenticate the user on the server
     var id_token = googleUser.getAuthResponse().id_token;
-    console.log('ID Token: ' + id_token);
 
-    // Send the ID token to your server for validation and user session creation
     fetch('/google_login/callback', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ id_token: id_token })
-    }).then(response => {
-        return response.json();
-    }).then(data => {
-        console.log('Server response:', data);
-        if (data.success) {
-            // Handle successful login (e.g., update UI, show a welcome message)
-            location.reload(); // Reload the page to update UI elements
-        } else {
-            // Handle error
-            alert('Login failed: ' + data.message);
-        }
-    }).catch(error => {
-        console.error('Error:', error);
-    });
+    }).then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              location.reload(); // Reload the page to update UI elements
+          } else {
+              alert('Login failed: ' + data.message);
+          }
+      });
 }
+    document.addEventListener('DOMContentLoaded', () => {
+    const addRecipeBtn = document.getElementById('add-recipe-btn');
+    const loginBtn = document.getElementById('login-button');
+    const logoutBtn = document.getElementById('logout-button');
+    const loginModal = document.getElementById('login-modal');
+    const closeBtn = loginModal.querySelector('.close');
+    const signupBtn = document.getElementById('signup-button');
+    const emailAuthForm = document.getElementById('email-auth-form');
+
+    // Example function to check if the user is logged in
+    const isLoggedIn = () => {
+        // Replace with your actual logic to check if the user is logged in
+        return !!document.cookie.match(/session_id/);
+    };
+
+    if (isLoggedIn()) {
+        addRecipeBtn.style.display = 'block';
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'block';
+    }
+
+    loginBtn.addEventListener('click', () => {
+        loginModal.style.display = 'block';
+    });
+
+    closeBtn.addEventListener('click', () => {
+        loginModal.style.display = 'none';
+    });
+
+    signupBtn.addEventListener('click', () => {
+        // Redirect to your signup page or show a signup form
+        alert('Redirecting to signup page...');
+        // window.location.href = '/signup';
+    });
+
+    logoutBtn.addEventListener('click', () => {
+        // Logout logic
+        fetch('/logout').then(() => {
+            addRecipeBtn.style.display = 'none';
+            loginBtn.style.display = 'block';
+            logoutBtn.style.display = 'none';
+        });
+    });
+
+    emailAuthForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const rememberMe = document.getElementById('remember-me').checked;
+
+        fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password, remember: rememberMe })
+        }).then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  loginModal.style.display = 'none';
+                  addRecipeBtn.style.display = 'block';
+                  loginBtn.style.display = 'none';
+                  logoutBtn.style.display = 'block';
+              } else {
+                  alert('Login failed: ' + data.message);
+              }
+          });
+    });
+});
+
 
 });
