@@ -16,6 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewFavoritesLink = document.getElementById('view-favorites-link');
     const viewTagsLink = document.getElementById('view-tags-link');
     const viewAllRecipesLink = document.getElementById('view-all-recipes-link');
+    const loginButton = document.getElementById('login-button');
+    const logoutButton = document.getElementById('logout-button');
+    const loginModal = document.getElementById('login-modal');
+    const closeButton = loginModal.querySelector('.close');
+    const emailAuthForm = document.getElementById('email-auth-form');
     let formJustOpened = false;
 
     const debounce = (func, delay) => {
@@ -119,10 +124,9 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('.origin').textContent = data.origin;
 
             favoriteCheckbox.checked = data.is_favorite;
-            favoriteCheckbox.setAttribute('data-recipe-id', recipeId); // Set recipe ID on the checkbox
+            favoriteCheckbox.setAttribute('data-recipe-id', recipeId);
 
             recipeDetailsContainer.style.display = 'block';
-            // Scroll to the top of the container
             setTimeout(() => {
                 recipeDetailsContainer.scrollTop = 0;
             }, 0);
@@ -144,12 +148,10 @@ document.addEventListener('DOMContentLoaded', () => {
             };
     
             document.getElementById('delete-recipe-btn').onclick = async () => {
-                const password = prompt("Enter password to delete this recipe:");
-                if (password) {
+                if (confirm("Are you sure you want to delete this recipe?")) {
                     try {
                         const response = await fetch(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
                             method: 'POST',
-                            body: JSON.stringify({ password: password }),
                             headers: {
                                 'Content-Type': 'application/json'
                             }
@@ -331,7 +333,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } catch (error) {
             console.error('Error updating favorite status:', error);
-            // Optionally revert the checkbox state if an error occurs
             favoriteCheckbox.checked = !isFavorite;
         }
     };
@@ -341,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/favorites');
             const favorites = await response.json();
             renderRecipes(favorites);
-            searchBox.value = 'Favorites'; // Set the search box text to "Favorites"
+            searchBox.value = 'Favorites';
         } catch (error) {
             console.error('Error fetching favorite recipes:', error);
         }
@@ -350,7 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
     viewTagsLink.addEventListener('click', async () => {
         try {
             const tags = await fetchTags();
-            resultsContainer.innerHTML = ''; // Clear the results container
+            resultsContainer.innerHTML = '';
             const tagListContainer = document.createElement('div');
             tagListContainer.className = 'tags-list-container';
             
@@ -358,22 +359,21 @@ document.addEventListener('DOMContentLoaded', () => {
             tags.forEach(tag => {
                 const tagItem = document.createElement('li');
                 tagItem.textContent = tag;
-                tagItem.className = 'tag-item'; // Add a class for styling
+                tagItem.className = 'tag-item';
                 tagItem.addEventListener('click', () => {
-                    // Add click animation class
                     tagItem.classList.add('clicked');
                     setTimeout(() => {
                         tagItem.classList.remove('clicked');
-                    }, 300); // Duration of the animation
+                    }, 300);
 
                     searchBox.value = tag;
-                    handleSearch({ target: { value: tag } }); // Trigger search
+                    handleSearch({ target: { value: tag } });
                 });
                 tagList.appendChild(tagItem);
             });
             tagListContainer.appendChild(tagList);
             resultsContainer.appendChild(tagListContainer);
-            searchBox.value = 'Tags'; // Set the search box text to "Tags"
+            searchBox.value = 'Tags';
         } catch (error) {
             console.error('Error fetching tags:', error);
         }
@@ -381,20 +381,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     viewAllRecipesLink.addEventListener('click', async () => {
         try {
-            const recipes = await fetchRecipes(''); // Fetch all recipes with an empty query
+            const recipes = await fetchRecipes('');
             renderRecipes(recipes);
-            searchBox.value = 'All Recipes'; // Set the search box text to "All Recipes"
+            searchBox.value = 'All Recipes';
         } catch (error) {
             console.error('Error fetching all recipes:', error);
         }
     });
-
-    const loginButton = document.getElementById('login-button');
-    const logoutButton = document.getElementById('logout-button');
-    const loginModal = document.getElementById('login-modal');
-    const closeButton = loginModal.querySelector('.close');
-    const googleSignInButton = document.getElementById('google-signin');
-    const emailAuthForm = document.getElementById('email-auth-form');
 
     loginButton.addEventListener('click', () => {
         loginModal.style.display = 'block';
@@ -403,163 +396,105 @@ document.addEventListener('DOMContentLoaded', () => {
     closeButton.addEventListener('click', () => {
         loginModal.style.display = 'none';
     });
-
-    window.addEventListener('click', (event) => {
-        if (event.target == loginModal) {
+    
+window.addEventListener('click', (event) => {
+    if (event.target == loginModal) {
             loginModal.style.display = 'none';
         }
     });
 
-    googleSignInButton.addEventListener('click', async () => {
-        const response = await fetch('/google_login');
-        const data = await response.json();
-        window.location.href = data.auth_url;
-    });
-
-    emailAuthForm.addEventListener('submit', async (e) => {
+emailAuthForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const rememberMe = document.getElementById('remember-me').checked;
 
-        const response = await fetch('/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password, remember: rememberMe }),
-        });
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password, remember: rememberMe }),
+            });
 
-        const data = await response.json();
-        if (data.success) {
-            loginModal.style.display = 'none';
-            loginButton.style.display = 'none';
-            logoutButton.style.display = 'block';
-            showMessage(`Welcome, ${data.name}!`);
-        } else {
-            showMessage(data.message);
+            const data = await response.json();
+            if (data.success) {
+                loginModal.style.display = 'none';
+                loginButton.style.display = 'none';
+                logoutButton.style.display = 'block';
+                document.getElementById('add-recipe-btn').style.display = 'block';
+                showMessage(`Welcome, ${data.name}!`);
+            } else {
+                showMessage(data.message);
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            showMessage('An error occurred during login. Please try again.');
         }
     });
 
     logoutButton.addEventListener('click', async () => {
-        const response = await fetch('/logout');
-        const data = await response.json();
-        if (data.success) {
-            loginButton.style.display = 'block';
-            logoutButton.style.display = 'none';
-            showMessage('You have been logged out.');
+        try {
+            const response = await fetch('/logout');
+            const data = await response.json();
+            if (data.success) {
+                loginButton.style.display = 'block';
+                logoutButton.style.display = 'none';
+                document.getElementById('add-recipe-btn').style.display = 'none';
+                showMessage('You have been logged out.');
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+            showMessage('An error occurred during logout. Please try again.');
         }
     });
 
-    function onSignIn(googleUser) {
-    var profile = googleUser.getBasicProfile();
-    var id_token = googleUser.getAuthResponse().id_token;
-
-    fetch('/google_login/callback', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ id_token: id_token })
-    }).then(response => response.json())
-      .then(data => {
-          if (data.success) {
-              location.reload(); // Reload the page to update UI elements
-          } else {
-              alert('Login failed: ' + data.message);
-          }
-      });
-}
-    document.addEventListener('DOMContentLoaded', () => {
-    const addRecipeBtn = document.getElementById('add-recipe-btn');
-    const loginBtn = document.getElementById('login-button');
-    const logoutBtn = document.getElementById('logout-button');
-    const loginModal = document.getElementById('login-modal');
-    const closeBtn = loginModal.querySelector('.close');
-    const signupBtn = document.getElementById('signup-button');
-    const emailAuthForm = document.getElementById('email-auth-form');
-
-    // Example function to check if the user is logged in
-    const isLoggedIn = () => {
-        // Replace with your actual logic to check if the user is logged in
-        return !!document.cookie.match(/session_id/);
-    };
-
-    if (isLoggedIn()) {
-        addRecipeBtn.style.display = 'block';
-        loginBtn.style.display = 'none';
-        logoutBtn.style.display = 'block';
-    }
-
-    loginBtn.addEventListener('click', () => {
-        loginModal.style.display = 'block';
-    });
-
-    closeBtn.addEventListener('click', () => {
-        loginModal.style.display = 'none';
-    });
-
-    signupBtn.addEventListener('click', () => {
-        // Redirect to your signup page or show a signup form
-        alert('Redirecting to signup page...');
-        // window.location.href = '/signup';
-    });
-
-    logoutBtn.addEventListener('click', () => {
-        // Logout logic
-        fetch('/logout').then(() => {
-            addRecipeBtn.style.display = 'none';
-            loginBtn.style.display = 'block';
-            logoutBtn.style.display = 'none';
-        });
-    });
-
-    emailAuthForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const rememberMe = document.getElementById('remember-me').checked;
-
-        fetch('/login', {
+    function handleCredentialResponse(response) {
+        fetch('/google_login/callback', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ email, password, remember: rememberMe })
-        }).then(response => response.json())
-          .then(data => {
-              if (data.success) {
-                  loginModal.style.display = 'none';
-                  addRecipeBtn.style.display = 'block';
-                  loginBtn.style.display = 'none';
-                  logoutBtn.style.display = 'block';
-              } else {
-                  alert('Login failed: ' + data.message);
-              }
-          });
-    });
-});
+            body: JSON.stringify({ id_token: response.credential })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                loginButton.style.display = 'none';
+                logoutButton.style.display = 'block';
+                document.getElementById('add-recipe-btn').style.display = 'block';
+                showMessage(`Welcome, ${data.name}!`);
+            } else {
+                showMessage('Login failed: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Google login error:', error);
+            showMessage('An error occurred during Google login. Please try again.');
+        });
+    }
 
-function onSignIn(googleUser) {
-    var profile = googleUser.getBasicProfile();
-    var id_token = googleUser.getAuthResponse().id_token;
+    // Load the Google Sign-In API
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
 
-    fetch('/google_login/callback', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ id_token: id_token })
-    }).then(response => response.json())
-      .then(data => {
-          if (data.success) {
-              location.reload(); // Reload the page to update UI elements
-          } else {
-              alert('Login failed: ' + data.message);
-          }
-      });
-}
-
-
-
+    // Check login status on page load
+    fetch('/check_login')
+        .then(response => response.json())
+        .then(data => {
+            if (data.logged_in) {
+                loginButton.style.display = 'none';
+                logoutButton.style.display = 'block';
+                document.getElementById('add-recipe-btn').style.display = 'block';
+            } else {
+                loginButton.style.display = 'block';
+                logoutButton.style.display = 'none';
+                document.getElementById('add-recipe-btn').style.display = 'none';
+            }
+        })
+        .catch(error => console.error('Error checking login status:', error));
 });
