@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,7 +16,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='images/apple-touch-icon.png')}}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon-32x32.png')}}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon-16x16.png')}}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=1">
     <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
@@ -37,7 +36,7 @@
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <h2>Log In / Sign Up</h2>
-                <button id="google-signin" class="auth-btn">Sign in with Google</button>
+                <div class="g-signin2" data-onsuccess="onSignIn" style="margin: 0 auto;"></div>
                 <div class="or-divider">
                     <hr class="or-hr" /><span class="or-span">or</span><hr class="or-hr" />
                 </div>
@@ -130,6 +129,7 @@
         </form>
     </div>
     
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}?v=1"></script>
 </body>
 </html>
