@@ -127,6 +127,8 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
         document.querySelector('.tags-list').textContent = data.tags.join(', ');
         document.querySelector('.servings-count').textContent = data.servings;
         document.querySelector('.origin').textContent = data.origin;
+        const tagsListElement = document.querySelector('.tags-list');
+        tagsListElement.textContent = data.tags.join(', ');
 
         favoriteCheckbox.checked = data.is_favorite;
         favoriteCheckbox.setAttribute('data-recipe-id', recipeId); // Set recipe ID on the checkbox
