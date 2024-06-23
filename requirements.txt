@@ -5,10 +5,10 @@ gunicorn==21.2.0
 python-dotenv
 Flask-Caching
 flask_login
-werkzeug
+Werkzeug
 oauthlib
 requests
-flask_sqlalchemy
-flask_jwt_extended
+Flask-SQLAlchemy
+Flask-JWT-Extended
 marshmallow
 mysqlclient
