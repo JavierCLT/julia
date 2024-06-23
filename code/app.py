@@ -27,7 +27,7 @@ app.config['JWT_BLOCKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 # Initialize extensions
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})  # Replace with your frontend URL
+CORS(app, resources={r"/*": {"origins": "*", "allow_headers": ["Content-Type", "Authorization"]}})
 
 # Set up logging
 logging.basicConfig(filename='app.log', level=logging.INFO,
