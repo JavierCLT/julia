@@ -9,3 +9,4 @@ werkzeug
 oauthlib
 requests
 flask_sqlalchemy
+flask_jwt_extended
