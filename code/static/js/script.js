@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', () => {
     const searchBox = document.getElementById('search-box');
     const resultsContainer = document.getElementById('results');
@@ -51,32 +50,47 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000);
     };
 
+    const fetchWithAuth = async (url, options = {}) => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+        const defaultOptions = {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+        };
+        const response = await fetch(url, { ...defaultOptions, ...options });
+        if (response.status === 401) {
+            // Handle token expiration
+            localStorage.removeItem('token');
+            window.location.href = '/login.html'; // Redirect to login page
+            throw new Error('Authentication token expired');
+        }
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    };
+
     const fetchRecipes = async (query) => {
-  const token = localStorage.getItem('token'); // Or wherever you store the token
-  try {
-    const response = await fetch(`/search?query=${encodeURIComponent(query)}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    if (!response.ok) {
-      throw new Error('Unauthorized');
-    }
-    const data = await response.json();
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    console.error('Error fetching recipes:', error);
-    return [];
-  }
-};
+        try {
+            const data = await fetchWithAuth(`/search?query=${encodeURIComponent(query)}`);
+            return Array.isArray(data) ? data : [];
+        } catch (error) {
+            console.error('Error fetching recipes:', error);
+            showMessage('Error fetching recipes. Please try again.');
+            return [];
+        }
+    };
 
     const fetchTags = async () => {
         try {
-            const response = await fetch('/tags');
-            const data = await response.json();
-            return Array.isArray(data) ? data : [];
+            return await fetchWithAuth('/tags');
         } catch (error) {
             console.error('Error fetching tags:', error);
+            showMessage('Error fetching tags. Please try again.');
             return [];
         }
     };
@@ -107,106 +121,100 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 300);
 
-const fetchAndDisplayRecipeDetails = async (recipeId) => {
-    try {
-        const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
-        const data = await response.json();
-        console.log('API Response:', data);
+    const fetchAndDisplayRecipeDetails = async (recipeId) => {
+        try {
+            const data = await fetchWithAuth(`/recipe_details/${encodeURIComponent(recipeId)}`);
+            console.log('API Response:', data);
 
-        // Ingredients
-        const ingredientsList = document.querySelector('.ingredients-list');
-        ingredientsList.innerHTML = '';
-        data.ingredients.forEach(ingredient => {
-            const li = document.createElement('li');
-            li.textContent = ingredient.Description;
-            ingredientsList.appendChild(li);
-        });
-
-        // Instructions
-        const instructionsList = document.querySelector('.instructions-list');
-        instructionsList.innerHTML = '';
-        data.instructions.forEach(instruction => {
-            const li = document.createElement('li');
-            li.textContent = instruction.Description;
-            instructionsList.appendChild(li);
-        });
-
-        // Tags, Servings, Origin
-        document.querySelector('.tags-list').textContent = data.tags.join(', ');
-        document.querySelector('.servings-count').textContent = data.servings;
-        document.querySelector('.origin').textContent = data.origin;
-        const tagsListElement = document.querySelector('.tags-list');
-        tagsListElement.textContent = data.tags.join(', ');
-
-        favoriteCheckbox.checked = data.is_favorite;
-        favoriteCheckbox.setAttribute('data-recipe-id', recipeId); // Set recipe ID on the checkbox
-
-        recipeDetailsContainer.style.display = 'block';
-        // Scroll to the top of the container
-        setTimeout(() => {
-            recipeDetailsContainer.scrollTop = 0;
-        }, 0);
-        
-        document.getElementById('edit-recipe-btn').onclick = () => {
-            formJustOpened = true;
-            console.log('Edit button clicked for recipe ID:', recipeId);
-            const recipeData = {
-                title: data.title,
-                ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
-                instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
-                tags: data.tags.join(','),
-                servings: data.servings,
-                origin: data.origin
-            };
-            console.log('Recipe data:', recipeData);
-            populateEditForm(recipeId, recipeData);
-            setTimeout(() => { formJustOpened = false; }, 100);
-        };
-
-    
-        
-        document.getElementById('delete-recipe-btn').onclick = async () => {
-            const password = prompt("Enter password to delete this recipe:");
-            if (password) {
-                try {
-                    const response = await fetch(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
-                        method: 'POST',
-                        body: JSON.stringify({ password: password }),
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    const data = await response.json();
-                    showMessage(data.message);
-                    if (data.success) {
-                        recipeDetailsContainer.style.display = 'none';
-                        toggleBlurAndOverlay(false);
-                    }
-                } catch (error) {
-                    console.error('Error deleting recipe:', error);
-                }
-            }
-        };
-
-        // Share Recipe Button
-        const shareButton = document.getElementById('share-recipe-btn');
-        shareButton.onclick = () => {
-            const shareData = {
-                title: `Check out this recipe: ${data.title}`,
-                text: `Ingredients:\n${data.ingredients.map(i => i.Description).join('\n')}\n\nInstructions:\n${data.instructions.map(i => i.Description).join('\n')}\n\nTags: ${data.tags.join(', ')}\n\nServings: ${data.servings}`,
-                url: window.location.href
-            };
-            navigator.share(shareData).then(() => {
-                console.log('Recipe shared successfully');
-            }).catch((error) => {
-                console.error('Error sharing recipe:', error);
+            // Ingredients
+            const ingredientsList = document.querySelector('.ingredients-list');
+            ingredientsList.innerHTML = '';
+            data.ingredients.forEach(ingredient => {
+                const li = document.createElement('li');
+                li.textContent = ingredient.Description;
+                ingredientsList.appendChild(li);
             });
-        };
 
-    } catch (error) {
-        console.error('Error fetching recipe details:', error);
-    }
-};
+            // Instructions
+            const instructionsList = document.querySelector('.instructions-list');
+            instructionsList.innerHTML = '';
+            data.instructions.forEach(instruction => {
+                const li = document.createElement('li');
+                li.textContent = instruction.Description;
+                instructionsList.appendChild(li);
+            });
+
+            // Tags, Servings, Origin
+            document.querySelector('.tags-list').textContent = data.tags.join(', ');
+            document.querySelector('.servings-count').textContent = data.servings;
+            document.querySelector('.origin').textContent = data.origin;
+            const tagsListElement = document.querySelector('.tags-list');
+            tagsListElement.textContent = data.tags.join(', ');
+
+            favoriteCheckbox.checked = data.is_favorite;
+            favoriteCheckbox.setAttribute('data-recipe-id', recipeId);
+
+            recipeDetailsContainer.style.display = 'block';
+            setTimeout(() => {
+                recipeDetailsContainer.scrollTop = 0;
+            }, 0);
+            
+            document.getElementById('edit-recipe-btn').onclick = () => {
+                formJustOpened = true;
+                console.log('Edit button clicked for recipe ID:', recipeId);
+                const recipeData = {
+                    title: data.title,
+                    ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
+                    instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
+                    tags: data.tags.join(','),
+                    servings: data.servings,
+                    origin: data.origin
+                };
+                console.log('Recipe data:', recipeData);
+                populateEditForm(recipeId, recipeData);
+                setTimeout(() => { formJustOpened = false; }, 100);
+            };
+
+            document.getElementById('delete-recipe-btn').onclick = async () => {
+                const password = prompt("Enter password to delete this recipe:");
+                if (password) {
+                    try {
+                        const data = await fetchWithAuth(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
+                            method: 'POST',
+                            body: JSON.stringify({ password: password })
+                        });
+                        showMessage(data.message);
+                        if (data.success) {
+                            recipeDetailsContainer.style.display = 'none';
+                            toggleBlurAndOverlay(false);
+                        }
+                    } catch (error) {
+                        console.error('Error deleting recipe:', error);
+                        showMessage('Error deleting recipe. Please try again.');
+                    }
+                }
+            };
+
+            // Share Recipe Button
+            const shareButton = document.getElementById('share-recipe-btn');
+            shareButton.onclick = () => {
+                const shareData = {
+                    title: `Check out this recipe: ${data.title}`,
+                    text: `Ingredients:\n${data.ingredients.map(i => i.Description).join('\n')}\n\nInstructions:\n${data.instructions.map(i => i.Description).join('\n')}\n\nTags: ${data.tags.join(', ')}\n\nServings: ${data.servings}`,
+                    url: window.location.href
+                };
+                navigator.share(shareData).then(() => {
+                    console.log('Recipe shared successfully');
+                }).catch((error) => {
+                    console.error('Error sharing recipe:', error);
+                });
+            };
+
+        } catch (error) {
+            console.error('Error fetching recipe details:', error);
+            showMessage('Error fetching recipe details. Please try again.');
+        }
+    };
 
     const populateEditForm = (recipeId, recipeData) => {
         console.log('Populating edit form with data:', recipeData); 
@@ -230,14 +238,10 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
 
             try {
                 console.log('Sending update request with data:', updatedRecipeData);
-                const response = await fetch(`/update_recipe/${recipeId}`, {
-                    method: 'POST',
-                    body: JSON.stringify(updatedRecipeData),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                const data = await fetchWithAuth(`/update_recipe/${recipeId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(updatedRecipeData)
                 });
-                const data = await response.json();
                 showMessage(data.message);
                 if (data.success) {
                     addRecipeForm.reset();
@@ -247,6 +251,7 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
                 }
             } catch (error) {
                 console.error('Error updating recipe:', error);
+                showMessage('Error updating recipe. Please try again.');
             }
         };
     };
@@ -287,14 +292,10 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
         formData.set('tags', tags.join(','));
 
         try {
-            const response = await fetch('/add_recipe', {
+            const data = await fetchWithAuth('/add_recipe', {
                 method: 'POST',
-                body: JSON.stringify(Object.fromEntries(formData.entries())),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                body: JSON.stringify(Object.fromEntries(formData.entries()))
             });
-            const data = await response.json();
             showMessage(data.message);
             if (data.success) {
                 addRecipeForm.reset();
@@ -303,6 +304,7 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
             }
         } catch (error) {
             console.error('Error adding recipe:', error);
+            showMessage('Error adding recipe. Please try again.');
         }
     });
 
@@ -325,7 +327,6 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
             recipeDetailsContainer.style.display = 'none';
             recipeTitle.textContent = '';
             toggleBlurAndOverlay(false);
-            
         }
         if (!formJustOpened && !addRecipeFormContainer.contains(event.target) && addRecipeFormContainer.style.display === 'block' && !event.target.closest('#add-recipe-btn')) {
             addRecipeFormContainer.style.display = 'none';
@@ -338,63 +339,59 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
         const isFavorite = favoriteCheckbox.checked;
 
         try {
-            await fetch(`/update_favorite/${recipeId}`, {
+            await fetchWithAuth(`/update_favorite/${recipeId}`, {
                 method: 'POST',
-                body: JSON.stringify({ is_favorite: isFavorite }),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                body: JSON.stringify({ is_favorite: isFavorite })
             });
         } catch (error) {
             console.error('Error updating favorite status:', error);
-            // Optionally revert the checkbox state if an error occurs
             favoriteCheckbox.checked = !isFavorite;
+            showMessage('Error updating favorite status. Please try again.');
         }
     };
 
     viewFavoritesLink.addEventListener('click', async () => {
         try {
-            const response = await fetch('/favorites');
-            const favorites = await response.json();
+            const favorites = await fetchWithAuth('/favorites');
             renderRecipes(favorites);
-            searchBox.value = 'Favorites'; // Set the search box text to "Favorites"
+            searchBox.value = 'Favorites';
         } catch (error) {
             console.error('Error fetching favorite recipes:', error);
+            showMessage('Error fetching favorites. Please try again.');
         }
     });
 
     viewTagsLink.addEventListener('click', async () => {
-    try {
-        const tags = await fetchTags();
-        resultsContainer.innerHTML = ''; // Clear the results container
-        const tagListContainer = document.createElement('div');
-        tagListContainer.className = 'tags-list-container';
-        
-        const tagList = document.createElement('ul');
-        tags.forEach(tag => {
-            const tagItem = document.createElement('li');
-            tagItem.textContent = tag;
-            tagItem.className = 'tag-item'; // Add a class for styling
-            tagItem.addEventListener('click', () => {
-                // Add click animation class
-                tagItem.classList.add('clicked');
-                setTimeout(() => {
-                    tagItem.classList.remove('clicked');
-                }, 300); // Duration of the animation
+        try {
+            const tags = await fetchTags();
+            resultsContainer.innerHTML = '';
+            const tagListContainer = document.createElement('div');
+            tagListContainer.className = 'tags-list-container';
+            
+            const tagList = document.createElement('ul');
+            tags.forEach(tag => {
+                const tagItem = document.createElement('li');
+                tagItem.textContent = tag;
+                tagItem.className = 'tag-item';
+                tagItem.addEventListener('click', () => {
+                    tagItem.classList.add('clicked');
+                    setTimeout(() => {
+                        tagItem.classList.remove('clicked');
+                    }, 300);
 
-                searchBox.value = tag;
-                handleSearch({ target: { value: tag } }); // Trigger search
+                    searchBox.value = tag;
+                    handleSearch({ target: { value: tag } });
+                });
+                tagList.appendChild(tagItem);
             });
-            tagList.appendChild(tagItem);
-        });
-        tagListContainer.appendChild(tagList);
-        resultsContainer.appendChild(tagListContainer);
-        searchBox.value = 'Tags'; // Set the search box text to "Tags"
-    } catch (error) {
-        console.error('Error fetching tags:', error);
-    }
-});
-
+            tagListContainer.appendChild(tagList);
+            resultsContainer.appendChild(tagListContainer);
+            searchBox.value = 'Tags';
+        } catch (error) {
+            console.error('Error fetching tags:', error);
+            showMessage('Error fetching tags. Please try again.');
+        }
+    });
     viewAllRecipesLink.addEventListener('click', async () => {
         try {
             const recipes = await fetchRecipes(''); // Fetch all recipes with an empty query
@@ -402,6 +399,45 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
             searchBox.value = 'All Recipes'; // Set the search box text to "All Recipes"
         } catch (error) {
             console.error('Error fetching all recipes:', error);
+            showMessage('Error fetching all recipes. Please try again.');
         }
     });
+
+    // Function to check if user is authenticated
+    const checkAuth = () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            // Redirect to login page if no token is found
+            window.location.href = '/login.html';
+        }
+    };
+
+    // Call checkAuth when the page loads
+    checkAuth();
+
+    // Logout function
+    const logout = () => {
+        localStorage.removeItem('token');
+        window.location.href = '/login.html';
+    };
+
+    // Add event listener for logout button if it exists
+    const logoutButton = document.getElementById('logout-btn');
+    if (logoutButton) {
+        logoutButton.addEventListener('click', logout);
+    }
+
+    // Initial load of all recipes
+    const loadInitialRecipes = async () => {
+        try {
+            const recipes = await fetchRecipes('');
+            renderRecipes(recipes);
+        } catch (error) {
+            console.error('Error loading initial recipes:', error);
+            showMessage('Error loading recipes. Please try again.');
+        }
+    };
+
+    // Call loadInitialRecipes when the page loads
+    loadInitialRecipes();
 });
