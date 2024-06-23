@@ -51,12 +51,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const fetchWithAuth = async (url, options = {}) => {
-    const response = await fetch(url, options);
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.json();
-};
+        const response = await fetch(url, options);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    };
 
     const fetchRecipes = async (query) => {
         try {
@@ -86,9 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
         recipes.forEach(recipe => {
             const recipeElement = document.createElement('div');
             recipeElement.className = 'recipe-box';
-            recipeElement.setAttribute('data-recipe-id', recipe.RecipeID);
+            recipeElement.setAttribute('data-recipe-id', recipe.id);
             recipeElement.innerHTML = `<div class="recipe-content">
-                                          <h3 class="recipe-title">${recipe.Title}</h3>
+                                          <h3 class="recipe-title">${recipe.title}</h3>
                                        </div>`;
             grid.appendChild(recipeElement);
         });
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ingredientsList.innerHTML = '';
             data.ingredients.forEach(ingredient => {
                 const li = document.createElement('li');
-                li.textContent = ingredient.Description;
+                li.textContent = ingredient;
                 ingredientsList.appendChild(li);
             });
 
@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
             instructionsList.innerHTML = '';
             data.instructions.forEach(instruction => {
                 const li = document.createElement('li');
-                li.textContent = instruction.Description;
+                li.textContent = instruction;
                 instructionsList.appendChild(li);
             });
 
@@ -132,8 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('.tags-list').textContent = data.tags.join(', ');
             document.querySelector('.servings-count').textContent = data.servings;
             document.querySelector('.origin').textContent = data.origin;
-            const tagsListElement = document.querySelector('.tags-list');
-            tagsListElement.textContent = data.tags.join(', ');
 
             favoriteCheckbox.checked = data.is_favorite;
             favoriteCheckbox.setAttribute('data-recipe-id', recipeId);
@@ -148,8 +146,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('Edit button clicked for recipe ID:', recipeId);
                 const recipeData = {
                     title: data.title,
-                    ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
-                    instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
+                    ingredients: data.ingredients.join('\n'),
+                    instructions: data.instructions.join('\n'),
                     tags: data.tags.join(','),
                     servings: data.servings,
                     origin: data.origin
@@ -160,17 +158,16 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             document.getElementById('delete-recipe-btn').onclick = async () => {
-                const password = prompt("Enter password to delete this recipe:");
-                if (password) {
+                if (confirm("Are you sure you want to delete this recipe?")) {
                     try {
                         const data = await fetchWithAuth(`/delete_recipe/${encodeURIComponent(recipeId)}`, {
-                            method: 'POST',
-                            body: JSON.stringify({ password: password })
+                            method: 'DELETE'
                         });
                         showMessage(data.message);
                         if (data.success) {
                             recipeDetailsContainer.style.display = 'none';
                             toggleBlurAndOverlay(false);
+                            loadInitialRecipes();
                         }
                     } catch (error) {
                         console.error('Error deleting recipe:', error);
@@ -184,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
             shareButton.onclick = () => {
                 const shareData = {
                     title: `Check out this recipe: ${data.title}`,
-                    text: `Ingredients:\n${data.ingredients.map(i => i.Description).join('\n')}\n\nInstructions:\n${data.instructions.map(i => i.Description).join('\n')}\n\nTags: ${data.tags.join(', ')}\n\nServings: ${data.servings}`,
+                    text: `Ingredients:\n${data.ingredients.join('\n')}\n\nInstructions:\n${data.instructions.join('\n')}\n\nTags: ${data.tags.join(', ')}\n\nServings: ${data.servings}`,
                     url: window.location.href
                 };
                 navigator.share(shareData).then(() => {
@@ -224,6 +221,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('Sending update request with data:', updatedRecipeData);
                 const data = await fetchWithAuth(`/update_recipe/${recipeId}`, {
                     method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
                     body: JSON.stringify(updatedRecipeData)
                 });
                 showMessage(data.message);
@@ -278,6 +278,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const data = await fetchWithAuth('/add_recipe', {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify(Object.fromEntries(formData.entries()))
             });
             showMessage(data.message);
@@ -285,6 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 addRecipeForm.reset();
                 addRecipeFormContainer.style.display = 'none';
                 toggleBlurAndOverlay(false);
+                loadInitialRecipes();
             }
         } catch (error) {
             console.error('Error adding recipe:', error);
@@ -325,6 +329,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await fetchWithAuth(`/update_favorite/${recipeId}`, {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({ is_favorite: isFavorite })
             });
         } catch (error) {
@@ -376,43 +383,18 @@ document.addEventListener('DOMContentLoaded', () => {
             showMessage('Error fetching tags. Please try again.');
         }
     });
+
     viewAllRecipesLink.addEventListener('click', async () => {
         try {
-            const recipes = await fetchRecipes(''); // Fetch all recipes with an empty query
+            const recipes = await fetchRecipes('');
             renderRecipes(recipes);
-            searchBox.value = 'All Recipes'; // Set the search box text to "All Recipes"
+            searchBox.value = 'All Recipes';
         } catch (error) {
             console.error('Error fetching all recipes:', error);
             showMessage('Error fetching all recipes. Please try again.');
         }
     });
- /*
-    // Function to check if user is authenticated
-    const checkAuth = () => {
-    const token = localStorage.getItem('token');
-    const requiresAuth = ['/recipes', '/profile'].includes(window.location.pathname);
-    if (!token && requiresAuth) {
-        window.location.href = '/login.html';
-    }
-};
 
-    // Call checkAuth when the page loads
-   
-    checkAuth();
-
-    // Logout function
-    const logout = () => {
-        localStorage.removeItem('token');
-        window.location.href = '/login.html';
-    };
-
-    // Add event listener for logout button if it exists
-    const logoutButton = document.getElementById('logout-btn');
-    if (logoutButton) {
-        logoutButton.addEventListener('click', logout);
-    }
-
-    // Initial load of all recipes
     const loadInitialRecipes = async () => {
         try {
             const recipes = await fetchRecipes('');
@@ -423,7 +405,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Call loadInitialRecipes when the page loads
     loadInitialRecipes();
-    */
 });
