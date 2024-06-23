@@ -11,4 +11,4 @@ requests
 Flask-SQLAlchemy
 Flask-JWT-Extended
 marshmallow
-mysqlclient
+PyMySQL
