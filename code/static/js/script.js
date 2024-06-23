@@ -402,7 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showMessage('Error fetching all recipes. Please try again.');
         }
     });
-
+ /*
     // Function to check if user is authenticated
     const checkAuth = () => {
     const token = localStorage.getItem('token');
@@ -413,7 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
 };
 
     // Call checkAuth when the page loads
-    /*
+   
     checkAuth();
 
     // Logout function
