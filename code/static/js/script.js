@@ -51,28 +51,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const fetchWithAuth = async (url, options = {}) => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            throw new Error('No authentication token found');
-        }
-        const defaultOptions = {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-        };
-        const response = await fetch(url, { ...defaultOptions, ...options });
-        if (response.status === 401) {
-            // Handle token expiration
-            localStorage.removeItem('token');
-            window.location.href = '/login.html'; // Redirect to login page
-            throw new Error('Authentication token expired');
-        }
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    };
+    const response = await fetch(url, options);
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+};
 
     const fetchRecipes = async (query) => {
         try {
