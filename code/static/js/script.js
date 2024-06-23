@@ -413,6 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
 };
 
     // Call checkAuth when the page loads
+    /*
     checkAuth();
 
     // Logout function
@@ -440,4 +441,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Call loadInitialRecipes when the page loads
     loadInitialRecipes();
+    */
 });
