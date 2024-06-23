@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
-from flask_jwt_extended import JWTManager, jwt_required, create_access_token, create_refresh_token, get_jwt_identity, get_raw_jwt
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token, create_refresh_token, get_jwt_identity, get_jwt
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from marshmallow import Schema, fields, ValidationError
@@ -21,8 +21,8 @@ app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
 app.config['JWT_ERROR_MESSAGE_KEY'] = 'message'
-app.config['JWT_BLACKLIST_ENABLED'] = True
-app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
+app.config['JWT_BLOCKLIST_ENABLED'] = True
+app.config['JWT_BLOCKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 
 # Initialize extensions
 db = SQLAlchemy(app)
@@ -80,9 +80,9 @@ class RecipeSchema(Schema):
     is_favorite = fields.Bool()
 
 # JWT token blacklist check
-@jwt.token_in_blacklist_loader
-def check_if_token_in_blacklist(decrypted_token):
-    jti = decrypted_token['jti']
+@jwt.token_in_blocklist_loader
+def check_if_token_in_blacklist(jwt_header, jwt_payload):
+    jti = jwt_payload['jti']
     return jti in blacklist
 
 # Error handler
@@ -131,7 +131,7 @@ def refresh():
 @app.route('/logout', methods=['POST'])
 @jwt_required()
 def logout():
-    jti = get_raw_jwt()['jti']
+    jti = get_jwt()['jti']
     blacklist.add(jti)
     return jsonify({"message": "Successfully logged out"}), 200
 
