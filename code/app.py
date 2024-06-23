@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
-from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token, create_refresh_token, get_jwt_identity, get_raw_jwt
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from marshmallow import Schema, fields, ValidationError
@@ -8,6 +8,8 @@ import os
 import logging
 from datetime import timedelta
 import pymysql
+from sqlalchemy import or_
+
 pymysql.install_as_MySQLdb()
 
 app = Flask(__name__)
@@ -17,21 +19,29 @@ app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{os.getenv('DB_USER')}
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
+app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
+app.config['JWT_ERROR_MESSAGE_KEY'] = 'message'
+app.config['JWT_BLACKLIST_ENABLED'] = True
+app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 
 # Initialize extensions
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})  # Replace with your frontend URL
 
 # Set up logging
 logging.basicConfig(filename='app.log', level=logging.INFO,
                     format='%(asctime)s:%(levelname)s:%(message)s')
+
+# Token blacklist set
+blacklist = set()
 
 # Models
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
+    recipes = db.relationship('Recipe', backref='user', lazy=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -48,6 +58,7 @@ class Recipe(db.Model):
     origin = db.Column(db.String(100))
     is_favorite = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    tags = db.relationship('Tag', secondary='recipe_tags', lazy='subquery', backref=db.backref('recipes', lazy=True))
 
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -68,10 +79,36 @@ class RecipeSchema(Schema):
     origin = fields.Str()
     is_favorite = fields.Bool()
 
+# JWT token blacklist check
+@jwt.token_in_blacklist_loader
+def check_if_token_in_blacklist(decrypted_token):
+    jti = decrypted_token['jti']
+    return jti in blacklist
+
+# Error handler
+@app.errorhandler(Exception)
+def handle_exception(e):
+    logging.error(f"Unhandled exception: {str(e)}")
+    return jsonify({"message": "An unexpected error occurred"}), 500
+
 # Routes
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/register', methods=['POST'])
+def register():
+    username = request.json.get('username', None)
+    password = request.json.get('password', None)
+    if not username or not password:
+        return jsonify({"message": "Missing username or password"}), 400
+    if User.query.filter_by(username=username).first():
+        return jsonify({"message": "Username already exists"}), 400
+    user = User(username=username)
+    user.set_password(password)
+    db.session.add(user)
+    db.session.commit()
+    return jsonify({"message": "User created successfully"}), 201
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -80,22 +117,39 @@ def login():
     user = User.query.filter_by(username=username).first()
     if user and user.check_password(password):
         access_token = create_access_token(identity=username)
-        return jsonify(access_token=access_token), 200
-    return jsonify({"msg": "Bad username or password"}), 401
+        refresh_token = create_refresh_token(identity=username)
+        return jsonify(access_token=access_token, refresh_token=refresh_token), 200
+    return jsonify({"message": "Bad username or password"}), 401
+
+@app.route('/refresh', methods=['POST'])
+@jwt_required(refresh=True)
+def refresh():
+    current_user = get_jwt_identity()
+    new_token = create_access_token(identity=current_user)
+    return jsonify({'access_token': new_token}), 200
+
+@app.route('/logout', methods=['POST'])
+@jwt_required()
+def logout():
+    jti = get_raw_jwt()['jti']
+    blacklist.add(jti)
+    return jsonify({"message": "Successfully logged out"}), 200
 
 @app.route('/search', methods=['GET'])
-@jwt_required
+@jwt_required()
 def search_recipes():
     query = request.args.get('query', '')
     recipes = Recipe.query.filter(
-        (Recipe.title.like(f'%{query}%')) |
-        (Recipe.ingredients.like(f'%{query}%')) |
-        (Recipe.instructions.like(f'%{query}%'))
+        or_(
+            Recipe.title.ilike(f'%{query}%'),
+            Recipe.ingredients.ilike(f'%{query}%'),
+            Recipe.instructions.ilike(f'%{query}%')
+        )
     ).all()
     return jsonify([{'id': r.id, 'title': r.title} for r in recipes])
 
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
-@jwt_required
+@jwt_required()
 def recipe_details(recipe_id):
     recipe = Recipe.query.get_or_404(recipe_id)
     return jsonify({
@@ -109,7 +163,7 @@ def recipe_details(recipe_id):
     })
 
 @app.route('/add_recipe', methods=['POST'])
-@jwt_required
+@jwt_required()
 def add_recipe():
     try:
         schema = RecipeSchema()
@@ -141,7 +195,7 @@ def add_recipe():
         return jsonify({'success': False, 'message': 'An error occurred while adding the recipe.'}), 500
 
 @app.route('/update_recipe/<int:recipe_id>', methods=['PUT'])
-@jwt_required
+@jwt_required()
 def update_recipe(recipe_id):
     try:
         schema = RecipeSchema()
@@ -173,7 +227,7 @@ def update_recipe(recipe_id):
         return jsonify({'success': False, 'message': 'An error occurred while updating the recipe.'}), 500
 
 @app.route('/delete_recipe/<int:recipe_id>', methods=['DELETE'])
-@jwt_required
+@jwt_required()
 def delete_recipe(recipe_id):
     try:
         recipe = Recipe.query.get_or_404(recipe_id)
@@ -189,14 +243,14 @@ def delete_recipe(recipe_id):
         return jsonify({'success': False, 'message': 'An error occurred while deleting the recipe.'}), 500
 
 @app.route('/favorites', methods=['GET'])
-@jwt_required
+@jwt_required()
 def get_favorites():
     current_user = User.query.filter_by(username=get_jwt_identity()).first()
     favorites = Recipe.query.filter_by(user_id=current_user.id, is_favorite=True).all()
     return jsonify([{'id': r.id, 'title': r.title} for r in favorites])
 
 @app.route('/tags', methods=['GET'])
-@jwt_required
+@jwt_required()
 def get_tags():
     tags = Tag.query.all()
     return jsonify([tag.name for tag in tags])
