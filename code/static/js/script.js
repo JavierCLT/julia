@@ -52,15 +52,23 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const fetchRecipes = async (query) => {
-        try {
-            const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
-            const data = await response.json();
-            return Array.isArray(data) ? data : [];
-        } catch (error) {
-            console.error('Error fetching recipes:', error);
-            return [];
-        }
-    };
+  const token = localStorage.getItem('token'); // Or wherever you store the token
+  try {
+    const response = await fetch(`/search?query=${encodeURIComponent(query)}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!response.ok) {
+      throw new Error('Unauthorized');
+    }
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error('Error fetching recipes:', error);
+    return [];
+  }
+};
 
     const fetchTags = async () => {
         try {
