@@ -138,6 +138,8 @@ def logout():
 @app.route('/search', methods=['GET'])
 @jwt_required()
 def search_recipes():
+    current_user = get_jwt_identity()
+    app.logger.info(f"Search request received from user: {current_user}")
     query = request.args.get('query', '')
     recipes = Recipe.query.filter(
         or_(
