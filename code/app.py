@@ -136,17 +136,21 @@ def logout():
 
 @app.route('/search', methods=['GET'])
 def search_recipes():
-    current_user = get_jwt_identity()
-    app.logger.info(f"Search request received from user: {current_user}")
-    query = request.args.get('query', '')
-    recipes = Recipe.query.filter(
-        or_(
-            Recipe.title.ilike(f'%{query}%'),
-            Recipe.ingredients.ilike(f'%{query}%'),
-            Recipe.instructions.ilike(f'%{query}%')
-        )
-    ).all()
-    return jsonify([{'id': r.id, 'title': r.title} for r in recipes])
+    try:
+        query = request.args.get('query', '')
+        app.logger.info(f"Search query: {query}")
+        recipes = Recipe.query.filter(
+            or_(
+                Recipe.title.ilike(f'%{query}%'),
+                Recipe.ingredients.ilike(f'%{query}%'),
+                Recipe.instructions.ilike(f'%{query}%')
+            )
+        ).all()
+        app.logger.info(f"Found {len(recipes)} recipes")
+        return jsonify([{'id': r.id, 'title': r.title} for r in recipes])
+    except Exception as e:
+        app.logger.error(f"Error in search_recipes: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
 def recipe_details(recipe_id):
