@@ -405,12 +405,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to check if user is authenticated
     const checkAuth = () => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            // Redirect to login page if no token is found
-            window.location.href = '/login.html';
-        }
-    };
+    const token = localStorage.getItem('token');
+    const requiresAuth = ['/recipes', '/profile'].includes(window.location.pathname);
+    if (!token && requiresAuth) {
+        window.location.href = '/login.html';
+    }
+};
 
     // Call checkAuth when the page loads
     checkAuth();
