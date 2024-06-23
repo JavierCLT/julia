@@ -129,14 +129,12 @@ def refresh():
     return jsonify({'access_token': new_token}), 200
 
 @app.route('/logout', methods=['POST'])
-@jwt_required()
 def logout():
     jti = get_jwt()['jti']
     blacklist.add(jti)
     return jsonify({"message": "Successfully logged out"}), 200
 
 @app.route('/search', methods=['GET'])
-@jwt_required()
 def search_recipes():
     current_user = get_jwt_identity()
     app.logger.info(f"Search request received from user: {current_user}")
@@ -151,7 +149,6 @@ def search_recipes():
     return jsonify([{'id': r.id, 'title': r.title} for r in recipes])
 
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
-@jwt_required()
 def recipe_details(recipe_id):
     recipe = Recipe.query.get_or_404(recipe_id)
     return jsonify({
@@ -165,7 +162,6 @@ def recipe_details(recipe_id):
     })
 
 @app.route('/add_recipe', methods=['POST'])
-@jwt_required()
 def add_recipe():
     try:
         schema = RecipeSchema()
@@ -197,7 +193,6 @@ def add_recipe():
         return jsonify({'success': False, 'message': 'An error occurred while adding the recipe.'}), 500
 
 @app.route('/update_recipe/<int:recipe_id>', methods=['PUT'])
-@jwt_required()
 def update_recipe(recipe_id):
     try:
         schema = RecipeSchema()
@@ -229,7 +224,6 @@ def update_recipe(recipe_id):
         return jsonify({'success': False, 'message': 'An error occurred while updating the recipe.'}), 500
 
 @app.route('/delete_recipe/<int:recipe_id>', methods=['DELETE'])
-@jwt_required()
 def delete_recipe(recipe_id):
     try:
         recipe = Recipe.query.get_or_404(recipe_id)
@@ -245,14 +239,12 @@ def delete_recipe(recipe_id):
         return jsonify({'success': False, 'message': 'An error occurred while deleting the recipe.'}), 500
 
 @app.route('/favorites', methods=['GET'])
-@jwt_required()
 def get_favorites():
     current_user = User.query.filter_by(username=get_jwt_identity()).first()
     favorites = Recipe.query.filter_by(user_id=current_user.id, is_favorite=True).all()
     return jsonify([{'id': r.id, 'title': r.title} for r in favorites])
 
 @app.route('/tags', methods=['GET'])
-@jwt_required()
 def get_tags():
     tags = Tag.query.all()
     return jsonify([tag.name for tag in tags])
