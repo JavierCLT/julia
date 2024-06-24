@@ -139,6 +139,11 @@ def search_recipes():
     try:
         query = request.args.get('query', '')
         app.logger.info(f"Search query: {query}")
+        
+        # Ensure the database connection is established
+        if db.session.bind is None:
+            db.session.bind = db.engine
+
         recipes = Recipe.query.filter(
             or_(
                 Recipe.title.ilike(f'%{query}%'),
@@ -146,8 +151,10 @@ def search_recipes():
                 Recipe.instructions.ilike(f'%{query}%')
             )
         ).all()
+        
         app.logger.info(f"Found {len(recipes)} recipes")
-        return jsonify([{'id': r.id, 'title': r.title} for r in recipes])
+        result = [{'id': r.id, 'title': r.title} for r in recipes]
+        return jsonify(result)
     except Exception as e:
         app.logger.error(f"Error in search_recipes: {str(e)}")
         return jsonify({"error": str(e)}), 500
