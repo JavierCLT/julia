@@ -36,6 +36,16 @@ logging.basicConfig(filename='app.log', level=logging.INFO,
 # Token blacklist set
 blacklist = set()
 
+@app.route('/test_db')
+def test_db():
+    try:
+        # Test a simple query
+        result = db.engine.execute('SELECT 1')
+        return jsonify({"message": "Database connection is working"}), 200
+    except Exception as e:
+        app.logger.error(f"Database connection test failed: {str(e)}", exc_info=True)
+        return jsonify({"error": "Database connection failed"}), 500
+      
 # Models
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
