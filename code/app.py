@@ -156,7 +156,7 @@ def search_recipes():
         result = [{'id': r.id, 'title': r.title} for r in recipes]
         return jsonify(result)
     except Exception as e:
-        app.logger.error(f"Error in search_recipes: {str(e)}")
+        app.logger.error(f"Error in search_recipes: {str(e)}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
