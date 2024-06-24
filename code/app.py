@@ -1,274 +1,377 @@
-from flask import Flask, request, jsonify, render_template
-from flask_sqlalchemy import SQLAlchemy
-from flask_jwt_extended import JWTManager, jwt_required, create_access_token, create_refresh_token, get_jwt_identity, get_jwt
-from flask_cors import CORS
-from werkzeug.security import generate_password_hash, check_password_hash
-from marshmallow import Schema, fields, ValidationError
-import os
-import logging
-from datetime import timedelta
-import pymysql
-from sqlalchemy import or_
 
-pymysql.install_as_MySQLdb()
+from flask import Flask, request, jsonify, render_template
+from flask_caching import Cache
+import mysql.connector
+from mysql.connector import Error, pooling
+from flask_cors import CORS
+import os
+import re
 
 app = Flask(__name__)
+CORS(app, resources={r"/search*": {"origins": "*"}})
 
-# Configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
-app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
-app.config['JWT_ERROR_MESSAGE_KEY'] = 'message'
-app.config['JWT_BLOCKLIST_ENABLED'] = True
-app.config['JWT_BLOCKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
+# Cache configuration
+cache = Cache(config={'CACHE_TYPE': 'simple'})
+cache.init_app(app)
 
-# Initialize extensions
-db = SQLAlchemy(app)
-jwt = JWTManager(app)
-CORS(app, resources={r"/*": {"origins": "*", "allow_headers": ["Content-Type", "Authorization"]}})
+# Database configuration using environment variables
+db_config = {
+    'host': os.getenv('DB_HOST'),
+    'user': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASSWORD'),
+    'database': os.getenv('DB_NAME'),
+    'pool_name': 'mypool',
+    'pool_size': 10,
+}
 
-# Set up logging
-logging.basicConfig(filename='app.log', level=logging.INFO,
-                    format='%(asctime)s:%(levelname)s:%(message)s')
+# Create a connection pool
+connection_pool = mysql.connector.pooling.MySQLConnectionPool(pool_name=db_config['pool_name'],
+                                                              pool_size=db_config['pool_size'],
+                                                              pool_reset_session=True,
+                                                              host=db_config['host'],
+                                                              database=db_config['database'],
+                                                              user=db_config['user'],
+                                                              password=db_config['password'])
 
-# Token blacklist set
-blacklist = set()
-
-@app.route('/test_db')
-def test_db():
-    try:
-        # Test a simple query
-        result = db.engine.execute('SELECT 1')
-        return jsonify({"message": "Database connection is working"}), 200
-    except Exception as e:
-        app.logger.error(f"Database connection test failed: {str(e)}", exc_info=True)
-        return jsonify({"error": "Database connection failed"}), 500
-      
-# Models
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128))
-    recipes = db.relationship('Recipe', backref='user', lazy=True)
-
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
-class Recipe(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    ingredients = db.Column(db.Text, nullable=False)
-    instructions = db.Column(db.Text, nullable=False)
-    servings = db.Column(db.String(20))
-    origin = db.Column(db.String(100))
-    is_favorite = db.Column(db.Boolean, default=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    tags = db.relationship('Tag', secondary='recipe_tags', lazy='subquery', backref=db.backref('recipes', lazy=True))
-
-class Tag(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True, nullable=False)
-
-recipe_tags = db.Table('recipe_tags',
-    db.Column('recipe_id', db.Integer, db.ForeignKey('recipe.id'), primary_key=True),
-    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'), primary_key=True)
-)
-
-# Schemas for validation
-class RecipeSchema(Schema):
-    title = fields.Str(required=True)
-    ingredients = fields.Str(required=True)
-    instructions = fields.Str(required=True)
-    tags = fields.List(fields.Str())
-    servings = fields.Str()
-    origin = fields.Str()
-    is_favorite = fields.Bool()
-
-# JWT token blacklist check
-@jwt.token_in_blocklist_loader
-def check_if_token_in_blacklist(jwt_header, jwt_payload):
-    jti = jwt_payload['jti']
-    return jti in blacklist
-
-# Error handler
-@app.errorhandler(Exception)
-def handle_exception(e):
-    logging.error(f"Unhandled exception: {str(e)}")
-    return jsonify({"message": "An unexpected error occurred"}), 500
-
-# Routes
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/register', methods=['POST'])
-def register():
-    username = request.json.get('username', None)
-    password = request.json.get('password', None)
-    if not username or not password:
-        return jsonify({"message": "Missing username or password"}), 400
-    if User.query.filter_by(username=username).first():
-        return jsonify({"message": "Username already exists"}), 400
-    user = User(username=username)
-    user.set_password(password)
-    db.session.add(user)
-    db.session.commit()
-    return jsonify({"message": "User created successfully"}), 201
-
-@app.route('/login', methods=['POST'])
-def login():
-    username = request.json.get('username', None)
-    password = request.json.get('password', None)
-    user = User.query.filter_by(username=username).first()
-    if user and user.check_password(password):
-        access_token = create_access_token(identity=username)
-        refresh_token = create_refresh_token(identity=username)
-        return jsonify(access_token=access_token, refresh_token=refresh_token), 200
-    return jsonify({"message": "Bad username or password"}), 401
-
-@app.route('/refresh', methods=['POST'])
-@jwt_required(refresh=True)
-def refresh():
-    current_user = get_jwt_identity()
-    new_token = create_access_token(identity=current_user)
-    return jsonify({'access_token': new_token}), 200
-
-@app.route('/logout', methods=['POST'])
-def logout():
-    jti = get_jwt()['jti']
-    blacklist.add(jti)
-    return jsonify({"message": "Successfully logged out"}), 200
-
 @app.route('/search', methods=['GET'])
+@cache.cached(timeout=60, query_string=True)
 def search_recipes():
-    try:
-        query = request.args.get('query', '')
-        app.logger.info(f"Search query: {query}")
-        
-        # Ensure the database connection is established
-        if db.session.bind is None:
-            db.session.bind = db.engine
+    query_param = request.args.get('query', '')
+    result = []
+    connection = None
+    cursor = None
 
-        recipes = Recipe.query.filter(
-            or_(
-                Recipe.title.ilike(f'%{query}%'),
-                Recipe.ingredients.ilike(f'%{query}%'),
-                Recipe.instructions.ilike(f'%{query}%')
-            )
-        ).all()
-        
-        app.logger.info(f"Found {len(recipes)} recipes")
-        result = [{'id': r.id, 'title': r.title} for r in recipes]
-        return jsonify(result)
-    except Exception as e:
-        app.logger.error(f"Error in search_recipes: {str(e)}", exc_info=True)
-        return jsonify({"error": str(e)}), 500
+    try:
+        connection = connection_pool.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        query = """
+        SELECT 
+            MIN(recipes.RecipeID) as RecipeID, 
+            recipes.Title
+        FROM 
+            recipes
+        LEFT JOIN 
+            recipetags ON recipes.RecipeID = recipetags.RecipeID
+        LEFT JOIN 
+            tags ON recipetags.TagID = tags.TagID
+        LEFT JOIN 
+            ingredients ON recipes.RecipeID = ingredients.RecipeID
+        WHERE 
+            recipes.Title LIKE %s 
+            OR ingredients.Description LIKE %s 
+            OR tags.TagName LIKE %s
+        GROUP BY 
+            recipes.Title
+        """
+        like_pattern = f"%{query_param}%"
+        cursor.execute(query, (like_pattern, like_pattern, like_pattern))
+        result = cursor.fetchall()
+    except Error as e:
+        print(f"Error while connecting to MySQL or executing query: {e}")
+        result = []
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+    return jsonify(result)
 
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
+@cache.cached(timeout=60)
 def recipe_details(recipe_id):
-    recipe = Recipe.query.get_or_404(recipe_id)
-    return jsonify({
-        'title': recipe.title,
-        'ingredients': recipe.ingredients.split('\n'),
-        'instructions': recipe.instructions.split('\n'),
-        'servings': recipe.servings,
-        'origin': recipe.origin,
-        'is_favorite': recipe.is_favorite,
-        'tags': [tag.name for tag in recipe.tags]
-    })
+    details = {'ingredients': [], 'instructions': [], 'tags': [], 'servings': None, 'origin': None, 'title': None, 'is_favorite': False}
+    connection = None
+    cursor = None
+    try:
+        connection = connection_pool.get_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        # Fetch title, servings, origin, and is_favorite
+        cursor.execute("""
+            SELECT Title, Servings, Origin, is_favorite
+            FROM recipes
+            WHERE RecipeID = %s
+        """, (recipe_id,))
+        result = cursor.fetchone()
+        if result:
+            details['title'] = result['Title']
+            details['servings'] = result['Servings']
+            details['origin'] = result['Origin']
+            details['is_favorite'] = result['is_favorite']
+
+            # Fetch ingredients
+            cursor.execute("""
+                SELECT Description
+                FROM ingredients
+                WHERE RecipeID = %s
+                ORDER BY IngredientID
+            """, (recipe_id,))
+            details['ingredients'] = cursor.fetchall()
+
+            # Fetch instructions
+            cursor.execute("""
+                SELECT StepNumber, Description
+                FROM instructions
+                WHERE RecipeID = %s
+                ORDER BY StepNumber
+            """, (recipe_id,))
+            details['instructions'] = cursor.fetchall()
+
+            # Fetch tags
+            cursor.execute("""
+                SELECT TagName
+                FROM tags
+                LEFT JOIN recipetags ON tags.TagID = recipetags.TagID
+                WHERE recipetags.RecipeID = %s
+            """, (recipe_id,))
+            details['tags'] = [tag['TagName'] for tag in cursor.fetchall()]
+
+    except Error as e:
+        print(f"Error while connecting to MySQL or executing query: {e}")
+        details = {'error': 'An error occurred while fetching recipe details.'}
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+    return jsonify(details)
 
 @app.route('/add_recipe', methods=['POST'])
 def add_recipe():
+    # Temporarily hardcoding the UserID for 'defaultuser'
+    user_id = 1  # Replace with the actual UserID of 'defaultuser'
+    
+    data = request.json
+    title = data.get('title')
+    ingredients = data.get('ingredients').split('\n')
+    instructions = data.get('instructions').split('\n')
+    tags = [tag.strip() for tag in data.get('tags').split(',')]
+    servings = data.get('servings')
+    origin = data.get('origin')
+    is_favorite = data.get('is_favorite', False)
+    password = data.get('password')
+
+    print("Received tags:", tags)  # Debugging line
+
+    if password != os.getenv('SECRET_PASSWORD'):
+        return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
+
+    connection = None
+    cursor = None
     try:
-        schema = RecipeSchema()
-        data = schema.load(request.json)
-        current_user = User.query.filter_by(username=get_jwt_identity()).first()
-        new_recipe = Recipe(
-            title=data['title'],
-            ingredients='\n'.join(data['ingredients']),
-            instructions='\n'.join(data['instructions']),
-            servings=data.get('servings'),
-            origin=data.get('origin'),
-            is_favorite=data.get('is_favorite', False),
-            user_id=current_user.id
-        )
-        for tag_name in data.get('tags', []):
-            tag = Tag.query.filter_by(name=tag_name).first()
-            if not tag:
-                tag = Tag(name=tag_name)
-            new_recipe.tags.append(tag)
-        db.session.add(new_recipe)
-        db.session.commit()
-        logging.info(f"Recipe '{new_recipe.title}' added successfully")
-        return jsonify({'success': True, 'message': 'Recipe added successfully!'}), 201
-    except ValidationError as err:
-        logging.error(f"Validation error while adding recipe: {err.messages}")
-        return jsonify(err.messages), 400
-    except Exception as e:
-        logging.error(f"Error while adding recipe: {str(e)}")
+        connection = connection_pool.get_connection()
+        cursor = connection.cursor()
+
+        cursor.execute("INSERT INTO recipes (Title, UserID, Servings, Origin, is_favorite) VALUES (%s, %s, %s, %s, %s)", (title, user_id, servings, origin, is_favorite))
+        recipe_id = cursor.lastrowid
+
+        for ingredient in ingredients:
+            cursor.execute("INSERT INTO ingredients (RecipeID, Description) VALUES (%s, %s)", (recipe_id, ingredient.strip()))
+
+        for step_number, instruction in enumerate(instructions, start=1):
+            cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)", (recipe_id, step_number, instruction.strip()))
+
+        for tag in tags:
+            cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag,))
+            tag_id = cursor.fetchone()
+            if not tag_id:
+                cursor.execute("INSERT INTO tags (TagName) VALUES (%s)", (tag,))
+                tag_id = cursor.lastrowid
+            else:
+                tag_id = tag_id[0]
+            cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
+
+        connection.commit()
+        return jsonify({'success': True, 'message': 'Recipe added successfully!'})
+    except Error as e:
+        print(f"Error while adding recipe: {e}")
         return jsonify({'success': False, 'message': 'An error occurred while adding the recipe.'}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
 
-@app.route('/update_recipe/<int:recipe_id>', methods=['PUT'])
-def update_recipe(recipe_id):
-    try:
-        schema = RecipeSchema()
-        data = schema.load(request.json)
-        recipe = Recipe.query.get_or_404(recipe_id)
-        current_user = User.query.filter_by(username=get_jwt_identity()).first()
-        if recipe.user_id != current_user.id:
-            return jsonify({'error': 'Unauthorized'}), 403
-        recipe.title = data['title']
-        recipe.ingredients = '\n'.join(data['ingredients'])
-        recipe.instructions = '\n'.join(data['instructions'])
-        recipe.servings = data.get('servings')
-        recipe.origin = data.get('origin')
-        recipe.is_favorite = data.get('is_favorite', False)
-        recipe.tags = []
-        for tag_name in data.get('tags', []):
-            tag = Tag.query.filter_by(name=tag_name).first()
-            if not tag:
-                tag = Tag(name=tag_name)
-            recipe.tags.append(tag)
-        db.session.commit()
-        logging.info(f"Recipe '{recipe.title}' updated successfully")
-        return jsonify({'success': True, 'message': 'Recipe updated successfully!'}), 200
-    except ValidationError as err:
-        logging.error(f"Validation error while updating recipe: {err.messages}")
-        return jsonify(err.messages), 400
-    except Exception as e:
-        logging.error(f"Error while updating recipe: {str(e)}")
-        return jsonify({'success': False, 'message': 'An error occurred while updating the recipe.'}), 500
+    return jsonify({'success': True, 'message': 'Recipe added successfully!'})
 
-@app.route('/delete_recipe/<int:recipe_id>', methods=['DELETE'])
+@app.route('/delete_recipe/<int:recipe_id>', methods=['POST'])
 def delete_recipe(recipe_id):
+    data = request.json
+    password = data.get('password')
+
+    if password != os.getenv('SECRET_PASSWORD'):
+        return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
+
+    connection = None
+    cursor = None
     try:
-        recipe = Recipe.query.get_or_404(recipe_id)
-        current_user = User.query.filter_by(username=get_jwt_identity()).first()
-        if recipe.user_id != current_user.id:
-            return jsonify({'error': 'Unauthorized'}), 403
-        db.session.delete(recipe)
-        db.session.commit()
-        logging.info(f"Recipe '{recipe.title}' deleted successfully")
-        return jsonify({'success': True, 'message': 'Recipe deleted successfully!'}), 200
-    except Exception as e:
-        logging.error(f"Error while deleting recipe: {str(e)}")
+        connection = connection_pool.get_connection()
+        cursor = connection.cursor()
+
+        # Delete the recipe and associated data
+        cursor.execute("DELETE FROM instructions WHERE RecipeID = %s", (recipe_id,))
+        cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
+        cursor.execute("DELETE FROM recipetags WHERE RecipeID = %s", (recipe_id,))
+        cursor.execute("DELETE FROM recipes WHERE RecipeID = %s", (recipe_id,))
+
+        # Commit the changes
+        connection.commit()
+
+        # Cleanup orphaned tags
+        cursor.execute("""
+            DELETE tags FROM tags
+            LEFT JOIN recipetags ON tags.TagID = recipetags.TagID
+            WHERE recipetags.TagID IS NULL
+        """)
+        connection.commit()
+
+        return jsonify({'success': True, 'message': 'Recipe deleted and orphaned tags cleaned up successfully!'})
+    except Error as e:
+        print(f"Error while deleting recipe with ID {recipe_id}: {e}")
         return jsonify({'success': False, 'message': 'An error occurred while deleting the recipe.'}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+@app.route('/update_recipe/<int:recipe_id>', methods=['POST'])
+def update_recipe(recipe_id):
+    data = request.get_json()
+    title = data.get('title')
+    ingredients = data.get('ingredients').split('\n')
+    instructions = data.get('instructions').split('\n')
+    tags = [tag.strip() for tag in data.get('tags').split(',')]
+    servings = data.get('servings')
+    origin = data.get('origin')
+    is_favorite = data.get('is_favorite', False)
+    password = data.get('password')
+
+    print("Received tags for update:", tags)  # Debugging line
+
+    if password != os.getenv('SECRET_PASSWORD'):
+        return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
+
+    # Validate servings to allow numbers and ranges like "8-10"
+    if not re.match(r'^\d+(-\d+)?$', servings):
+        return jsonify({'success': False, 'message': 'Invalid format for servings. Use a number or a range like "8-10".'})
+
+    connection = None
+    cursor = None
+    try:
+        connection = connection_pool.get_connection()
+        cursor = connection.cursor()
+
+        # Update the recipe
+        cursor.execute("UPDATE recipes SET Title = %s, Servings = %s, Origin = %s, is_favorite = %s WHERE RecipeID = %s", 
+                       (title, servings, origin, is_favorite, recipe_id))
+
+        # Update ingredients
+        cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
+        for ingredient in ingredients:
+            cursor.execute("INSERT INTO ingredients (RecipeID, Description) VALUES (%s, %s)", 
+                           (recipe_id, ingredient.strip()))
+
+        # Update instructions
+        cursor.execute("DELETE FROM instructions WHERE RecipeID = %s", (recipe_id,))
+        for step_number, instruction in enumerate(instructions, start=1):
+            cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)", 
+                           (recipe_id, step_number, instruction.strip()))
+
+        # Update tags
+        cursor.execute("DELETE FROM recipetags WHERE RecipeID = %s", (recipe_id,))
+        for tag in tags:
+            cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag,))
+            tag_id = cursor.fetchone()
+            if not tag_id:
+                cursor.execute("INSERT INTO tags (TagName) VALUES (%s)", (tag,))
+                tag_id = cursor.lastrowid
+            else:
+                tag_id = tag_id[0]
+            cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
+
+        connection.commit()
+        return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
+    except Error as e:
+        print(f"Error while updating recipe: {e}")
+        return jsonify({'success': False, 'message': 'An error occurred while updating the recipe.'}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+    return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
 
 @app.route('/favorites', methods=['GET'])
 def get_favorites():
-    current_user = User.query.filter_by(username=get_jwt_identity()).first()
-    favorites = Recipe.query.filter_by(user_id=current_user.id, is_favorite=True).all()
-    return jsonify([{'id': r.id, 'title': r.title} for r in favorites])
+    result = []
+    connection = None
+    cursor = None
+    try:
+        connection = connection_pool.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM recipes WHERE is_favorite = TRUE")
+        result = cursor.fetchall()
+    except Error as e:
+        print(f"Error while connecting to MySQL or executing query: {e}")
+        result = []
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
 
+    return jsonify(result)
+
+@app.route('/update_favorite/<int:recipe_id>', methods=['POST'])
+def update_favorite(recipe_id):
+    data = request.json
+    is_favorite = data.get('is_favorite', False)
+
+    connection = None
+    cursor = None
+    try:
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+        cursor.execute("UPDATE recipes SET is_favorite = %s WHERE RecipeID = %s", (is_favorite, recipe_id))
+        connection.commit()
+        return jsonify({'success': True, 'message': 'Favorite status updated successfully!'})
+    except Error as e:
+        print(f"Error while updating favorite status for recipe ID {recipe_id}: {e}")
+        return jsonify({'success': False, 'message': 'An error occurred while updating the favorite status.'}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+            
 @app.route('/tags', methods=['GET'])
 def get_tags():
-    tags = Tag.query.all()
-    return jsonify([tag.name for tag in tags])
+    result = []
+    connection = None
+    cursor = None
+    try:
+        connection = connection_pool.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT TagName FROM tags")
+        result = [tag['TagName'] for tag in cursor.fetchall()]
+    except Error as e:
+        print(f"Error while connecting to MySQL or executing query: {e}")
+        result = []
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+    return jsonify(result)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
