@@ -1,7 +1,6 @@
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    let isTagSearch = false;
     const searchBox = document.getElementById('search-box');
     const resultsContainer = document.getElementById('results');
     const addRecipeFormContainer = document.getElementById('add-recipe-form-container');
@@ -20,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewTagsLink = document.getElementById('view-tags-link');
     const viewAllRecipesLink = document.getElementById('view-all-recipes-link');
     let formJustOpened = false;
+    let isTagSearch = false;
 
     // Function to debounce the search input
     const debounce = (func, delay) => {
