@@ -1,6 +1,7 @@
 
 
 document.addEventListener('DOMContentLoaded', () => {
+    let isTagSearch = false;
     const searchBox = document.getElementById('search-box');
     const resultsContainer = document.getElementById('results');
     const addRecipeFormContainer = document.getElementById('add-recipe-form-container');
@@ -20,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewAllRecipesLink = document.getElementById('view-all-recipes-link');
     let formJustOpened = false;
 
+    // Function to debounce the search input
     const debounce = (func, delay) => {
         let timer;
         return (...args) => {
@@ -28,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     };
 
+    // Function to toggle blur and overlay
     const toggleBlurAndOverlay = (show) => {
         if (show) {
             darkOverlay.style.display = 'block';
@@ -38,11 +41,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Function to show a loading indicator
     const showLoadingIndicator = (show) => {
         const loadingIndicator = document.getElementById('loading-indicator');
         loadingIndicator.style.display = show ? 'block' : 'none';
     };
-    
+
+    // Function to show a message
     const showMessage = (message) => {
         messageContainer.textContent = '';
         messageContainer.textContent = message;
@@ -52,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000);
     };
 
+    // Fetch recipes from the server
     const fetchRecipes = async (query) => {
         try {
             const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
@@ -63,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Fetch tags from the server
     const fetchTags = async () => {
         try {
             const response = await fetch('/tags');
@@ -74,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Render recipes in the results container
     const renderRecipes = (recipes) => {
         resultsContainer.innerHTML = '';
         const grid = document.createElement('div');
@@ -90,10 +98,11 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsContainer.appendChild(grid);
     };
 
-    const handleSearch = debounce(async (event) => {
+        // Handle search input
+        const handleSearch = debounce(async (event) => {
         const searchQuery = event.target.value.trim();
         if (searchQuery.length > 2) {
-            const recipes = await fetchRecipes(searchQuery);
+            const recipes = await fetchRecipes(searchQuery, isTagSearch);
             renderRecipes(recipes);
         } else {
             resultsContainer.innerHTML = '';
@@ -356,37 +365,46 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
         }
     });
 
+    // Event listener for tag clicks
     viewTagsLink.addEventListener('click', async () => {
-    try {
-        const tags = await fetchTags();
-        resultsContainer.innerHTML = ''; // Clear the results container
-        const tagListContainer = document.createElement('div');
-        tagListContainer.className = 'tags-list-container';
-        
-        const tagList = document.createElement('ul');
-        tags.forEach(tag => {
-            const tagItem = document.createElement('li');
-            tagItem.textContent = tag;
-            tagItem.className = 'tag-item'; // Add a class for styling
-            tagItem.addEventListener('click', () => {
-                // Add click animation class
-                tagItem.classList.add('clicked');
-                setTimeout(() => {
-                    tagItem.classList.remove('clicked');
-                }, 300); // Duration of the animation
+        try {
+            const tags = await fetchTags();
+            resultsContainer.innerHTML = ''; // Clear the results container
+            const tagListContainer = document.createElement('div');
+            tagListContainer.className = 'tags-list-container';
+            
+            const tagList = document.createElement('ul');
+            tags.forEach(tag => {
+                const tagItem = document.createElement('li');
+                tagItem.textContent = tag;
+                tagItem.className = 'tag-item'; // Add a class for styling
+                tagItem.addEventListener('click', () => {
+                    // Add click animation class
+                    tagItem.classList.add('clicked');
+                    setTimeout(() => {
+                        tagItem.classList.remove('clicked');
+                    }, 300); // Duration of the animation
 
-                searchBox.value = tag;
-                handleSearch({ target: { value: tag } }); // Trigger search
+                    searchBox.value = tag;
+                    isTagSearch = true; // Set the flag for tag search
+                    handleSearch({ target: { value: tag } }); // Trigger search
+                });
+                tagList.appendChild(tagItem);
             });
-            tagList.appendChild(tagItem);
-        });
-        tagListContainer.appendChild(tagList);
-        resultsContainer.appendChild(tagListContainer);
-        searchBox.value = 'Tags'; // Set the search box text to "Tags"
-    } catch (error) {
-        console.error('Error fetching tags:', error);
-    }
-});
+            tagListContainer.appendChild(tagList);
+            resultsContainer.appendChild(tagListContainer);
+            searchBox.value = 'Tags'; // Set the search box text to "Tags"
+        } catch (error) {
+            console.error('Error fetching tags:', error);
+        }
+    });
+
+    // Reset the isTagSearch flag on input in the search box
+    searchBox.addEventListener('input', () => {
+        isTagSearch = false;
+    });
+
+    searchBox.addEventListener('input', handleSearch);
 
     viewAllRecipesLink.addEventListener('click', async () => {
         try {
