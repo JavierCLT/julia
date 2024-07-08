@@ -96,6 +96,7 @@ def search_recipes():
 
     return jsonify(result)
 
+
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
 @cache.cached(timeout=60)
 def recipe_details(recipe_id):
