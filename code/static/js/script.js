@@ -58,16 +58,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Fetch recipes from the server
-    const fetchRecipes = async (query) => {
-        try {
-            const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
-            const data = await response.json();
-            return Array.isArray(data) ? data : [];
-        } catch (error) {
-            console.error('Error fetching recipes:', error);
-            return [];
-        }
-    };
+    const fetchRecipes = async (query, isTagSearch = false) => {
+    try {
+        const response = await fetch(`/search?query=${encodeURIComponent(query)}&isTagSearch=${isTagSearch}`);
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error('Error fetching recipes:', error);
+        return [];
+    }
+};
 
     // Fetch tags from the server
     const fetchTags = async () => {
