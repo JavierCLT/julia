@@ -1,4 +1,5 @@
 
+
 from flask import Flask, request, jsonify, render_template
 from flask_caching import Cache
 import mysql.connector
@@ -33,11 +34,14 @@ connection_pool = mysql.connector.pooling.MySQLConnectionPool(pool_name=db_confi
                                                               user=db_config['user'],
                                                               password=db_config['password'])
 
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 @app.route('/search', methods=['GET'])
 @cache.cached(timeout=60, query_string=True)
 def search_recipes():
     query_param = request.args.get('query', '')
-    is_tag_search = request.args.get('isTagSearch', 'false').lower() == 'true'
     result = []
     connection = None
     cursor = None
@@ -45,45 +49,27 @@ def search_recipes():
     try:
         connection = connection_pool.get_connection()
         cursor = connection.cursor(dictionary=True)
-        if is_tag_search:
-            query = """
-            SELECT 
-                MIN(recipes.RecipeID) as RecipeID, 
-                recipes.Title
-            FROM 
-                recipes
-            LEFT JOIN 
-                recipetags ON recipes.RecipeID = recipetags.RecipeID
-            LEFT JOIN 
-                tags ON recipetags.TagID = tags.TagID
-            WHERE 
-                tags.TagName = %s
-            GROUP BY 
-                recipes.Title
-            """
-            cursor.execute(query, (query_param,))
-        else:
-            query = """
-            SELECT 
-                MIN(recipes.RecipeID) as RecipeID, 
-                recipes.Title
-            FROM 
-                recipes
-            LEFT JOIN 
-                recipetags ON recipes.RecipeID = recipetags.RecipeID
-            LEFT JOIN 
-                tags ON recipetags.TagID = tags.TagID
-            LEFT JOIN 
-                ingredients ON recipes.RecipeID = ingredients.RecipeID
-            WHERE 
-                recipes.Title LIKE %s 
-                OR ingredients.Description LIKE %s 
-                OR tags.TagName LIKE %s
-            GROUP BY 
-                recipes.Title
-            """
-            like_pattern = f"%{query_param}%"
-            cursor.execute(query, (like_pattern, like_pattern, like_pattern))
+        query = """
+        SELECT 
+            MIN(recipes.RecipeID) as RecipeID, 
+            recipes.Title
+        FROM 
+            recipes
+        LEFT JOIN 
+            recipetags ON recipes.RecipeID = recipetags.RecipeID
+        LEFT JOIN 
+            tags ON recipetags.TagID = tags.TagID
+        LEFT JOIN 
+            ingredients ON recipes.RecipeID = ingredients.RecipeID
+        WHERE 
+            recipes.Title LIKE %s 
+            OR ingredients.Description LIKE %s 
+            OR tags.TagName LIKE %s
+        GROUP BY 
+            recipes.Title
+        """
+        like_pattern = f"%{query_param}%"
+        cursor.execute(query, (like_pattern, like_pattern, like_pattern))
         result = cursor.fetchall()
     except Error as e:
         print(f"Error while connecting to MySQL or executing query: {e}")
@@ -95,7 +81,6 @@ def search_recipes():
             connection.close()
 
     return jsonify(result)
-
 
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
 @cache.cached(timeout=60)
