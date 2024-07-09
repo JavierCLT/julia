@@ -80,6 +80,43 @@ def search_recipes():
 
     return jsonify(result)
 
+@app.route('/search_by_tag', methods=['GET'])
+@cache.cached(timeout=60, query_string=True)
+def search_by_tag():
+    tag = request.args.get('tag', '')
+    result = []
+    connection = None
+    cursor = None
+
+    try:
+        connection = connection_pool.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        query = """
+        SELECT 
+            recipes.RecipeID, 
+            recipes.Title
+        FROM 
+            recipes
+        LEFT JOIN 
+            recipetags ON recipes.RecipeID = recipetags.RecipeID
+        LEFT JOIN 
+            tags ON recipetags.TagID = tags.TagID
+        WHERE 
+            tags.TagName = %s
+        """
+        cursor.execute(query, (tag,))
+        result = cursor.fetchall()
+    except Error as e:
+        print(f"Error while connecting to MySQL or executing query: {e}")
+        result = []
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+    return jsonify(result)
+    
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
 @cache.cached(timeout=60)
 def recipe_details(recipe_id):
