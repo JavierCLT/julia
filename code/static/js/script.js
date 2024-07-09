@@ -355,36 +355,49 @@ const fetchAndDisplayRecipeDetails = async (recipeId) => {
     });
 
     viewTagsLink.addEventListener('click', async () => {
-    try {
-        const tags = await fetchTags();
-        resultsContainer.innerHTML = ''; // Clear the results container
-        const tagListContainer = document.createElement('div');
-        tagListContainer.className = 'tags-list-container';
-        
-        const tagList = document.createElement('ul');
-        tags.forEach(tag => {
-            const tagItem = document.createElement('li');
-            tagItem.textContent = tag;
-            tagItem.className = 'tag-item'; // Add a class for styling
-            tagItem.addEventListener('click', () => {
-                // Add click animation class
-                tagItem.classList.add('clicked');
-                setTimeout(() => {
-                    tagItem.classList.remove('clicked');
-                }, 300); // Duration of the animation
+        try {
+            const tags = await fetchTags();
+            resultsContainer.innerHTML = ''; // Clear the results container
+            const tagListContainer = document.createElement('div');
+            tagListContainer.className = 'tags-list-container';
+            
+            const tagList = document.createElement('ul');
+            tags.forEach(tag => {
+                const tagItem = document.createElement('li');
+                tagItem.textContent = tag;
+                tagItem.className = 'tag-item'; // Add a class for styling
+                tagItem.addEventListener('click', async () => {
+                    // Add click animation class
+                    tagItem.classList.add('clicked');
+                    setTimeout(() => {
+                        tagItem.classList.remove('clicked');
+                    }, 300); // Duration of the animation
 
-                searchBox.value = tag;
-                handleSearch({ target: { value: tag } }); // Trigger search
+                    searchBox.value = `Tags: ${tag}`; // Indicate tag search
+                    const recipes = await fetchRecipesByTag(tag); // Fetch recipes by tag
+                    renderRecipes(recipes); // Render the recipes
+                });
+                tagList.appendChild(tagItem);
             });
-            tagList.appendChild(tagItem);
-        });
-        tagListContainer.appendChild(tagList);
-        resultsContainer.appendChild(tagListContainer);
-        searchBox.value = 'Tags'; // Set the search box text to "Tags"
-    } catch (error) {
-        console.error('Error fetching tags:', error);
-    }
-});
+            tagListContainer.appendChild(tagList);
+            resultsContainer.appendChild(tagListContainer);
+            searchBox.value = 'Tags'; // Set the search box text to "Tags"
+        } catch (error) {
+            console.error('Error fetching tags:', error);
+        }
+    });
+
+    // Fetch recipes by tag
+    const fetchRecipesByTag = async (tag) => {
+        try {
+            const response = await fetch(`/search_by_tag?tag=${encodeURIComponent(tag)}`);
+            const data = await response.json();
+            return Array.isArray(data) ? data : [];
+        } catch (error) {
+            console.error('Error fetching recipes by tag:', error);
+            return [];
+        }
+    };
 
     viewAllRecipesLink.addEventListener('click', async () => {
         try {
