@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 recipeDetailsContainer.scrollTop = 0;
             }, 0);
             
-            document.getElementById('edit-recipe-btn').onclick = () => {
+           document.getElementById('edit-recipe-btn').onclick = () => {
     formJustOpened = true;
     console.log('Edit button clicked for recipe ID:', recipeId);
     const recipeData = {
@@ -244,7 +244,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 };
-
     const checkDuplicateTags = (tags) => {
         const tagSet = new Set(tags);
         return tagSet.size !== tags.length;
