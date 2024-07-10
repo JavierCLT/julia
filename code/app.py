@@ -304,9 +304,17 @@ def update_recipe(recipe_id):
         connection = connection_pool.get_connection()
         cursor = connection.cursor()
 
+        # Verify the recipe exists
+        cursor.execute("SELECT RecipeID FROM recipes WHERE RecipeID = %s", (recipe_id,))
+        if cursor.fetchone() is None:
+            return jsonify({'success': False, 'message': 'Recipe not found.'}), 404
+
         # Update the recipe
-        cursor.execute("UPDATE recipes SET Title = %s, Servings = %s, Origin = %s, is_favorite = %s WHERE RecipeID = %s", 
-                       (title, servings, origin, is_favorite, recipe_id))
+        cursor.execute("""
+            UPDATE recipes
+            SET Title = %s, Servings = %s, Origin = %s, is_favorite = %s
+            WHERE RecipeID = %s
+        """, (title, servings, origin, is_favorite, recipe_id))
 
         # Update ingredients
         cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
@@ -344,6 +352,7 @@ def update_recipe(recipe_id):
             connection.close()
 
     return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
+
 
 @app.route('/favorites', methods=['GET'])
 def get_favorites():
