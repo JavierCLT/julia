@@ -289,14 +289,8 @@ def update_recipe(recipe_id):
     is_favorite = data.get('is_favorite', False)
     password = data.get('password')
 
-    print("Received tags for update:", tags)  # Debugging line
-
     if password != os.getenv('SECRET_PASSWORD'):
         return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
-
-    # Validate servings to allow numbers and ranges like "8-10"
-    if not re.match(r'^\d+(-\d+)?$', servings):
-        return jsonify({'success': False, 'message': 'Invalid format for servings. Use a number or a range like "8-10".'})
 
     connection = None
     cursor = None
@@ -316,20 +310,22 @@ def update_recipe(recipe_id):
             WHERE RecipeID = %s
         """, (title, servings, origin, is_favorite, recipe_id))
 
-        # Update ingredients
+        # Delete existing ingredients, instructions, and tags
         cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
+        cursor.execute("DELETE FROM instructions WHERE RecipeID = %s", (recipe_id,))
+        cursor.execute("DELETE FROM recipetags WHERE RecipeID = %s", (recipe_id,))
+
+        # Insert new ingredients
         for ingredient in ingredients:
             cursor.execute("INSERT INTO ingredients (RecipeID, Description) VALUES (%s, %s)", 
                            (recipe_id, ingredient.strip()))
 
-        # Update instructions
-        cursor.execute("DELETE FROM instructions WHERE RecipeID = %s", (recipe_id,))
+        # Insert new instructions
         for step_number, instruction in enumerate(instructions, start=1):
             cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)", 
                            (recipe_id, step_number, instruction.strip()))
 
-        # Update tags
-        cursor.execute("DELETE FROM recipetags WHERE RecipeID = %s", (recipe_id,))
+        # Insert new tags
         for tag in tags:
             cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag,))
             tag_id = cursor.fetchone()
@@ -352,6 +348,7 @@ def update_recipe(recipe_id):
             connection.close()
 
     return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
+
 
 
 @app.route('/favorites', methods=['GET'])
