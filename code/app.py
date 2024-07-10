@@ -1,3 +1,4 @@
+
 from flask import Flask, request, jsonify, render_template
 from flask_caching import Cache
 import mysql.connector
@@ -80,6 +81,43 @@ def search_recipes():
 
     return jsonify(result)
 
+@app.route('/search_by_tag', methods=['GET'])
+@cache.cached(timeout=60, query_string=True)
+def search_by_tag():
+    tag = request.args.get('tag', '')
+    result = []
+    connection = None
+    cursor = None
+
+    try:
+        connection = connection_pool.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        query = """
+        SELECT 
+            recipes.RecipeID, 
+            recipes.Title
+        FROM 
+            recipes
+        LEFT JOIN 
+            recipetags ON recipes.RecipeID = recipetags.RecipeID
+        LEFT JOIN 
+            tags ON recipetags.TagID = tags.TagID
+        WHERE 
+            tags.TagName = %s
+        """
+        cursor.execute(query, (tag,))
+        result = cursor.fetchall()
+    except Error as e:
+        print(f"Error while connecting to MySQL or executing query: {e}")
+        result = []
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+    return jsonify(result)
+    
 @app.route('/recipe_details/<int:recipe_id>', methods=['GET'])
 @cache.cached(timeout=60)
 def recipe_details(recipe_id):
@@ -197,6 +235,8 @@ def add_recipe():
         if connection and connection.is_connected():
             connection.close()
 
+    return jsonify({'success': True, 'message': 'Recipe added successfully!'})
+
 @app.route('/delete_recipe/<int:recipe_id>', methods=['POST'])
 def delete_recipe(recipe_id):
     data = request.json
@@ -250,14 +290,8 @@ def update_recipe(recipe_id):
     is_favorite = data.get('is_favorite', False)
     password = data.get('password')
 
-    print("Received tags for update:", tags)  # Debugging line
-
     if password != os.getenv('SECRET_PASSWORD'):
         return jsonify({'success': False, 'message': 'Incorrect password.'}), 403
-
-    # Validate servings to allow numbers and ranges like "8-10"
-    if not re.match(r'^\d+(-\d+)?$', servings):
-        return jsonify({'success': False, 'message': 'Invalid format for servings. Use a number or a range like "8-10".'})
 
     connection = None
     cursor = None
@@ -265,24 +299,34 @@ def update_recipe(recipe_id):
         connection = connection_pool.get_connection()
         cursor = connection.cursor()
 
-        # Update the recipe
-        cursor.execute("UPDATE recipes SET Title = %s, Servings = %s, Origin = %s, is_favorite = %s WHERE RecipeID = %s", 
-                       (title, servings, origin, is_favorite, recipe_id))
+        # Verify the recipe exists
+        cursor.execute("SELECT RecipeID FROM recipes WHERE RecipeID = %s", (recipe_id,))
+        if cursor.fetchone() is None:
+            return jsonify({'success': False, 'message': 'Recipe not found.'}), 404
 
-        # Update ingredients
+        # Update the recipe
+        cursor.execute("""
+            UPDATE recipes
+            SET Title = %s, Servings = %s, Origin = %s, is_favorite = %s
+            WHERE RecipeID = %s
+        """, (title, servings, origin, is_favorite, recipe_id))
+
+        # Delete existing ingredients, instructions, and tags
         cursor.execute("DELETE FROM ingredients WHERE RecipeID = %s", (recipe_id,))
+        cursor.execute("DELETE FROM instructions WHERE RecipeID = %s", (recipe_id,))
+        cursor.execute("DELETE FROM recipetags WHERE RecipeID = %s", (recipe_id,))
+
+        # Insert new ingredients
         for ingredient in ingredients:
             cursor.execute("INSERT INTO ingredients (RecipeID, Description) VALUES (%s, %s)", 
                            (recipe_id, ingredient.strip()))
 
-        # Update instructions
-        cursor.execute("DELETE FROM instructions WHERE RecipeID = %s", (recipe_id,))
+        # Insert new instructions
         for step_number, instruction in enumerate(instructions, start=1):
             cursor.execute("INSERT INTO instructions (RecipeID, StepNumber, Description) VALUES (%s, %s, %s)", 
                            (recipe_id, step_number, instruction.strip()))
 
-        # Update tags
-        cursor.execute("DELETE FROM recipetags WHERE RecipeID = %s", (recipe_id,))
+        # Insert new tags
         for tag in tags:
             cursor.execute("SELECT TagID FROM tags WHERE TagName = %s", (tag,))
             tag_id = cursor.fetchone()
@@ -303,6 +347,9 @@ def update_recipe(recipe_id):
             cursor.close()
         if connection and connection.is_connected():
             connection.close()
+
+
+
 
 @app.route('/favorites', methods=['GET'])
 def get_favorites():
