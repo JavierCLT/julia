@@ -139,21 +139,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 0);
             
             document.getElementById('edit-recipe-btn').onclick = () => {
-                formJustOpened = true;
-                console.log('Edit button clicked for recipe ID:', recipeId);
-                const recipeData = {
-                    title: data.title,
-                    ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
-                    instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
-                    tags: data.tags.join(','),
-                    servings: data.servings,
-                    origin: data.origin
-                };
-                console.log('Recipe data:', recipeData);
-                populateEditForm(recipeId, recipeData);
-                setTimeout(() => { formJustOpened = false; }, 100);
-            };
-
+    formJustOpened = true;
+    console.log('Edit button clicked for recipe ID:', recipeId);
+    const recipeData = {
+        title: data.title,
+        ingredients: data.ingredients.map(ingredient => ingredient.Description).join('\n'),
+        instructions: data.instructions.map(instruction => instruction.Description).join('\n'),
+        tags: data.tags.join(','),
+        servings: data.servings,
+        origin: data.origin
+    };
+    console.log('Recipe data:', recipeData);
+    populateEditForm(recipeId, recipeData);
+    setTimeout(() => { formJustOpened = false; }, 100);
+};
             document.getElementById('delete-recipe-btn').onclick = async () => {
                 const password = prompt("Enter password to delete this recipe:");
                 if (password) {
@@ -200,51 +199,51 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const populateEditForm = (recipeId, recipeData) => {
-        console.log('Populating edit form with data:', recipeData); 
+ const populateEditForm = (recipeId, recipeData) => {
+    console.log('Populating edit form with data:', recipeData); 
 
-        addRecipeFormContainer.style.display = 'block'; 
-        addRecipeButton.textContent = 'Save'; 
-        console.log('Form container display set to block');
-        toggleBlurAndOverlay(true);
+    addRecipeFormContainer.style.display = 'block'; 
+    addRecipeButton.textContent = 'Save'; 
+    console.log('Form container display set to block');
+    toggleBlurAndOverlay(true);
 
-        document.getElementById('recipe-title-input').value = recipeData.title || '';
-        document.getElementById('recipe-ingredients-input').value = recipeData.ingredients || '';
-        document.getElementById('recipe-instructions-input').value = recipeData.instructions || '';
-        document.getElementById('recipe-tags-input').value = recipeData.tags || '';
-        document.getElementById('recipe-servings-input').value = recipeData.servings || '';
-        document.getElementById('recipe-origin-input').value = recipeData.origin || '';
+    document.getElementById('recipe-title-input').value = recipeData.title || '';
+    document.getElementById('recipe-ingredients-input').value = recipeData.ingredients || '';
+    document.getElementById('recipe-instructions-input').value = recipeData.instructions || '';
+    document.getElementById('recipe-tags-input').value = recipeData.tags || '';
+    document.getElementById('recipe-servings-input').value = recipeData.servings || '';
+    document.getElementById('recipe-origin-input').value = recipeData.origin || '';
 
-        addRecipeForm.onsubmit = async (event) => {
-            event.preventDefault();
-            const formData = new FormData(addRecipeForm);
-            const updatedRecipeData = Object.fromEntries(formData.entries());
+    addRecipeForm.onsubmit = async (event) => {
+        event.preventDefault();
+        const formData = new FormData(addRecipeForm);
+        const updatedRecipeData = Object.fromEntries(formData.entries());
 
-            try {
-                console.log('Sending update request with data:', updatedRecipeData);
-                const response = await fetch(`/update_recipe/${recipeId}`, {
-                    method: 'POST',
-                    body: JSON.stringify(updatedRecipeData),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                const data = await response.json();
-                showMessage(data.message);
-                if (data.success) {
-                    addRecipeForm.reset();
-                    addRecipeFormContainer.style.display = 'none';
-                    toggleBlurAndOverlay(false);
-                    fetchAndDisplayRecipeDetails(recipeId);
-                    // Refresh the view
-                    const recipes = await fetchRecipes(searchBox.value.trim());
-                    renderRecipes(recipes);
+        try {
+            console.log('Sending update request with data:', updatedRecipeData);
+            const response = await fetch(`/update_recipe/${recipeId}`, {
+                method: 'POST',
+                body: JSON.stringify(updatedRecipeData),
+                headers: {
+                    'Content-Type': 'application/json'
                 }
-            } catch (error) {
-                console.error('Error updating recipe:', error);
+            });
+            const data = await response.json();
+            showMessage(data.message);
+            if (data.success) {
+                addRecipeForm.reset();
+                addRecipeFormContainer.style.display = 'none';
+                toggleBlurAndOverlay(false);
+                fetchAndDisplayRecipeDetails(recipeId);
+                // Refresh the view
+                const recipes = await fetchRecipes(searchBox.value.trim());
+                renderRecipes(recipes);
             }
-        };
+        } catch (error) {
+            console.error('Error updating recipe:', error);
+        }
     };
+};
 
     const checkDuplicateTags = (tags) => {
         const tagSet = new Set(tags);
