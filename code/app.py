@@ -298,6 +298,7 @@ def update_recipe(recipe_id):
     try:
         connection = connection_pool.get_connection()
         cursor = connection.cursor()
+        connection.start_transaction()  # Start a transaction
 
         # Verify the recipe exists
         cursor.execute("SELECT RecipeID FROM recipes WHERE RecipeID = %s", (recipe_id,))
@@ -337,9 +338,10 @@ def update_recipe(recipe_id):
                 tag_id = tag_id[0]
             cursor.execute("INSERT INTO recipetags (RecipeID, TagID) VALUES (%s, %s)", (recipe_id, tag_id))
 
-        connection.commit()
+        connection.commit()  # Commit the transaction
         return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
     except Error as e:
+        connection.rollback()  # Rollback the transaction on error
         print(f"Error while updating recipe: {e}")
         return jsonify({'success': False, 'message': 'An error occurred while updating the recipe.'}), 500
     finally:
@@ -349,6 +351,7 @@ def update_recipe(recipe_id):
             connection.close()
 
     return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
+
 
 
 
