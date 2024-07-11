@@ -74,10 +74,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const renderRecipes = (recipes) => {
-        resultsContainer.innerHTML = '';
-        const grid = document.createElement('div');
-        grid.className = 'grid';
-        recipes.forEach(recipe => {
+    resultsContainer.innerHTML = '';
+    const recipeIds = new Set();
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    recipes.forEach(recipe => {
+        if (!recipeIds.has(recipe.RecipeID)) {
+            recipeIds.add(recipe.RecipeID);
             const recipeElement = document.createElement('div');
             recipeElement.className = 'recipe-box';
             recipeElement.setAttribute('data-recipe-id', recipe.RecipeID);
@@ -85,9 +88,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                           <h3 class="recipe-title">${recipe.Title}</h3>
                                        </div>`;
             grid.appendChild(recipeElement);
-        });
-        resultsContainer.appendChild(grid);
-    };
+        }
+    });
+    resultsContainer.appendChild(grid);
+};
 
     const handleSearch = debounce(async (event) => {
         const searchQuery = event.target.value.trim();
