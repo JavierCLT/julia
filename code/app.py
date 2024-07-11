@@ -348,6 +348,7 @@ def update_recipe(recipe_id):
         if connection and connection.is_connected():
             connection.close()
 
+    return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
 
 
 
