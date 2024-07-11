@@ -261,12 +261,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 addRecipeForm.reset();
                 addRecipeFormContainer.style.display = 'none';
                 toggleBlurAndOverlay(false);
-                // Fetch and display updated recipe details after confirmation from the backend
-                await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay to ensure update completes
-                await fetchAndDisplayRecipeDetails(currentRecipeId);
-                // Refresh the view
-                const recipes = await fetchRecipes(searchBox.value.trim());
-                renderRecipes(recipes);
+                // Introduce a delay before fetching and displaying updated recipe details
+                setTimeout(async () => {
+                    await fetchAndDisplayRecipeDetails(currentRecipeId);
+                    // Refresh the view
+                    const recipes = await fetchRecipes(searchBox.value.trim());
+                    renderRecipes(recipes);
+                }, 1000); // 1 second delay
             }
         } else {
             console.log('Sending add request with data:', recipeData);
@@ -294,6 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
         addRecipeButton.disabled = false; // Re-enable the button after the request is complete
     }
 };
+
 
 
     addRecipeForm.addEventListener('submit', handleFormSubmit);
