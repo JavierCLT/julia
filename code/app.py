@@ -352,9 +352,6 @@ def update_recipe(recipe_id):
 
     return jsonify({'success': True, 'message': 'Recipe updated successfully!'})
 
-
-
-
 @app.route('/favorites', methods=['GET'])
 def get_favorites():
     result = []
