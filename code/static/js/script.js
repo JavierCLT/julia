@@ -230,68 +230,72 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const handleFormSubmit = async (event) => {
-        event.preventDefault();
-        const formData = new FormData(addRecipeForm);
-        const recipeData = Object.fromEntries(formData.entries());
+    event.preventDefault();
+    const formData = new FormData(addRecipeForm);
+    const recipeData = Object.fromEntries(formData.entries());
 
-        const tags = formData.get('tags').split(',').map(tag => tag.trim());
-        if (checkDuplicateTags(tags)) {
-            errorMessage.textContent = 'Duplicate tags are not allowed.';
-            errorMessage.style.display = 'block';
-            return;
-        } else {
-            errorMessage.style.display = 'none';
-        }
+    const tags = formData.get('tags').split(',').map(tag => tag.trim());
+    if (checkDuplicateTags(tags)) {
+        errorMessage.textContent = 'Duplicate tags are not allowed.';
+        errorMessage.style.display = 'block';
+        return;
+    } else {
+        errorMessage.style.display = 'none';
+    }
 
-        addRecipeButton.disabled = true; // Disable the button to prevent multiple submissions
+    addRecipeButton.disabled = true; // Disable the button to prevent multiple submissions
 
-        try {
-            if (isUpdateMode && currentRecipeId) {
-                console.log('Sending update request with data:', recipeData);
-                const response = await fetch(`/update_recipe/${currentRecipeId}`, {
-                    method: 'POST',
-                    body: JSON.stringify(recipeData),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                const data = await response.json();
-                showMessage(data.message);
-                if (data.success) {
-                    addRecipeForm.reset();
-                    addRecipeFormContainer.style.display = 'none';
-                    toggleBlurAndOverlay(false);
-                    fetchAndDisplayRecipeDetails(currentRecipeId);
+    try {
+        if (isUpdateMode && currentRecipeId) {
+            console.log('Sending update request with data:', recipeData);
+            const response = await fetch(`/update_recipe/${currentRecipeId}`, {
+                method: 'POST',
+                body: JSON.stringify(recipeData),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
+            showMessage(data.message);
+            if (data.success) {
+                addRecipeForm.reset();
+                addRecipeFormContainer.style.display = 'none';
+                toggleBlurAndOverlay(false);
+                // Fetch and display updated recipe details after a short delay to ensure the update is complete
+                setTimeout(async () => {
+                    await fetchAndDisplayRecipeDetails(currentRecipeId);
                     // Refresh the view
                     const recipes = await fetchRecipes(searchBox.value.trim());
                     renderRecipes(recipes);
-                }
-            } else {
-                console.log('Sending add request with data:', recipeData);
-                const response = await fetch('/add_recipe', {
-                    method: 'POST',
-                    body: JSON.stringify(recipeData),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                const data = await response.json();
-                showMessage(data.message);
-                if (data.success) {
-                    addRecipeForm.reset();
-                    addRecipeFormContainer.style.display = 'none';
-                    toggleBlurAndOverlay(false);
-                    // Refresh the view
-                    const recipes = await fetchRecipes(searchBox.value.trim());
-                    renderRecipes(recipes);
-                }
+                }, 500); // 500ms delay
             }
-        } catch (error) {
-            console.error('Error submitting form:', error);
-        } finally {
-            addRecipeButton.disabled = false; // Re-enable the button after the request is complete
+        } else {
+            console.log('Sending add request with data:', recipeData);
+            const response = await fetch('/add_recipe', {
+                method: 'POST',
+                body: JSON.stringify(recipeData),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
+            showMessage(data.message);
+            if (data.success) {
+                addRecipeForm.reset();
+                addRecipeFormContainer.style.display = 'none';
+                toggleBlurAndOverlay(false);
+                // Refresh the view
+                const recipes = await fetchRecipes(searchBox.value.trim());
+                renderRecipes(recipes);
+            }
         }
-    };
+    } catch (error) {
+        console.error('Error submitting form:', error);
+    } finally {
+        addRecipeButton.disabled = false; // Re-enable the button after the request is complete
+    }
+};
+
 
     addRecipeForm.addEventListener('submit', handleFormSubmit);
 
