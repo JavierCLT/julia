@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultsContainer = document.getElementById('results');
     const addRecipeFormContainer = document.getElementById('add-recipe-form-container');
     const addRecipeForm = document.getElementById('add-recipe-form');
+    const formTitle = document.getElementById('form-title'); // Form title element
     const recipeDetailsContainer = document.getElementById('recipe-details-container');
     const recipeTitle = document.getElementById('recipe-title');
     const deleteRecipeBtn = document.getElementById('delete-recipe-btn');
@@ -19,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let formJustOpened = false;
     let isUpdateMode = false;
     let currentRecipeId = null;
+    let lastQuery = ''; // Variable to store the last search query
 
     const debounce = (func, delay) => {
         let timer;
@@ -96,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const handleSearch = debounce(async (event) => {
         const searchQuery = event.target.value.trim();
+        lastQuery = searchQuery; // Store the last query
         if (searchQuery.length > 2) {
             const recipes = await fetchRecipes(searchQuery);
             renderRecipes(recipes);
@@ -214,6 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         addRecipeFormContainer.style.display = 'block'; 
         addRecipeButton.textContent = 'Save Changes'; 
+        formTitle.textContent = 'Update Recipe'; // Update the form title
         console.log('Form container display set to block');
         toggleBlurAndOverlay(true);
 
@@ -229,6 +233,15 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         const formData = new FormData(addRecipeForm);
         const recipeData = Object.fromEntries(formData.entries());
+
+        const tags = formData.get('tags').split(',').map(tag => tag.trim());
+        if (checkDuplicateTags(tags)) {
+            errorMessage.textContent = 'Duplicate tags are not allowed.';
+            errorMessage.style.display = 'block';
+            return;
+        } else {
+            errorMessage.style.display = 'none';
+        }
 
         addRecipeButton.disabled = true; // Disable the button to prevent multiple submissions
 
@@ -294,6 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentRecipeId = null;
         addRecipeFormContainer.style.display = 'block';
         addRecipeButton.textContent = 'Add Recipe'; 
+        formTitle.textContent = 'Add New Recipe'; // Set the form title to Add New Recipe
         toggleBlurAndOverlay(true);
     });
 
@@ -315,19 +329,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    window.addEventListener('click', (event) => {
+    window.addEventListener('click', async (event) => {
         console.log('Window click event:', event.target);
         if (!recipeDetailsContainer.contains(event.target) && recipeDetailsContainer.style.display === 'block') {
             recipeDetailsContainer.style.display = 'none';
             recipeTitle.textContent = '';
             toggleBlurAndOverlay(false);
+            // Refresh the view
+            const recipes = await fetchRecipes(lastQuery);
+            renderRecipes(recipes);
         }
         if (!formJustOpened && !addRecipeFormContainer.contains(event.target) && addRecipeFormContainer.style.display === 'block' && !event.target.closest('#add-recipe-btn')) {
             addRecipeFormContainer.style.display = 'none';
             toggleBlurAndOverlay(false);
         }
     });
-    
+
     favoriteCheckbox.onchange = async () => {
         const recipeId = favoriteCheckbox.getAttribute('data-recipe-id');
         const isFavorite = favoriteCheckbox.checked;
@@ -378,6 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }, 300); // Duration of the animation
 
                     searchBox.value = `Tags: ${tag}`; // Indicate tag search
+                    lastQuery = `Tags: ${tag}`; // Store the last query
                     const recipes = await fetchRecipesByTag(tag); // Fetch recipes by tag
                     renderRecipes(recipes); // Render the recipes
                 });
