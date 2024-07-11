@@ -261,13 +261,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 addRecipeForm.reset();
                 addRecipeFormContainer.style.display = 'none';
                 toggleBlurAndOverlay(false);
-                // Fetch and display updated recipe details after a short delay to ensure the update is complete
-                setTimeout(async () => {
-                    await fetchAndDisplayRecipeDetails(currentRecipeId);
-                    // Refresh the view
-                    const recipes = await fetchRecipes(searchBox.value.trim());
-                    renderRecipes(recipes);
-                }, 500); // 500ms delay
+                // Fetch and display updated recipe details after confirmation from the backend
+                await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay to ensure update completes
+                await fetchAndDisplayRecipeDetails(currentRecipeId);
+                // Refresh the view
+                const recipes = await fetchRecipes(searchBox.value.trim());
+                renderRecipes(recipes);
             }
         } else {
             console.log('Sending add request with data:', recipeData);
