@@ -50,7 +50,7 @@ def search_recipes():
         cursor = connection.cursor(dictionary=True)
         query = """
         SELECT 
-            MIN(recipes.RecipeID) as RecipeID, 
+            DISTINCT recipes.RecipeID, 
             recipes.Title
         FROM 
             recipes
@@ -64,8 +64,6 @@ def search_recipes():
             recipes.Title LIKE %s 
             OR ingredients.Description LIKE %s 
             OR tags.TagName LIKE %s
-        GROUP BY 
-            recipes.Title
         """
         like_pattern = f"%{query_param}%"
         cursor.execute(query, (like_pattern, like_pattern, like_pattern))
@@ -80,6 +78,7 @@ def search_recipes():
             connection.close()
 
     return jsonify(result)
+
 
 @app.route('/search_by_tag', methods=['GET'])
 @cache.cached(timeout=60, query_string=True)
