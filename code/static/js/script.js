@@ -220,6 +220,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData(addRecipeForm);
         const updatedRecipeData = Object.fromEntries(formData.entries());
 
+        addRecipeButton.disabled = true; // Disable the button to prevent multiple submissions
+
         try {
             console.log('Sending update request with data:', updatedRecipeData);
             const response = await fetch(`/update_recipe/${recipeId}`, {
@@ -242,6 +244,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Error updating recipe:', error);
+        } finally {
+            addRecipeButton.disabled = false; // Re-enable the button after the request is complete
         }
     };
 };
