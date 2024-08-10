@@ -25,34 +25,9 @@
     <div class="dark-overlay" id="darkOverlay"></div>
     <div class="container">
         <div class="header">
-    <h1>JH Recipes</h1>
-    <div id="auth-container">
-        <div id="user-display"></div>
-        <button id="login-btn" class="auth-btn">Login</button>
-        <button id="signup-btn" class="auth-btn">Sign Up</button>
-        <button id="logout-btn" class="auth-btn" style="display: none;">Logout</button>
-    </div>
-    <button id="add-recipe-btn" class="add-recipe-btn">Add New Recipe</button>
-</div>
-
-<!-- Add these forms after the header div -->
-<div id="login-form-container" class="form-container" style="display:none;">
-    <h2>Login</h2>
-    <form id="login-form">
-        <input type="email" id="login-email" placeholder="Email" required>
-        <input type="password" id="login-password" placeholder="Password" required>
-        <button type="submit">Login</button>
-    </form>
-</div>
-
-<div id="signup-form-container" class="form-container" style="display:none;">
-    <h2>Sign Up</h2>
-    <form id="signup-form">
-        <input type="email" id="signup-email" placeholder="Email" required>
-        <input type="password" id="signup-password" placeholder="Password" required>
-        <button type="submit">Sign Up</button>
-    </form>
-</div>
+            <h1>JH Recipes</h1>
+            <button id="add-recipe-btn" class="add-recipe-btn">Add New Recipe</button>
+        </div>
         <div id="message-container" class="message-container"></div>
         <div class="nav-links">
             <a href="#" id="view-favorites-link">Favorites</a>
@@ -131,6 +106,6 @@
         </form>
     </div>
     
-    <script type="module" src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
