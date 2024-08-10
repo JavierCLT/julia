@@ -347,75 +347,62 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const handleFormSubmit = async (event) => {
-        event.preventDefault();
-        if (!currentUser) {
-            showMessage('You must be logged in to add or edit recipes');
-            return;
-        }
+    event.preventDefault();
+    if (!currentUser) {
+        showMessage('You must be logged in to add or edit recipes');
+        return;
+    }
 
-        const formData = new FormData(addRecipeForm);
-        const recipeData = Object.fromEntries(formData.entries());
-        recipeData.uid = currentUser.uid;
+    const formData = new FormData(addRecipeForm);
+    const recipeData = Object.fromEntries(formData.entries());
+    recipeData.uid = currentUser.uid;
 
     const tags = formData.get('tags').split(',').map(tag => tag.trim());
     if (checkDuplicateTags(tags)) {
         errorMessage.textContent = 'Duplicate tags are not allowed.';
         errorMessage.style.display = 'block';
         return;
-    } else {
-        errorMessage.style.display = 'none';
     }
+    errorMessage.style.display = 'none';
 
-    addRecipeButton.disabled = true; // Disable the button to prevent multiple submissions
+    addRecipeButton.disabled = true;
+    showLoadingIndicator(true);
 
     try {
-        if (isUpdateMode && currentRecipeId) {
-            console.log('Sending update request with data:', recipeData);
-            const response = await fetch(`/update_recipe/${currentRecipeId}`, {
-                method: 'POST',
-                body: JSON.stringify(recipeData),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            const data = await response.json();
-            showMessage(data.message);
-            if (data.success) {
-                addRecipeForm.reset();
-                addRecipeFormContainer.style.display = 'none';
-                toggleBlurAndOverlay(false);
-                // Introduce a delay before fetching and displaying updated recipe details
-                setTimeout(async () => {
-                    await fetchAndDisplayRecipeDetails(currentRecipeId);
-                    // Refresh the view
-                    const recipes = await fetchRecipes(searchBox.value.trim());
-                    renderRecipes(recipes);
-                }, 1000); // 1 second delay
+        const endpoint = isUpdateMode ? `/update_recipe/${currentRecipeId}` : '/add_recipe';
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            body: JSON.stringify(recipeData),
+            headers: {
+                'Content-Type': 'application/json'
             }
-        } else {
-            console.log('Sending add request with data:', recipeData);
-            const response = await fetch('/add_recipe', {
-                method: 'POST',
-                body: JSON.stringify(recipeData),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            const data = await response.json();
-            showMessage(data.message);
-            if (data.success) {
-                addRecipeForm.reset();
-                addRecipeFormContainer.style.display = 'none';
-                toggleBlurAndOverlay(false);
-                // Refresh the view
-                const recipes = await fetchRecipes(searchBox.value.trim());
-                renderRecipes(recipes);
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        showMessage(data.message);
+
+        if (data.success) {
+            addRecipeForm.reset();
+            addRecipeFormContainer.style.display = 'none';
+            toggleBlurAndOverlay(false);
+
+            if (isUpdateMode) {
+                await fetchAndDisplayRecipeDetails(currentRecipeId);
             }
+
+            const recipes = await fetchRecipes(searchBox.value.trim());
+            renderRecipes(recipes);
         }
     } catch (error) {
         console.error('Error submitting form:', error);
+        showMessage('An error occurred while saving the recipe. Please try again.');
     } finally {
-        addRecipeButton.disabled = false; // Re-enable the button after the request is complete
+        addRecipeButton.disabled = false;
+        showLoadingIndicator(false);
     }
 };
 
