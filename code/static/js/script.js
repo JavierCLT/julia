@@ -1,23 +1,3 @@
-// Firebase imports
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
-import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
-
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyAf_ctPJrXjlrUsmxIlZB2fYsrX4DAJ3Hs",
-  authDomain: "jhrecipes1.firebaseapp.com",
-  databaseURL: "https://jhrecipes1-default-rtdb.firebaseio.com",
-  projectId: "jhrecipes1",
-  storageBucket: "jhrecipes1.appspot.com",
-  messagingSenderId: "319004682120",
-  appId: "1:319004682120:web:787f15928e249e6ea43c3d",
-  measurementId: "G-W9SJVFNSWD"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
 document.addEventListener('DOMContentLoaded', () => {
     const searchBox = document.getElementById('search-box');
     const resultsContainer = document.getElementById('results');
@@ -37,102 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewFavoritesLink = document.getElementById('view-favorites-link');
     const viewTagsLink = document.getElementById('view-tags-link');
     const viewAllRecipesLink = document.getElementById('view-all-recipes-link');
-    const loginBtn = document.getElementById('login-btn');
-    const signupBtn = document.getElementById('signup-btn');
-    const logoutBtn = document.getElementById('logout-btn');
-    const userDisplay = document.getElementById('user-display');
-    const loginFormContainer = document.getElementById('login-form-container');
-    const signupFormContainer = document.getElementById('signup-form-container');
-    const loginForm = document.getElementById('login-form');
-    const signupForm = document.getElementById('signup-form');
-
-    let currentUser = null;
     let formJustOpened = false;
     let isUpdateMode = false;
     let currentRecipeId = null;
     let lastQuery = ''; // Variable to store the last search query
-
-    // Authentication state observer
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            currentUser = user;
-            userDisplay.textContent = `Logged in as: ${user.email}`;
-            showAuthenticatedUI();
-        } else {
-            currentUser = null;
-            userDisplay.textContent = 'Not logged in';
-            showUnauthenticatedUI();
-        }
-    });
-
-    // Show/hide UI elements based on authentication state
-    const showAuthenticatedUI = () => {
-        loginBtn.style.display = 'none';
-        signupBtn.style.display = 'none';
-        logoutBtn.style.display = 'inline-block';
-        document.getElementById('add-recipe-btn').style.display = 'inline-block';
-    };
-
-    const showUnauthenticatedUI = () => {
-        loginBtn.style.display = 'inline-block';
-        signupBtn.style.display = 'inline-block';
-        logoutBtn.style.display = 'none';
-        document.getElementById('add-recipe-btn').style.display = 'none';
-    };
-
-    // Login button click handler
-    loginBtn.addEventListener('click', () => {
-        loginFormContainer.style.display = 'block';
-        signupFormContainer.style.display = 'none';
-        toggleBlurAndOverlay(true);
-    });
-
-    // Signup button click handler
-    signupBtn.addEventListener('click', () => {
-        signupFormContainer.style.display = 'block';
-        loginFormContainer.style.display = 'none';
-        toggleBlurAndOverlay(true);
-    });
-
-    // Login form submission
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = loginForm.querySelector('#login-email').value;
-        const password = loginForm.querySelector('#login-password').value;
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
-            showMessage('Logged in successfully');
-            loginFormContainer.style.display = 'none';
-            toggleBlurAndOverlay(false);
-        } catch (error) {
-            showMessage('Login failed: ' + error.message);
-        }
-    });
-
-    // Signup form submission
-    signupForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = signupForm.querySelector('#signup-email').value;
-        const password = signupForm.querySelector('#signup-password').value;
-        try {
-            await createUserWithEmailAndPassword(auth, email, password);
-            showMessage('Signed up successfully');
-            signupFormContainer.style.display = 'none';
-            toggleBlurAndOverlay(false);
-        } catch (error) {
-            showMessage('Signup failed: ' + error.message);
-        }
-    });
-
-    // Logout button
-    logoutBtn.addEventListener('click', async () => {
-        try {
-            await signOut(auth);
-            showMessage('Logged out successfully');
-        } catch (error) {
-            showMessage('Logout failed: ' + error.message);
-        }
-    });
 
     const debounce = (func, delay) => {
         let timer;
@@ -168,8 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const fetchRecipes = async (query) => {
         try {
-            const uid = currentUser ? currentUser.uid : '';
-            const response = await fetch(`/search?query=${encodeURIComponent(query)}&uid=${uid}`);
+            const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
             const data = await response.json();
             return Array.isArray(data) ? data : [];
         } catch (error) {
@@ -222,8 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const fetchAndDisplayRecipeDetails = async (recipeId) => {
         try {
-            const uid = currentUser ? currentUser.uid : '';
-            const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}?uid=${uid}`);
+            const response = await fetch(`/recipe_details/${encodeURIComponent(recipeId)}`);
             const data = await response.json();
             console.log('API Response:', data);
 
@@ -318,9 +204,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             };
 
-        document.getElementById('edit-recipe-btn').style.display = data.is_owner ? 'inline-block' : 'none';
-            document.getElementById('delete-recipe-btn').style.display = data.is_owner ? 'inline-block' : 'none';
-
         } catch (error) {
             console.error('Error fetching recipe details:', error);
         }
@@ -348,61 +231,68 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const handleFormSubmit = async (event) => {
     event.preventDefault();
-    if (!currentUser) {
-        showMessage('You must be logged in to add or edit recipes');
-        return;
-    }
-
     const formData = new FormData(addRecipeForm);
     const recipeData = Object.fromEntries(formData.entries());
-    recipeData.uid = currentUser.uid;
 
     const tags = formData.get('tags').split(',').map(tag => tag.trim());
     if (checkDuplicateTags(tags)) {
         errorMessage.textContent = 'Duplicate tags are not allowed.';
         errorMessage.style.display = 'block';
         return;
+    } else {
+        errorMessage.style.display = 'none';
     }
-    errorMessage.style.display = 'none';
 
-    addRecipeButton.disabled = true;
-    showLoadingIndicator(true);
+    addRecipeButton.disabled = true; // Disable the button to prevent multiple submissions
 
     try {
-        const endpoint = isUpdateMode ? `/update_recipe/${currentRecipeId}` : '/add_recipe';
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            body: JSON.stringify(recipeData),
-            headers: {
-                'Content-Type': 'application/json'
+        if (isUpdateMode && currentRecipeId) {
+            console.log('Sending update request with data:', recipeData);
+            const response = await fetch(`/update_recipe/${currentRecipeId}`, {
+                method: 'POST',
+                body: JSON.stringify(recipeData),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
+            showMessage(data.message);
+            if (data.success) {
+                addRecipeForm.reset();
+                addRecipeFormContainer.style.display = 'none';
+                toggleBlurAndOverlay(false);
+                // Introduce a delay before fetching and displaying updated recipe details
+                setTimeout(async () => {
+                    await fetchAndDisplayRecipeDetails(currentRecipeId);
+                    // Refresh the view
+                    const recipes = await fetchRecipes(searchBox.value.trim());
+                    renderRecipes(recipes);
+                }, 1000); // 1 second delay
             }
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        showMessage(data.message);
-
-        if (data.success) {
-            addRecipeForm.reset();
-            addRecipeFormContainer.style.display = 'none';
-            toggleBlurAndOverlay(false);
-
-            if (isUpdateMode) {
-                await fetchAndDisplayRecipeDetails(currentRecipeId);
+        } else {
+            console.log('Sending add request with data:', recipeData);
+            const response = await fetch('/add_recipe', {
+                method: 'POST',
+                body: JSON.stringify(recipeData),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
+            showMessage(data.message);
+            if (data.success) {
+                addRecipeForm.reset();
+                addRecipeFormContainer.style.display = 'none';
+                toggleBlurAndOverlay(false);
+                // Refresh the view
+                const recipes = await fetchRecipes(searchBox.value.trim());
+                renderRecipes(recipes);
             }
-
-            const recipes = await fetchRecipes(searchBox.value.trim());
-            renderRecipes(recipes);
         }
     } catch (error) {
         console.error('Error submitting form:', error);
-        showMessage('An error occurred while saving the recipe. Please try again.');
     } finally {
-        addRecipeButton.disabled = false;
-        showLoadingIndicator(false);
+        addRecipeButton.disabled = false; // Re-enable the button after the request is complete
     }
 };
 
@@ -480,15 +370,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     viewFavoritesLink.addEventListener('click', async () => {
-        if (!currentUser) {
-            showMessage('You must be logged in to view favorites');
-            return;
-        }
         try {
-            const response = await fetch(`/favorites?uid=${currentUser.uid}`);
+            const response = await fetch('/favorites');
             const favorites = await response.json();
             renderRecipes(favorites);
-            searchBox.value = 'Favorites';
+            searchBox.value = 'Favorites'; // Set the search box text to "Favorites"
         } catch (error) {
             console.error('Error fetching favorite recipes:', error);
         }
